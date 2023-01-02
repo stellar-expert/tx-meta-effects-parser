@@ -2,6 +2,11 @@
 
 > Low-level effects parser for Stellar transaction results and meta XDR
 
+Some [Stellar](https://stellar.org) operations yield non-deterministic results,
+so developers often have to pull the data from Horizon `/effects` API endpoints.
+This package provides the ability to retrieve atomic ledger state modifications
+directly from the transaction execution result and metadata.
+
 ## Installation
 
 ```

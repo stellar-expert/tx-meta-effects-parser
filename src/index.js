@@ -1,7 +1,8 @@
 const {TransactionBuilder, Networks, xdr} = require('stellar-sdk')
 const {processFeeChargedEffect, analyzeOperationEffects} = require('./tx-effects-analyzer')
 const {parseTxResult} = require('./tx-result-parser')
-const {parseOperationMeta} = require('./op-meta-parser')
+const {parseLedgerEntryChanges} = require('./ledger-entry-changes-parser')
+const {parseTxMetaChanges} = require('./tx-meta-changes-parser')
 
 /**
  *
@@ -57,4 +58,4 @@ function parseTxOperationsMeta({network, tx, result, meta}) {
     return res
 }
 
-module.exports = {parseTxOperationsMeta, parseTxResult, analyzeOperationEffects, parseOperationMeta}
+module.exports = {parseTxOperationsMeta, parseTxResult, analyzeOperationEffects, parseLedgerEntryChanges, parseTxMetaChanges}

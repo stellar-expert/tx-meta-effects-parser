@@ -1,5 +1,5 @@
 const Bignumber = require('bignumber.js')
-const {parseOperationMeta} = require('./op-meta-parser')
+const {parseLedgerEntryChanges} = require('./ledger-entry-changes-parser')
 const {xdrParseAsset, xdrParseClaimantPredicate} = require('./tx-xdr-parser-utils')
 
 function analyzeOperationEffects({operation, meta, result}) {
@@ -7,7 +7,7 @@ function analyzeOperationEffects({operation, meta, result}) {
     if (!operation.source)
         throw new Error('Aha')
     const processEffects = effectProcessorMap[operation.type]
-    const changes = parseOperationMeta(operation, meta)
+    const changes = parseLedgerEntryChanges(meta)
     operation.effects = processEffects({
         operation,
         changes,

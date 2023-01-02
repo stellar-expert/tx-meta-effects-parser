@@ -8,15 +8,21 @@ const {
 } = require('./tx-xdr-parser-utils')
 
 /**
- *
- * @param {BaseOperation} operation
- * @param {xdr.LedgerEntryChange[]} opMeta
+ * @typedef {{}} ParsedLedgerEntryMeta
+ * @property {'account'|'trustline'|'liquidityPoolStake'|'offer'|'data'|'liquidityPool'|'claimableBalance'} type - Ledger entry type
+ * @property {{}} before - Ledger entry state before changes applied
+ * @property {{}} after - Ledger entry state after changes application
  */
-function parseOperationMeta(operation, opMeta) {
+
+/**
+ * @param {LedgerEntryChange[]} ledgerEntryChanges
+ * @return {ParsedLedgerEntryMeta[]}
+ */
+function parseLedgerEntryChanges(ledgerEntryChanges) {
     const changes = []
     let state
-    for (let i = 0; i < opMeta.length; i++) {
-        const entry = opMeta[i]
+    for (let i = 0; i < ledgerEntryChanges.length; i++) {
+        const entry = ledgerEntryChanges[i]
         const actionType = entry.arm()
 
         const stateData = parseEntry(entry.value(), actionType)
@@ -228,4 +234,4 @@ function parseClaimableBalanceEntry(value) {
     return data
 }
 
-module.exports = {parseOperationMeta}
+module.exports = {parseLedgerEntryChanges}

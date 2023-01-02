@@ -1,4 +1,3 @@
-const crypto = require('crypto')
 const {StrKey} = require('stellar-sdk')
 const Bignumber = require('bignumber.js')
 
@@ -207,9 +206,21 @@ function xdrParseAsset(src, prefix = '') {
         return `${src.code}-${src.issuer}-${src.type || (src.code.length > 4 ? 2 : 1)}`
 }
 
+let shaHash
+if (typeof window !== 'undefined') { //nodejs
+    const crypto = require('crypto')
+    shaHash = function () {
+        return crypto.createHash('sha256')
+    }
+} else {
+    const sha = require('sha.js')
+    shaHash = function () {
+        return sha('sha256')
+    }
+}
 
 function computeHash(raw) {
-    return crypto.createHash('sha256').update(raw).digest('hex')
+    return shaHash.update(raw).digest('hex')
 }
 
 module.exports = {
