@@ -170,8 +170,9 @@ function parseTrustlineEntry(value) {
     }
     const extV1 = trustlineEntryXdr.ext()?.v1()
     if (extV1) {
-        data.buying_liabilities = xdrParseLong(extV1.buying())
-        data.selling_liabilities = xdrParseLong(extV1.selling())
+        const liabilities = extV1.liabilities()
+        data.buying_liabilities = xdrParseLong(liabilities.buying())
+        data.selling_liabilities = xdrParseLong(liabilities.selling())
     }
 
     return data
