@@ -1,4 +1,4 @@
-const {StrKey} = require('stellar-sdk')
+const {StrKey, LiquidityPoolId} = require('stellar-sdk')
 const Bignumber = require('bignumber.js')
 
 /**
@@ -183,7 +183,12 @@ function xdrParseAsset(src, prefix = '') {
             case 'assetTypeNative':
                 return 'XLM'
             case 'assetTypePoolShare':
-                return computeHash(src.value().toXDR())
+                const poolId = src.value()
+                if (poolId.length)
+                    return poolId.toString('hex')
+                if (poolId.constantProduct)
+                    return LiquidityPoolId.fromOperation(poolId).getLiquidityPoolId()
+                throw new Error('Unsupported liquidity pool asset id format')
             default:
                 const value = src.value()
                 return `${value.assetCode().toString().replace(/\0+$/, '')}-${StrKey.encodeEd25519PublicKey(value.issuer().ed25519())}-${src.arm() === 'alphaNum4' ? 1 : 2}`
@@ -206,23 +211,6 @@ function xdrParseAsset(src, prefix = '') {
         return `${src.code}-${src.issuer}-${src.type || (src.code.length > 4 ? 2 : 1)}`
 }
 
-let shaHash
-if (typeof window !== 'undefined') { //nodejs
-    const crypto = require('crypto')
-    shaHash = function () {
-        return crypto.createHash('sha256')
-    }
-} else {
-    const sha = require('sha.js')
-    shaHash = function () {
-        return sha('sha256')
-    }
-}
-
-function computeHash(raw) {
-    return shaHash.update(raw).digest('hex')
-}
-
 module.exports = {
     xdrParseAsset,
     xdrParseAccountAddress,
@@ -235,4 +223,3 @@ module.exports = {
     xdrParsePrice,
     xdrParseLong
 }
-
