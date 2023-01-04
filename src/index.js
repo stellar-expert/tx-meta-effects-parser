@@ -5,29 +5,32 @@ const {parseLedgerEntryChanges} = require('./ledger-entry-changes-parser')
 const {parseTxMetaChanges} = require('./tx-meta-changes-parser')
 
 /**
- *
+ * Retrieve effects from transaction execution result metadata
  * @param {String} network - Network identifier or passphrase
  * @param {String} tx - Base64-encoded tx envelope xdr
  * @param {String} result? - Base64-encoded tx envelope result
  * @param {String} meta? - Base64-encoded tx envelope meta
+ * @return {ParsedTxOperationsMetadata}
  */
 function parseTxOperationsMeta({network, tx, result, meta}) {
     const isEphemeral = !meta
-    let parsedTx = TransactionBuilder.fromXDR(tx, Networks[network.toUpperCase()] || network)
+    let parsedTx = tx = TransactionBuilder.fromXDR(tx, Networks[network.toUpperCase()] || network)
     let rawResult = xdr.TransactionResult.fromXDR(result, 'base64')
     const rawMeta = xdr.TransactionMeta.fromXDR(meta, 'base64')
 
-    const isFeeBump = !!parsedTx.innerTransaction
     const txEffects = []
+    const isFeeBump = !!parsedTx.innerTransaction
+    let feeBumpSuccess
     if (isFeeBump) {
         txEffects.push(processFeeChargedEffect(parsedTx, rawResult.feeCharged().toString(), true))
         parsedTx = parsedTx.innerTransaction
         rawResult = rawResult.result().innerResultPair().result()
+        feeBumpSuccess = rawResult.result().switch().value >= 0
     }
     txEffects.push(processFeeChargedEffect(parsedTx, rawResult.feeCharged().toString()))
 
     const res = {
-        tx: parsedTx,
+        tx,
         operations: parsedTx.operations,
         effects: txEffects,
         isEphemeral
@@ -38,7 +41,7 @@ function parseTxOperationsMeta({network, tx, result, meta}) {
 
     const opMeta = rawMeta.value().operations()
     const {success, opResults} = parseTxResult(rawResult)
-    if (!success) {
+    if (!success || isFeeBump && !feeBumpSuccess) {
         res.failed = true
         return res
     }
@@ -48,14 +51,27 @@ function parseTxOperationsMeta({network, tx, result, meta}) {
         if (!operation.source) {
             operation.source = parsedTx.source
         }
-        analyzeOperationEffects({
-            operation,
-            meta: opMeta[i]?.changes(),
-            result: opResults[i]
-        })
+        if (success) {
+            analyzeOperationEffects({
+                operation,
+                meta: opMeta[i]?.changes(),
+                result: opResults[i]
+            })
+        } else {
+            operation.effects = []
+        }
     }
 
     return res
 }
+
+/**
+ * @typedef {{}} ParsedTxOperationsMetadata
+ * @property {Transaction|FeeBumpTransaction} tx
+ * @property {BaseOperation[]} operations
+ * @property {{}[]} effects
+ * @property {Boolean} isEphemeral
+ * @property {Boolean} failed?
+ */
 
 module.exports = {parseTxOperationsMeta, parseTxResult, analyzeOperationEffects, parseLedgerEntryChanges, parseTxMetaChanges}

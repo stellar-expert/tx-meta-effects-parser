@@ -680,8 +680,9 @@ function processSponsorshipEffects({operation, changes}) {
             case 'claimableBalance':
                 effect.type = 'claimableBalance' + effect.type
                 effect.balance = before?.balanceId || after?.balanceId
+                //TODO: add claimable balance asset to the effect
                 break
-            case 'liquidityPool': //ignore
+            case 'liquidityPool': //ignore??
                 continue
             default:
                 throw new Error(`Unsupported meta change type: ${type}`)

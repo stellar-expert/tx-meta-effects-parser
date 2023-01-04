@@ -132,11 +132,11 @@ function parseAccountEntry(value) {
             data.numSponsored = extV2.numSponsored()
             data.numSponsoring = extV2.numSponsoring()
             data.signerSponsoringIDs = extV2.signerSponsoringIDs().map(spid => xdrParseAccountAddress(spid))
-        }
-        const extV3 = extV2.ext()?.v3()
-        if (extV3) {
-            data.seqLedger = extV3.seqLedger()
-            data.seqTime = xdrParseLong(extV3.seqTime())
+            const extV3 = extV2.ext()?.v3()
+            if (extV3) {
+                data.seqLedger = extV3.seqLedger()
+                data.seqTime = xdrParseLong(extV3.seqTime())
+            }
         }
     }
     return data
