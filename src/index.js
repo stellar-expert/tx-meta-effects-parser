@@ -14,20 +14,23 @@ const {parseTxMetaChanges} = require('./tx-meta-changes-parser')
  */
 function parseTxOperationsMeta({network, tx, result, meta}) {
     const isEphemeral = !meta
+    //parse tx, result, and meta xdr
     let parsedTx = tx = TransactionBuilder.fromXDR(tx, Networks[network.toUpperCase()] || network)
-    let rawResult = xdr.TransactionResult.fromXDR(result, 'base64')
-    const rawMeta = xdr.TransactionMeta.fromXDR(meta, 'base64')
+    let rawResult = result ? xdr.TransactionResult.fromXDR(result, 'base64') : null
+    const rawMeta = meta ? xdr.TransactionMeta.fromXDR(meta, 'base64') : null
 
     const txEffects = []
     const isFeeBump = !!parsedTx.innerTransaction
+
     let feeBumpSuccess
     if (isFeeBump) {
-        txEffects.push(processFeeChargedEffect(parsedTx, rawResult.feeCharged().toString(), true))
         parsedTx = parsedTx.innerTransaction
+        if (!isEphemeral) { //add fee bump charge effect
+            txEffects.push(processFeeChargedEffect(parsedTx, rawResult.feeCharged().toString(), true))
+        }
         rawResult = rawResult.result().innerResultPair().result()
         feeBumpSuccess = rawResult.result().switch().value >= 0
     }
-    txEffects.push(processFeeChargedEffect(parsedTx, rawResult.feeCharged().toString()))
 
     const res = {
         tx,
@@ -37,15 +40,17 @@ function parseTxOperationsMeta({network, tx, result, meta}) {
     }
 
     if (isEphemeral)
-        return res
-
+        return res //do not parse meta for unsubmitted/rejected transactions
+    //add fee charge effect
+    txEffects.push(processFeeChargedEffect(parsedTx, rawResult.feeCharged().toString()))
+    //retrieve operations result metadata
     const opMeta = rawMeta.value().operations()
     const {success, opResults} = parseTxResult(rawResult)
     if (!success || isFeeBump && !feeBumpSuccess) {
         res.failed = true
         return res
     }
-
+    //analyze operation effects for each operation
     for (let i = 0; i < parsedTx.operations.length; i++) {
         const operation = parsedTx.operations[i]
         if (!operation.source) {
