@@ -10,8 +10,8 @@
           "type": "feeCharged",
           "source": "GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI",
           "asset": "XLM",
-          "feeBid": "10000",
-          "charged": "100"
+          "feeBid": "0.0010000",
+          "charged": "0.0000100"
         }
       ]
     }
@@ -27,16 +27,16 @@
           "type": "feeCharged",
           "source": "GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI",
           "asset": "XLM",
-          "feeBid": "40000",
-          "charged": "200",
+          "feeBid": "0.0040000",
+          "charged": "0.0000200",
           "isFeeBump": true
         },
         {
           "type": "feeCharged",
           "source": "GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI",
           "asset": "XLM",
-          "feeBid": "10000",
-          "charged": "100"
+          "feeBid": "0.0010000",
+          "charged": "0.0000100"
         }
       ]
     }

@@ -52,13 +52,13 @@ const effectProcessorMap = {
     revokeSignerSponsorship: empty
 }
 
-function processFeeChargedEffect(tx, chargerAmount, feeBump = false) {
+function processFeeChargedEffect(tx, chargedAmount, feeBump = false) {
     const res = {
         type: 'feeCharged',
         source: tx.feeSource || tx.source,
         asset: 'XLM',
-        feeBid: tx.fee,
-        charged: chargerAmount
+        feeBid: adjustPrecision(tx.fee),
+        charged: adjustPrecision(chargedAmount)
 
     }
     if (feeBump) {
@@ -81,38 +81,39 @@ function processCreateAccountEffects({operation}) {
             type: 'accountDebited',
             source: operation.source,
             asset: 'XLM',
-            amount: operation.startingBalance
+            amount: trimZeros(operation.startingBalance)
         },
         {
             type: 'accountCredited',
             source: operation.destination,
             asset: 'XLM',
-            amount: operation.startingBalance
+            amount: trimZeros(operation.startingBalance)
         }
     ]
 }
 
 function processMergeAccountEffects({operation, result}) {
-    const effect = {
+    const removedEffect = {
         type: 'accountRemoved',
+        source: operation.source,
         account: operation.source
     }
     if (parseFloat(result.actualMergedAmount) === 0)
-        return [effect]
+        return [removedEffect]
     return [
         {
             type: 'accountDebited',
             source: operation.source,
             asset: 'XLM',
-            amount: result.actualMergedAmount
+            amount: adjustPrecision(result.actualMergedAmount)
         },
         {
             type: 'accountCredited',
             source: operation.destination,
             asset: 'XLM',
-            amount: result.actualMergedAmount
+            amount: adjustPrecision(result.actualMergedAmount)
         },
-        effect
+        removedEffect
     ]
 }
 
@@ -224,7 +225,7 @@ function processChangeTrustEffects({operation, changes}) {
         }
     } else {
         trustEffect.type = trustChange.action === 'created' ? 'trustlineCreated' : 'trustlineUpdated'
-        trustEffect.limit = operation.limit
+        trustEffect.limit = trimZeros(operation.limit)
         if (trustChange.type === 'liquidityPoolStake') {
             const lpChange = changes.find(ch => ch.type === 'liquidityPool' && ch.action === 'created')
             if (lpChange) {
@@ -266,7 +267,6 @@ function processAllowTrustEffects({operation, changes}) {
         }
     }
     const {after} = changes[0]
-    //const asset = `${operation.assetCode}-${operation.trustor}-${operation.assetCode.length > 4 ? 2 : 1}`
     return [{
         type: effectType,
         source: operation.source,
@@ -285,13 +285,13 @@ function processPaymentEffects({operation}) {
             type: 'accountDebited',
             source: operation.source,
             asset,
-            amount: operation.amount
+            amount: trimZeros(operation.amount)
         },
         {
             type: 'accountCredited',
             source: operation.destination,
             asset,
-            amount: operation.amount
+            amount: trimZeros(operation.amount)
         }
     ]
 }
@@ -299,21 +299,29 @@ function processPaymentEffects({operation}) {
 function processPathPaymentStrictReceiveEffects({operation, changes, result}) {
     if (!changes.length)
         return [] //self-transfer without effects
-    const effects = processDexOperationEffects({operation, changes, result})
-    const asset = xdrParseAsset(operation.destAsset)
+    const tradeEffects = processDexOperationEffects({operation, changes, result})
+    const trades = tradeEffects.filter(e => e.type === 'trade')
+    const srcAmounts = []
+    for (let i = 0; i < trades.length; i++) {
+        const {amount, asset} = trades[i]
+        if (i > 0 && trades[i - 1].asset.join() !== asset.join())
+            break
+        srcAmounts.push(amount[1])
+    }
+    const srcAmount = srcAmounts.reduce((prev, v) => prev.add(v), new Bignumber(0)).toString()
     return [
-        ...effects,
         {
             type: 'accountDebited',
             source: operation.source,
-            asset,
-            amount: operation.destAmount
+            asset: xdrParseAsset(operation.sendAsset),
+            amount: srcAmount
         },
+        ...tradeEffects,
         {
             type: 'accountCredited',
             source: operation.destination,
-            asset,
-            amount: operation.destAmount
+            asset: xdrParseAsset(operation.destAsset),
+            amount: trimZeros(operation.destAmount)
         }
     ]
 }
@@ -321,21 +329,20 @@ function processPathPaymentStrictReceiveEffects({operation, changes, result}) {
 function processPathPaymentStrictSendEffects({operation, changes, result}) {
     if (!changes.length)
         return [] //self-transfer without effects
-    const effects = processDexOperationEffects({operation, changes, result})
-    const asset = xdrParseAsset(operation.destAsset)
+    const tradeEffects = processDexOperationEffects({operation, changes, result})
     return [
-        ...effects,
         {
             type: 'accountDebited',
             source: operation.source,
-            asset,
-            amount: result.payment.amount
+            asset: xdrParseAsset(operation.sendAsset),
+            amount: trimZeros(operation.sendAmount)
         },
+        ...tradeEffects,
         {
             type: 'accountCredited',
             source: operation.destination,
-            asset,
-            amount: result.payment.amount
+            asset: xdrParseAsset(operation.destAsset),
+            amount: adjustPrecision(result.payment.amount)
         }
     ]
 }
@@ -368,9 +375,9 @@ function processDexOperationEffects({operation, changes, result}) {
                     source: operation.source,
                     amount: after.amount.map(adjustPrecision),
                     asset: after.asset,
-                    price: new Bignumber(after.amount[0]).div(new Bignumber(after.amount[1])).toString(),
+                    price: new Bignumber(after.amount[0]).div(new Bignumber(after.amount[1])).toNumber(),
                     shares: after.shares,
-                    accounts: after.accounts
+                    accounts: parseInt(after.accounts, 10)
                 })
                 break
             case 'offer':
@@ -423,9 +430,10 @@ function processDexOperationEffects({operation, changes, result}) {
 }
 
 function processInflationEffects({operation, result}) {
-    const effects = (result.inflationPayouts || []).map(ip => ({
+    const paymentEffects = (result.inflationPayouts || []).map(ip => ({
         type: 'accountCredited',
-        source: ip.account, asset: 'XLM',
+        source: ip.account,
+        asset: 'XLM',
         amount: adjustPrecision(ip.amount)
     }))
     return [
@@ -433,7 +441,7 @@ function processInflationEffects({operation, result}) {
             type: 'inflation',
             source: operation.source
         },
-        ...effects
+        ...paymentEffects
     ]
 }
 
@@ -482,14 +490,14 @@ function processCreateClaimableBalanceEffects({operation, result}) {
             type: 'accountDebited',
             source: operation.source,
             asset,
-            amount: operation.amount
+            amount: trimZeros(operation.amount)
         },
         {
             type: 'claimableBalanceCreated',
             source: operation.source,
             balance: result.balanceId,
             asset,
-            amount: operation.amount,
+            amount: trimZeros(operation.amount),
             claimants: operation.claimants.map(c => ({
                 destination: c.destination,
                 predicate: xdrParseClaimantPredicate(c.predicate)
@@ -596,13 +604,13 @@ function processClawbackEffects({operation}) {
             type: 'accountDebited',
             source: operation.from,
             asset,
-            amount: operation.amount
+            amount: trimZeros(operation.amount)
         },
         {
             type: 'accountCredited',
             source: operation.source,
             asset,
-            amount: operation.amount
+            amount: trimZeros(operation.amount)
         }
     ]
 }
@@ -755,16 +763,26 @@ function empty() {
     return []
 }
 
+function adjustPrecision(value) {
+    if (value === '0')
+        return value
+    return trimZeros(new Bignumber(value).div(10000000).toString())
+}
+
+function trimZeros(value) {
+    let [integer, fractional] = value.split('.')
+    if (!fractional)
+        return value
+    fractional = fractional.replace(/0+$/, '')
+    if (!fractional)
+        return integer
+    return integer + '.' + fractional
+}
+
 class UnexpectedMetaChangeError extends Error {
     constructor(change) {
         super(`Unexpected meta changes: ${change.action} ${change.type}`)
     }
-}
-
-
-function adjustPrecision(value) {
-    if (value === '0') return value
-    return new Bignumber(value).div(10000000).toString()
 }
 
 module.exports = {analyzeOperationEffects, processFeeChargedEffect}
