@@ -21,8 +21,9 @@ function parseTxOperationsMeta({network, tx, result, meta}) {
 
     const txEffects = []
     const isFeeBump = !!parsedTx.innerTransaction
-
     let feeBumpSuccess
+
+    //take inner transaction if parsed tx is a fee bump tx
     if (isFeeBump) {
         parsedTx = parsedTx.innerTransaction
         if (!isEphemeral) { //add fee bump charge effect
@@ -39,8 +40,18 @@ function parseTxOperationsMeta({network, tx, result, meta}) {
         isEphemeral
     }
 
+    //normalize operation source and effects container
+    for (let op of parsedTx.operations) {
+        if (!op.source) {
+            op.source = parsedTx.source
+            op.effects = []
+        }
+    }
+
+    //do not parse meta for unsubmitted/rejected transactions
     if (isEphemeral)
-        return res //do not parse meta for unsubmitted/rejected transactions
+        return res
+
     //add fee charge effect
     txEffects.push(processFeeChargedEffect(parsedTx, rawResult.feeCharged().toString()))
     //retrieve operations result metadata
@@ -53,20 +64,14 @@ function parseTxOperationsMeta({network, tx, result, meta}) {
     //analyze operation effects for each operation
     for (let i = 0; i < parsedTx.operations.length; i++) {
         const operation = parsedTx.operations[i]
-        if (!operation.source) {
-            operation.source = parsedTx.source
-        }
         if (success) {
             analyzeOperationEffects({
                 operation,
                 meta: opMeta[i]?.changes(),
                 result: opResults[i]
             })
-        } else {
-            operation.effects = []
         }
     }
-
     return res
 }
 
