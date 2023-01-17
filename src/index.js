@@ -44,8 +44,8 @@ function parseTxOperationsMeta({network, tx, result, meta}) {
     for (let op of parsedTx.operations) {
         if (!op.source) {
             op.source = parsedTx.source
-            op.effects = []
         }
+        op.effects = []
     }
 
     //do not parse meta for unsubmitted/rejected transactions
