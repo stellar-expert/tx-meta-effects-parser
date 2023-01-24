@@ -143,8 +143,8 @@ function xdrParseClaimedOffer(claimedAtom) {
 
 function xdrParseClaimantPredicate(predicate) {
     if (!predicate) return {}
-    const type = predicate.switch().name,
-        value = predicate.value()
+    const type = predicate.switch().name
+    const value = predicate.value()
     switch (type) {
         case 'claimPredicateUnconditional':
             return {}
@@ -183,15 +183,19 @@ function xdrParseAsset(src, prefix = '') {
             case 'assetTypeNative':
                 return 'XLM'
             case 'assetTypePoolShare':
+            {
                 const poolId = src.value()
                 if (poolId.length)
                     return poolId.toString('hex')
                 if (poolId.constantProduct)
                     return LiquidityPoolId.fromOperation(poolId).getLiquidityPoolId()
                 throw new Error('Unsupported liquidity pool asset id format')
+            }
             default:
+            {
                 const value = src.value()
                 return `${value.assetCode().toString().replace(/\0+$/, '')}-${StrKey.encodeEd25519PublicKey(value.issuer().ed25519())}-${src.arm() === 'alphaNum4' ? 1 : 2}`
+            }
         }
     }
 

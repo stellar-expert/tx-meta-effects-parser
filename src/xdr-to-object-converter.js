@@ -48,7 +48,7 @@ function convertObject(object, type) {
     if (!object) return undefined
     const methods = Object.keys(object).filter(key => typeof object[key] === 'function' && key !== 'toXDR')
     const res = {[XDR_TYPE]: type}
-    for (let method of methods) {
+    for (const method of methods) {
         res[method] = convertNode(object[method](), method)
     }
     return res

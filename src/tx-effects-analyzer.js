@@ -2,10 +2,78 @@ const Bignumber = require('bignumber.js')
 const {parseLedgerEntryChanges} = require('./ledger-entry-changes-parser')
 const {xdrParseAsset, xdrParseClaimantPredicate} = require('./tx-xdr-parser-utils')
 
+const effectTypes = {
+    feeCharged: "feeCharged",
+    accountCreated: "accountCreated",
+    accountDebited: "accountDebited",
+    accountCredited: "accountCredited",
+    accountRemoved: "accountRemoved",
+    accountHomeDomainUpdated: "accountHomeDomainUpdated",
+    accountThresholdsUpdated: "accountThresholdsUpdated",
+    accountFlagsUpdated: "accountFlagsUpdated",
+    accountInflationDestinationUpdated: "accountInflationDestinationUpdated",
+    accountSignerUpdated: "accountSignerUpdated",
+    accountSignerRemoved: "accountSignerRemoved",
+    accountSignerCreated: "accountSignerCreated",
+    trustlineRemoved: "trustlineRemoved",
+    liquidityPoolRemoved: "liquidityPoolRemoved",
+    trustlineCreated: "trustlineCreated",
+    trustlineUpdated: "trustlineUpdated",
+    liquidityPoolCreated: "liquidityPoolCreated",
+    trustlineAuthorizationUpdated: "trustlineAuthorizationUpdated",
+    trustlineDeauthorized: "trustlineDeauthorized",
+    trade: "trade",
+    liquidityPoolUpdated: "liquidityPoolUpdated",
+    offerCreated: "offerCreated",
+    offerUpdated: "offerUpdated",
+    offerRemoved: "offerRemoved",
+    inflation: "inflation",
+    dataEntryCreated: "dataEntryCreated",
+    dataEntryUpdated: "dataEntryUpdated",
+    dataEntryRemoved: "dataEntryRemoved",
+    sequenceBumped: "sequenceBumped",
+    claimableBalanceCreated: "claimableBalanceCreated",
+    claimableBalanceRemoved: "claimableBalanceRemoved",
+    liquidityPoolDeposited: "liquidityPoolDeposited",
+    liquidityPoolWithdrew: "liquidityPoolWithdrew",
+
+    accountSponsorshipCreated: "accountSponsorshipCreated",
+    accountSponsorshipUpdated: "accountSponsorshipUpdated",
+    accountSponsorshipRemoved: "accountSponsorshipRemoved",
+
+    trustlineSponsorshipCreated: "trustlineSponsorshipCreated",
+    trustlineSponsorshipUpdated: "trustlineSponsorshipUpdated",
+    trustlineSponsorshipRemoved: "trustlineSponsorshipRemoved",
+
+    liquidityPoolStakeSponsorshipCreated: "liquidityPoolStakeSponsorshipCreated",
+    liquidityPoolStakeSponsorshipUpdated: "liquidityPoolStakeSponsorshipUpdated",
+    liquidityPoolStakeSponsorshipRemoved: "liquidityPoolStakeSponsorshipRemoved",
+
+    offerSponsorshipCreated: "offerSponsorshipCreated",
+    offerSponsorshipUpdated: "offerSponsorshipUpdated",
+    offerSponsorshipRemoved: "offerSponsorshipRemoved",
+
+    dataSponsorshipCreated: "dataSponsorshipCreated",
+    dataSponsorshipUpdated: "dataSponsorshipUpdated",
+    dataSponsorshipRemoved: "dataSponsorshipRemoved",
+
+    claimableBalanceSponsorshipCreated: "claimableBalanceSponsorshipCreated",
+    claimableBalanceSponsorshipUpdated: "claimableBalanceSponsorshipUpdated",
+    claimableBalanceSponsorshipRemoved: "claimableBalanceSponsorshipRemoved",
+
+    liquidityPoolSponsorshipCreated: "liquidityPoolSponsorshipCreated",
+    liquidityPoolSponsorshipUpdated: "liquidityPoolSponsorshipUpdated",
+    liquidityPoolSponsorshipRemoved: "liquidityPoolSponsorshipRemoved",
+
+    signerSponsorshipRemoved: "signerSponsorshipRemoved",
+    signerSponsorshipUpdated: "signerSponsorshipUpdated",
+    signerSponsorshipCreated: "signerSponsorshipCreated"
+}
+
 function analyzeOperationEffects({operation, meta, result}) {
     //TODO: check that operation always has correct source account
     if (!operation.source)
-        throw new Error('Aha')
+        throw new Error('Operation source is not defined')
     const processEffects = effectProcessorMap[operation.type]
     const changes = parseLedgerEntryChanges(meta)
     operation.effects = processEffects({
@@ -54,7 +122,7 @@ const effectProcessorMap = {
 
 function processFeeChargedEffect(tx, chargedAmount, feeBump = false) {
     const res = {
-        type: 'feeCharged',
+        type: effectTypes.feeCharged,
         source: tx.feeSource || tx.source,
         asset: 'XLM',
         feeBid: adjustPrecision(tx.fee),
@@ -69,7 +137,7 @@ function processFeeChargedEffect(tx, chargedAmount, feeBump = false) {
 
 function processCreateAccountEffects({operation}) {
     const effect = {
-        type: 'accountCreated',
+        type: effectTypes.accountCreated,
         source: operation.source,
         account: operation.destination
     }
@@ -78,13 +146,13 @@ function processCreateAccountEffects({operation}) {
     return [
         effect,
         {
-            type: 'accountDebited',
+            type: effectTypes.accountDebited,
             source: operation.source,
             asset: 'XLM',
             amount: trimZeros(operation.startingBalance)
         },
         {
-            type: 'accountCredited',
+            type: effectTypes.accountCredited,
             source: operation.destination,
             asset: 'XLM',
             amount: trimZeros(operation.startingBalance)
@@ -94,7 +162,7 @@ function processCreateAccountEffects({operation}) {
 
 function processMergeAccountEffects({operation, result}) {
     const removedEffect = {
-        type: 'accountRemoved',
+        type: effectTypes.accountRemoved,
         source: operation.source,
         account: operation.source
     }
@@ -102,13 +170,13 @@ function processMergeAccountEffects({operation, result}) {
         return [removedEffect]
     return [
         {
-            type: 'accountDebited',
+            type: effectTypes.accountDebited,
             source: operation.source,
             asset: 'XLM',
             amount: adjustPrecision(result.actualMergedAmount)
         },
         {
-            type: 'accountCredited',
+            type: effectTypes.accountCredited,
             source: operation.destination,
             asset: 'XLM',
             amount: adjustPrecision(result.actualMergedAmount)
@@ -122,28 +190,28 @@ function processSetOptionsEffects({operation, changes}) {
     const {before, after} = changes.find(ch => ch.type === 'account' && ch.before.address === operation.source)
     if (before.homeDomain !== after.homeDomain) {
         effects.push({
-            type: 'accountHomeDomainUpdated',
+            type: effectTypes.accountHomeDomainUpdated,
             source: operation.source,
             domain: after.homeDomain
         })
     }
     if (JSON.stringify(before.thresholds) !== JSON.stringify(after.thresholds)) {
         effects.push({
-            type: 'accountThresholdsUpdated',
+            type: effectTypes.accountThresholdsUpdated,
             source: operation.source,
             thresholds: after.thresholds
         })
     }
     if (before.flags !== after.flags) {
         effects.push({
-            type: 'accountFlagsUpdated',
+            type: effectTypes.accountFlagsUpdated,
             source: operation.source,
             flags: after.flags
         })
     }
     if (before.inflationDest !== after.inflationDest) {
         effects.push({
-            type: 'accountInflationDestinationUpdated',
+            type: effectTypes.accountInflationDestinationUpdated,
             source: operation.source,
             inflationDestination: after.inflationDest
         })
@@ -151,7 +219,7 @@ function processSetOptionsEffects({operation, changes}) {
     if (operation.masterWeight !== undefined && before.masterWeight !== after.masterWeight) {
         if (operation.masterWeight > 0) {
             effects.push({
-                type: 'accountSignerUpdated',
+                type: effectTypes.accountSignerUpdated,
                 source: operation.source,
                 signer: after.address,
                 weight: after.masterWeight,
@@ -160,7 +228,7 @@ function processSetOptionsEffects({operation, changes}) {
             })
         } else {
             effects.push({
-                type: 'accountSignerRemoved',
+                type: effectTypes.accountSignerRemoved,
                 source: operation.source,
                 signer: after.address,
                 weight: after.masterWeight,
@@ -174,28 +242,28 @@ function processSetOptionsEffects({operation, changes}) {
         const key = operation.signer.ed25519PublicKey || operation.signer.sha256Hash || operation.signer.preAuthTx || operation.signer.ed25519SignedPayload
         if (weight === 0) {
             effects.push({
-                type: 'accountSignerRemoved',
+                type: effectTypes.accountSignerRemoved,
                 source: operation.source,
                 signer: key,
-                weight: weight,
+                weight,
                 masterWeight: after.masterWeight,
                 signers: after.signers
             })
         } else if (before.signers.length < after.signers.length) {
             effects.push({
-                type: 'accountSignerCreated',
+                type: effectTypes.accountSignerCreated,
                 source: operation.source,
                 signer: key,
-                weight: weight,
+                weight,
                 masterWeight: after.masterWeight,
                 signers: after.signers
             })
         } else {
             effects.push({
-                type: 'accountSignerUpdated',
+                type: effectTypes.accountSignerUpdated,
                 source: operation.source,
                 signer: key,
-                weight: weight,
+                weight,
                 masterWeight: after.masterWeight,
                 signers: after.signers
             })
@@ -215,22 +283,22 @@ function processChangeTrustEffects({operation, changes}) {
 
     const effects = [trustEffect]
     if (parseFloat(operation.limit) === 0) {
-        trustEffect.type = 'trustlineRemoved'
+        trustEffect.type = effectTypes.trustlineRemoved
         if (trustChange.type === 'liquidityPoolStake' && changes.some(ch => ch.type === 'liquidityPool' && ch.action === 'removed')) {
             effects.push({
-                type: 'liquidityPoolRemoved',
+                type: effectTypes.liquidityPoolRemoved,
                 source: operation.source,
                 pool: trustedAsset
             })
         }
     } else {
-        trustEffect.type = trustChange.action === 'created' ? 'trustlineCreated' : 'trustlineUpdated'
+        trustEffect.type = trustChange.action === 'created' ? effectTypes.trustlineCreated : effectTypes.trustlineUpdated
         trustEffect.limit = trimZeros(operation.limit)
         if (trustChange.type === 'liquidityPoolStake') {
             const lpChange = changes.find(ch => ch.type === 'liquidityPool' && ch.action === 'created')
             if (lpChange) {
                 effects.push({
-                    type: 'liquidityPoolCreated',
+                    type: effectTypes.liquidityPoolCreated,
                     source: operation.source,
                     pool: trustedAsset,
                     reserves: lpChange.after.asset.map(asset => ({asset, amount: '0'})),
@@ -249,20 +317,20 @@ function processAllowTrustEffects({operation, changes}) {
 
     if (operation.flags) {
         if (operation.flags.authorized || operation.flags.authorizedToMaintainLiabilities || operation.flags.clawbackEnabled) {
-            effectType = 'trustlineAuthorizationUpdated'
+            effectType = effectTypes.trustlineAuthorizationUpdated
         } else {
-            effectType = 'trustlineDeauthorized'
+            effectType = effectTypes.trustlineDeauthorized
         }
     } else {
         switch (operation.authorize) {
             case false:
             case 0:
-                effectType = 'trustlineDeauthorized'
+                effectType = effectTypes.trustlineDeauthorized
                 break
             case true:
             case 1:
             default:
-                effectType = 'trustlineAuthorizationUpdated'
+                effectType = effectTypes.trustlineAuthorizationUpdated
                 break
         }
     }
@@ -282,13 +350,13 @@ function processPaymentEffects({operation}) {
     const asset = xdrParseAsset(operation.asset)
     return [
         {
-            type: 'accountDebited',
+            type: effectTypes.accountDebited,
             source: operation.source,
             asset,
             amount: trimZeros(operation.amount)
         },
         {
-            type: 'accountCredited',
+            type: effectTypes.accountCredited,
             source: operation.destination,
             asset,
             amount: trimZeros(operation.amount)
@@ -300,7 +368,7 @@ function processPathPaymentStrictReceiveEffects({operation, changes, result}) {
     if (!changes.length)
         return [] //self-transfer without effects
     const tradeEffects = processDexOperationEffects({operation, changes, result})
-    const trades = tradeEffects.filter(e => e.type === 'trade')
+    const trades = tradeEffects.filter(e => e.type === effectTypes.trade)
     const srcAmounts = []
     for (let i = 0; i < trades.length; i++) {
         const {amount, asset} = trades[i]
@@ -311,14 +379,14 @@ function processPathPaymentStrictReceiveEffects({operation, changes, result}) {
     const srcAmount = srcAmounts.reduce((prev, v) => prev.add(v), new Bignumber(0)).toString()
     return [
         {
-            type: 'accountDebited',
+            type: effectTypes.accountDebited,
             source: operation.source,
             asset: xdrParseAsset(operation.sendAsset),
             amount: srcAmount
         },
         ...tradeEffects,
         {
-            type: 'accountCredited',
+            type: effectTypes.accountCredited,
             source: operation.destination,
             asset: xdrParseAsset(operation.destAsset),
             amount: trimZeros(operation.destAmount)
@@ -332,14 +400,14 @@ function processPathPaymentStrictSendEffects({operation, changes, result}) {
     const tradeEffects = processDexOperationEffects({operation, changes, result})
     return [
         {
-            type: 'accountDebited',
+            type: effectTypes.accountDebited,
             source: operation.source,
             asset: xdrParseAsset(operation.sendAsset),
             amount: trimZeros(operation.sendAmount)
         },
         ...tradeEffects,
         {
-            type: 'accountCredited',
+            type: effectTypes.accountCredited,
             source: operation.destination,
             asset: xdrParseAsset(operation.destAsset),
             amount: adjustPrecision(result.payment.amount)
@@ -355,7 +423,7 @@ function processDexOperationEffects({operation, changes, result}) {
             const id = before?.id || after?.id
             const claimedOffer = result.claimedOffers.find(co => co.offerId === id)
             const trade = {
-                type: 'trade',
+                type: effectTypes.trade,
                 source: operation.source,
                 amount: claimedOffer.amount.map(adjustPrecision),
                 asset: claimedOffer.asset
@@ -371,7 +439,7 @@ function processDexOperationEffects({operation, changes, result}) {
         switch (type) {
             case 'liquidityPool':
                 effects.push({ //updated token amount after the trade against a liquidity
-                    type: 'liquidityPoolUpdated',
+                    type: effectTypes.liquidityPoolUpdated,
                     source: operation.source,
                     amount: after.amount.map(adjustPrecision),
                     asset: after.asset,
@@ -384,7 +452,7 @@ function processDexOperationEffects({operation, changes, result}) {
                 switch (action) {
                     case 'created': //new offer created as a result of manage offer operation
                         effects.push({
-                            type: 'offerCreated',
+                            type: effectTypes.offerCreated,
                             source: operation.source,
                             owner: after.account,
                             offer: after.id,
@@ -396,7 +464,7 @@ function processDexOperationEffects({operation, changes, result}) {
                         break
                     case 'updated': //offer changed as a result of a trade
                         effects.push({
-                            type: 'offerUpdated',
+                            type: effectTypes.offerUpdated,
                             source: operation.source,
                             owner: after.account,
                             offer: after.id,
@@ -408,7 +476,7 @@ function processDexOperationEffects({operation, changes, result}) {
                         break
                     case 'removed': //offer removed - either as a result of trade or canceling operation
                         effects.push({
-                            type: 'offerRemoved',
+                            type: effectTypes.offerRemoved,
                             source: operation.source,
                             owner: before.account,
                             offer: before.id,
@@ -431,14 +499,14 @@ function processDexOperationEffects({operation, changes, result}) {
 
 function processInflationEffects({operation, result}) {
     const paymentEffects = (result.inflationPayouts || []).map(ip => ({
-        type: 'accountCredited',
+        type: effectTypes.accountCredited,
         source: ip.account,
         asset: 'XLM',
         amount: adjustPrecision(ip.amount)
     }))
     return [
         {
-            type: 'inflation',
+            type: effectTypes.inflation,
             source: operation.source
         },
         ...paymentEffects
@@ -456,15 +524,15 @@ function processManageDataEffects({operation, changes}) {
     }
     switch (change.action) {
         case 'created':
-            effect.type = 'dataEntryCreated'
+            effect.type = effectTypes.dataEntryCreated
             effect.value = operation.value.toString('base64')
             break
         case 'updated':
-            effect.type = 'dataEntryUpdated'
+            effect.type = effectTypes.dataEntryUpdated
             effect.value = operation.value.toString('base64')
             break
         case 'removed':
-            effect.type = 'dataEntryRemoved'
+            effect.type = effectTypes.dataEntryRemoved
             break
     }
     return [effect]
@@ -476,7 +544,7 @@ function processBumpSequenceEffects({operation, changes}) {
         return []
     return [
         {
-            type: 'sequenceBumped',
+            type: effectTypes.sequenceBumped,
             source: operation.source,
             sequence: after.sequence
         }
@@ -487,13 +555,13 @@ function processCreateClaimableBalanceEffects({operation, result}) {
     const asset = xdrParseAsset(operation.asset)
     return [
         {
-            type: 'accountDebited',
+            type: effectTypes.accountDebited,
             source: operation.source,
             asset,
             amount: trimZeros(operation.amount)
         },
         {
-            type: 'claimableBalanceCreated',
+            type: effectTypes.claimableBalanceCreated,
             source: operation.source,
             balance: result.balanceId,
             asset,
@@ -510,13 +578,13 @@ function processClaimClaimableBalanceEffects({operation, changes}) {
     const {before} = changes.find(ch => ch.type === 'claimableBalance')
     return [
         {
-            type: 'accountCredited',
+            type: effectTypes.accountCredited,
             source: operation.source,
             asset: before.asset,
             amount: adjustPrecision(before.amount)
         },
         {
-            type: 'claimableBalanceRemoved',
+            type: effectTypes.claimableBalanceRemoved,
             source: operation.source,
             balance: before.balanceId
         }
@@ -531,7 +599,7 @@ function processLiquidityPoolDepositEffects({operation, changes}) {
         switch (action) {
             case 'updated':
                 effects.push({
-                    type: 'liquidityPoolDeposited',
+                    type: effectTypes.liquidityPoolDeposited,
                     source: operation.source,
                     pool: operation.liquidityPoolId,
                     assets: after.asset.map((asset, i) => ({
@@ -541,7 +609,7 @@ function processLiquidityPoolDepositEffects({operation, changes}) {
                     shares: new Bignumber(after.shares).minus(before.shares).toString()
                 })
                 effects.push({
-                    type: 'liquidityPoolUpdated',
+                    type: effectTypes.liquidityPoolUpdated,
                     source: operation.source,
                     pool: operation.liquidityPoolId,
                     reserves: after.asset.map((asset, i) => ({
@@ -561,14 +629,14 @@ function processLiquidityPoolDepositEffects({operation, changes}) {
 
 function processLiquidityPoolWithdrawEffects({operation, changes}) {
     const effects = []
-    for (let ch of changes) {
+    for (const ch of changes) {
         if (ch.type !== 'liquidityPool')
             continue
         const {action, before, after} = ch
         switch (action) {
             case 'updated':
                 effects.push({
-                    type: 'liquidityPoolWithdrew',
+                    type: effectTypes.liquidityPoolWithdrew,
                     source: operation.source,
                     pool: operation.liquidityPoolId,
                     assets: before.asset.map((asset, i) => ({
@@ -578,7 +646,7 @@ function processLiquidityPoolWithdrawEffects({operation, changes}) {
                     shares: new Bignumber(before.shares).minus(after.shares).toString()
                 })
                 effects.push({
-                    type: 'liquidityPoolUpdated',
+                    type: effectTypes.liquidityPoolUpdated,
                     source: operation.source,
                     pool: operation.liquidityPoolId,
                     reserves: after.asset.map((asset, i) => ({
@@ -601,13 +669,13 @@ function processClawbackEffects({operation}) {
         throw new Error(`Asset ${asset} clawed back by account ${operation.source}`)
     return [
         {
-            type: 'accountDebited',
+            type: effectTypes.accountDebited,
             source: operation.from,
             asset,
             amount: trimZeros(operation.amount)
         },
         {
-            type: 'accountCredited',
+            type: effectTypes.accountCredited,
             source: operation.source,
             asset,
             amount: trimZeros(operation.amount)
@@ -619,74 +687,78 @@ function processClawbackClaimableBalanceEffects({operation, changes}) {
     const {before} = changes.find(ch => ch.type === 'claimableBalance')
     return [
         {
-            type: 'accountCredited',
+            type: effectTypes.accountCredited,
             source: operation.source,
             asset: before.asset,
             amount: adjustPrecision(before.amount)
         },
         {
-            type: 'claimableBalanceRemoved',
+            type: effectTypes.claimableBalanceRemoved,
             source: operation.source,
             balance: before.balanceId
         }
     ]
 }
 
+function __getSponsorshipEffect(action, type) {
+    switch (action) {
+        case 'created':
+            return effectTypes[`${type}SponsorshipCreated`]
+        case 'updated':
+            return effectTypes[`${type}SponsorshipUpdated`]
+        case 'removed':
+            return effectTypes[`${type}SponsorshipRemoved`]
+        default:
+            throw new UnexpectedMetaChangeError({action, type})
+    }
+}
+
 function processSponsorshipEffects({operation, changes}) {
-    for (let change of changes) {
+    for (const change of changes) {
         const {type, action, before, after} = change
         const effect = {
-            type: 'Sponsorship',
+            type: __getSponsorshipEffect(action, type),
             source: operation.source
         }
         switch (action) {
             case 'created':
                 if (!after.sponsor)
                     continue
-                effect.type += 'Created'
                 effect.sponsor = after.sponsor
                 break
             case 'updated':
                 if (before.sponsor === after.sponsor)
                     continue
-                effect.type += 'Updated'
                 effect.sponsor = after.sponsor
                 effect.prevSponsor = before.sponsor
                 break
             case 'removed':
                 if (!before.sponsor)
                     continue
-                effect.type += 'Removed'
                 effect.prevSponsor = before.sponsor
                 break
         }
         switch (type) {
             case 'account':
-                effect.type = 'account' + effect.type
                 effect.account = before?.address || after?.address
                 break
             case 'trustline':
-                effect.type = 'trustline' + effect.type
                 effect.account = before?.account || after?.account
                 effect.asset = before?.asset || after?.asset
                 break
             case 'liquidityPoolStake':
-                effect.type = 'trustline' + effect.type
                 effect.account = before?.account || after?.account
                 effect.pool = before?.pool || after?.pool
                 break
             case 'offer':
-                effect.type = 'offer' + effect.type
                 effect.account = before?.account || after?.account
                 effect.offer = before?.id || after?.id
                 break
             case 'data':
-                effect.type = 'data' + effect.type
                 effect.account = before?.account || after?.account
                 effect.name = before?.name || after?.name
                 break
             case 'claimableBalance':
-                effect.type = 'claimableBalance' + effect.type
                 effect.balance = before?.balanceId || after?.balanceId
                 //TODO: add claimable balance asset to the effect
                 break
@@ -702,7 +774,7 @@ function processSponsorshipEffects({operation, changes}) {
 function processSignerSponsorshipEffects({operation, changes}) {
     if (!['revokeSignerSponsorship', 'setOptions'].includes(operation.type))
         return
-    for (let {type, action, before, after} of changes) {
+    for (const {type, action, before, after} of changes) {
         if (type !== 'account' || action !== 'updated' || !before.signerSponsoringIDs?.length && !after.signerSponsoringIDs?.length)
             continue
         const [beforeMap, afterMap] = [before, after].map(state => {
@@ -718,11 +790,11 @@ function processSignerSponsorshipEffects({operation, changes}) {
             return signersMap
         })
 
-        for (let signerKey of Object.keys(beforeMap)) {
+        for (const signerKey of Object.keys(beforeMap)) {
             const newSponsor = afterMap[signerKey]
             if (!newSponsor) {
                 operation.effects.push({
-                    type: 'signerSponsorshipRemoved',
+                    type: effectTypes.signerSponsorshipRemoved,
                     source: operation.source,
                     account: before.address,
                     signer: signerKey,
@@ -732,7 +804,7 @@ function processSignerSponsorshipEffects({operation, changes}) {
             }
             if (newSponsor !== beforeMap[signerKey]) {
                 operation.effects.push({
-                    type: 'signerSponsorshipUpdated',
+                    type: effectTypes.signerSponsorshipUpdated,
                     source: operation.source,
                     account: before.address,
                     signer: signerKey,
@@ -743,11 +815,11 @@ function processSignerSponsorshipEffects({operation, changes}) {
             }
         }
 
-        for (let signerKey of Object.keys(afterMap)) {
+        for (const signerKey of Object.keys(afterMap)) {
             const prevSponsor = beforeMap[signerKey]
             if (!prevSponsor) {
                 operation.effects.push({
-                    type: 'signerSponsorshipCreated',
+                    type: effectTypes.signerSponsorshipCreated,
                     source: operation.source,
                     account: after.address,
                     signer: signerKey,
@@ -785,4 +857,4 @@ class UnexpectedMetaChangeError extends Error {
     }
 }
 
-module.exports = {analyzeOperationEffects, processFeeChargedEffect}
+module.exports = {analyzeOperationEffects, processFeeChargedEffect, effectTypes}
