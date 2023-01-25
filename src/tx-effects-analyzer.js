@@ -353,20 +353,23 @@ function processDexOperationEffects({operation, changes, result}) {
         //add trade effect
         if (type === 'liquidityPool' || type === 'offer' && action !== 'created') {
             const id = before?.id || after?.id
-            const claimedOffer = result.claimedOffers.find(co => co.offerId === id)
-            const trade = {
-                type: 'trade',
-                source: operation.source,
-                amount: claimedOffer.amount.map(adjustPrecision),
-                asset: claimedOffer.asset
+            //process trade effects
+            const claimedOffers = result.claimedOffers.filter(co => co.offerId === id)
+            for (const claimedOffer of claimedOffers) {
+                const trade = {
+                    type: 'trade',
+                    source: operation.source,
+                    amount: claimedOffer.amount.map(adjustPrecision),
+                    asset: claimedOffer.asset
+                }
+                if (type === 'liquidityPool') {
+                    trade.pool = before.pool
+                } else {
+                    trade.offer = before.id
+                    trade.seller = before.account
+                }
+                effects.push(trade)
             }
-            if (type === 'liquidityPool') {
-                trade.pool = before.pool
-            } else {
-                trade.offer = before.id
-                trade.seller = before.account
-            }
-            effects.push(trade)
         }
         switch (type) {
             case 'liquidityPool':

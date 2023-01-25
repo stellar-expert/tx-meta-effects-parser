@@ -659,7 +659,7 @@ async function createVectorAccount(seed, suffix, horizon, createIfNotExist = tru
             accountInfo = await horizon.loadAccount(address)
         }
     }
-    console.log(`Test vector account created: ${address}`)
+    console.log(`Test vector account created: ${address} ${keypair.secret()}`)
 
     const account = {
         keypair,
