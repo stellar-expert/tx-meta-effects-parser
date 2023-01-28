@@ -11,8 +11,11 @@ const {
     Claimant,
     AuthClawbackEnabledFlag,
     AuthRevocableFlag,
-    getLiquidityPoolId
+    getLiquidityPoolId,
+    LiquidityPoolId
 } = require('stellar-sdk')
+
+//TODO: generate inflation, liquidityPoolSponsorshipCreated, liquidityPoolSponsorshipUpdated and liquidityPoolSponsorshipRemoved effects
 
 /**
  * Generate test vectors for various combinations of transaction effects
@@ -47,6 +50,9 @@ async function generateTestVectors({
     const USDB_asset = new Asset('USD', accountB.address)
     const EURB_asset = new Asset('EUR', accountB.address)
 
+    const USDE_asset = new Asset('USD', accountE.address)
+    const EURE_asset = new Asset('EUR', accountE.address)
+
     const XLM_USDA_poolAsset = new LiquidityPoolAsset(
         Asset.native(),
         USDA_asset,
@@ -67,6 +73,15 @@ async function generateTestVectors({
         USDA_EURA_poolAsset.getLiquidityPoolParameters())
         .toString('hex')
 
+    const USDE_EURE_poolAsset = new LiquidityPoolAsset(
+        EURE_asset,
+        USDE_asset,
+        LiquidityPoolFeeV18
+    )
+
+    const USDE_EURE_poolId = getLiquidityPoolId('constant_product',
+        USDE_EURE_poolAsset.getLiquidityPoolParameters())
+        .toString("hex")
 
     const generalParams = {
         source: accountA,
@@ -191,6 +206,29 @@ async function generateTestVectors({
                         source: accountE.address
                     }),
                 Operation
+                    .manageSellOffer({
+                        selling: USDE_asset,
+                        buying: XLM,
+                        amount: '100',
+                        price: '1',
+                        source: accountE.address
+                    }),
+                Operation
+                    .changeTrust({
+                        asset: USDE_EURE_poolAsset,
+                        limit: '100000',
+                        source: accountE.address
+                    }),
+                Operation
+                    .liquidityPoolDeposit({
+                        liquidityPoolId: USDE_EURE_poolId,
+                        maxAmountA: '1000',
+                        maxAmountB: '1000',
+                        minPrice: '0.1',
+                        maxPrice: '10',
+                        source: accountE.address
+                    }),
+                Operation
                     .endSponsoringFutureReserves({
                         source: accountE.address
                     })
@@ -203,6 +241,15 @@ async function generateTestVectors({
         await exec('create sponsored account, add signer, create trustline, data entry, claimable balance using BeginSponsoringFutureReserves+EndSponsoringFutureReserves',
             tx
         )
+
+        const lastOffers = await horizon
+            .offers()
+            .forAccount(accountE.address)
+            .limit(1)
+            .order('desc')
+            .call()
+
+        const lastOfferId = lastOffers.records[0].id
 
         await exec('update sponsorship and then revoke it',
             buildTransaction({
@@ -233,6 +280,20 @@ async function generateTestVectors({
                     Operation
                         .revokeClaimableBalanceSponsorship({
                             balanceId: claimBalanceId
+                        }),
+                    Operation
+                        .revokeOfferSponsorship({
+                            seller: accountE.address,
+                            offerId: lastOfferId
+                        }),
+                    //Operation
+                    //.revokeLiquidityPoolSponsorship({
+                    //liquidityPoolId: USDE_EURE_poolId
+                    //}),
+                    Operation
+                        .revokeTrustlineSponsorship({
+                            account: accountE.address,
+                            asset: new LiquidityPoolId(USDE_EURE_poolId)
                         }),
                     Operation
                         .revokeAccountSponsorship({
@@ -273,6 +334,29 @@ async function generateTestVectors({
                     Operation
                         .clawbackClaimableBalance({
                             balanceId: claimBalanceId,
+                            source: accountE.address
+                        }),
+                    Operation
+                        .manageSellOffer({
+                            selling: USDE_asset,
+                            buying: XLM,
+                            amount: '0',
+                            price: '1',
+                            offerId: lastOfferId,
+                            source: accountE.address
+                        }),
+                    Operation
+                        .liquidityPoolWithdraw({
+                            liquidityPoolId: USDE_EURE_poolId,
+                            amount: '1000',
+                            minAmountA: '1',
+                            minAmountB: '1',
+                            source: accountE.address
+                        }),
+                    Operation
+                        .changeTrust({
+                            asset: USDE_EURE_poolAsset,
+                            limit: '0',
                             source: accountE.address
                         }),
                     Operation
@@ -747,7 +831,7 @@ async function generateTestVectors({
                         }),
                     Operation
                         .bumpSequence({
-                            bumpTo: '100',
+                            bumpTo: '3313129457898925',
                             source: accountB.address
                         })
                     //Todo: this operation is not supported by horizon
