@@ -2,6 +2,10 @@ const Bignumber = require('bignumber.js')
 const {parseLedgerEntryChanges} = require('./ledger-entry-changes-parser')
 const {xdrParseAsset, xdrParseClaimantPredicate} = require('./tx-xdr-parser-utils')
 
+/**
+ * All possible effects types
+ * @readonly
+ */
 const effectTypes = {
     feeCharged: "feeCharged",
     accountCreated: "accountCreated",
@@ -70,6 +74,11 @@ const effectTypes = {
     signerSponsorshipCreated: "signerSponsorshipCreated"
 }
 
+/**
+ * Processes operation effects and returns them
+ * @param {{operation: any, meta: any, result: any}} operationData - operation data
+ * @returns {any[]} - operation effects
+ */
 function analyzeOperationEffects({operation, meta, result}) {
     //TODO: check that operation always has correct source account
     if (!operation.source)
@@ -120,6 +129,13 @@ const effectProcessorMap = {
     revokeSignerSponsorship: empty
 }
 
+/**
+ * Generates fee charged effect
+ * @param {any} tx - transaction
+ * @param {string} chargedAmount - charged amount
+ * @param {boolean} feeBump - is fee bump
+ * @returns {any} - fee charged effect
+ */
 function processFeeChargedEffect(tx, chargedAmount, feeBump = false) {
     const res = {
         type: effectTypes.feeCharged,
@@ -487,6 +503,8 @@ function processDexOperationEffects({operation, changes, result}) {
                             flags: before.flags
                         })
                         break
+                    default:
+                        throw new UnexpectedMetaChangeError({action, type})
                 }
                 break
             case 'account':
@@ -537,6 +555,8 @@ function processManageDataEffects({operation, changes}) {
         case 'removed':
             effect.type = effectTypes.dataEntryRemoved
             break
+        default:
+            throw new UnexpectedMetaChangeError(change)
     }
     return [effect]
 }
@@ -703,7 +723,7 @@ function processClawbackClaimableBalanceEffects({operation, changes}) {
     ]
 }
 
-function __getSponsorshipEffect(action, type) {
+function getSponsorshipEffect(action, type) {
     switch (action) {
         case 'created':
             return effectTypes[`${type}SponsorshipCreated`]
@@ -720,7 +740,7 @@ function processSponsorshipEffects({operation, changes}) {
     for (const change of changes) {
         const {type, action, before, after} = change
         const effect = {
-            type: __getSponsorshipEffect(action, type),
+            type: getSponsorshipEffect(action, type),
             source: operation.source
         }
         switch (action) {
@@ -740,6 +760,8 @@ function processSponsorshipEffects({operation, changes}) {
                     continue
                 effect.prevSponsor = before.sponsor
                 break
+            default:
+                throw new UnexpectedMetaChangeError(change)
         }
         switch (type) {
             case 'account':
@@ -768,7 +790,7 @@ function processSponsorshipEffects({operation, changes}) {
             case 'liquidityPool': //ignore??
                 continue
             default:
-                throw new Error(`Unsupported meta change type: ${type}`)
+                throw new UnexpectedMetaChangeError(change)
         }
         operation.effects.push(effect)
     }

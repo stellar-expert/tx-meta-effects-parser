@@ -831,7 +831,7 @@ async function generateTestVectors({
                         }),
                     Operation
                         .bumpSequence({
-                            bumpTo: '3313129457898925',
+                            bumpTo: Date.now().toString(),
                             source: accountB.address
                         })
                     //Todo: this operation is not supported by horizon
