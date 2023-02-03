@@ -11,8 +11,11 @@ const {
     Claimant,
     AuthClawbackEnabledFlag,
     AuthRevocableFlag,
-    getLiquidityPoolId
+    getLiquidityPoolId,
+    LiquidityPoolId
 } = require('stellar-sdk')
+
+//TODO: generate inflation, liquidityPoolSponsorshipCreated, liquidityPoolSponsorshipUpdated and liquidityPoolSponsorshipRemoved effects
 
 /**
  * Generate test vectors for various combinations of transaction effects
@@ -23,11 +26,11 @@ const {
  * @return {Promise}
  */
 async function generateTestVectors({
-                                       seed,
-                                       network = Networks.TESTNET,
-                                       horizonUrl = 'https://horizon-testnet.stellar.org/',
-                                       baseFee = 10000
-                                   }) {
+    seed,
+    network = Networks.TESTNET,
+    horizonUrl = 'https://horizon-testnet.stellar.org/',
+    baseFee = 10000
+}) {
     if (typeof baseFee === 'string') {
         baseFee = parseInt(baseFee, 10)
     }
@@ -46,6 +49,9 @@ async function generateTestVectors({
 
     const USDB_asset = new Asset('USD', accountB.address)
     const EURB_asset = new Asset('EUR', accountB.address)
+
+    const USDE_asset = new Asset('USD', accountE.address)
+    const EURE_asset = new Asset('EUR', accountE.address)
 
     const XLM_USDA_poolAsset = new LiquidityPoolAsset(
         Asset.native(),
@@ -67,6 +73,15 @@ async function generateTestVectors({
         USDA_EURA_poolAsset.getLiquidityPoolParameters())
         .toString('hex')
 
+    const USDE_EURE_poolAsset = new LiquidityPoolAsset(
+        EURE_asset,
+        USDE_asset,
+        LiquidityPoolFeeV18
+    )
+
+    const USDE_EURE_poolId = getLiquidityPoolId('constant_product',
+        USDE_EURE_poolAsset.getLiquidityPoolParameters())
+        .toString("hex")
 
     const generalParams = {
         source: accountA,
@@ -99,6 +114,13 @@ async function generateTestVectors({
     await mergeAccount()
 
     await createAccount()
+
+    await signers()
+
+    //'op_not_supported'
+    //await inflation()
+
+    await setOptions()
 
     await payments()
 
@@ -184,6 +206,29 @@ async function generateTestVectors({
                         source: accountE.address
                     }),
                 Operation
+                    .manageSellOffer({
+                        selling: USDE_asset,
+                        buying: XLM,
+                        amount: '100',
+                        price: '1',
+                        source: accountE.address
+                    }),
+                Operation
+                    .changeTrust({
+                        asset: USDE_EURE_poolAsset,
+                        limit: '100000',
+                        source: accountE.address
+                    }),
+                Operation
+                    .liquidityPoolDeposit({
+                        liquidityPoolId: USDE_EURE_poolId,
+                        maxAmountA: '1000',
+                        maxAmountB: '1000',
+                        minPrice: '0.1',
+                        maxPrice: '10',
+                        source: accountE.address
+                    }),
+                Operation
                     .endSponsoringFutureReserves({
                         source: accountE.address
                     })
@@ -196,6 +241,15 @@ async function generateTestVectors({
         await exec('create sponsored account, add signer, create trustline, data entry, claimable balance using BeginSponsoringFutureReserves+EndSponsoringFutureReserves',
             tx
         )
+
+        const lastOffers = await horizon
+            .offers()
+            .forAccount(accountE.address)
+            .limit(1)
+            .order('desc')
+            .call()
+
+        const lastOfferId = lastOffers.records[0].id
 
         await exec('update sponsorship and then revoke it',
             buildTransaction({
@@ -226,6 +280,20 @@ async function generateTestVectors({
                     Operation
                         .revokeClaimableBalanceSponsorship({
                             balanceId: claimBalanceId
+                        }),
+                    Operation
+                        .revokeOfferSponsorship({
+                            seller: accountE.address,
+                            offerId: lastOfferId
+                        }),
+                    //Operation
+                    //.revokeLiquidityPoolSponsorship({
+                    //liquidityPoolId: USDE_EURE_poolId
+                    //}),
+                    Operation
+                        .revokeTrustlineSponsorship({
+                            account: accountE.address,
+                            asset: new LiquidityPoolId(USDE_EURE_poolId)
                         }),
                     Operation
                         .revokeAccountSponsorship({
@@ -266,6 +334,29 @@ async function generateTestVectors({
                     Operation
                         .clawbackClaimableBalance({
                             balanceId: claimBalanceId,
+                            source: accountE.address
+                        }),
+                    Operation
+                        .manageSellOffer({
+                            selling: USDE_asset,
+                            buying: XLM,
+                            amount: '0',
+                            price: '1',
+                            offerId: lastOfferId,
+                            source: accountE.address
+                        }),
+                    Operation
+                        .liquidityPoolWithdraw({
+                            liquidityPoolId: USDE_EURE_poolId,
+                            amount: '1000',
+                            minAmountA: '1',
+                            minAmountB: '1',
+                            source: accountE.address
+                        }),
+                    Operation
+                        .changeTrust({
+                            asset: USDE_EURE_poolAsset,
+                            limit: '0',
                             source: accountE.address
                         }),
                     Operation
@@ -364,6 +455,57 @@ async function generateTestVectors({
                     })
                 ],
                 signerKeys: [accountA.keypair, accountB.keypair]
+            }))
+
+
+        await exec('create offer to update and remove it',
+            buildTransaction({
+                ...generalParams,
+                operations: [
+                    Operation
+                        .createPassiveSellOffer({
+                            selling: USDA_asset,
+                            buying: XLM,
+                            amount: '100',
+                            price: 1
+                        })
+                ],
+                signerKeys: [accountA.keypair]
+            }))
+
+        const lastOffers = await horizon
+            .offers()
+            .forAccount(accountA.address)
+            .limit(1)
+            .order('desc')
+            .call()
+
+        const lastOfferId = lastOffers.records[0].id
+
+        console.log('lastOfferId', lastOfferId)
+
+        await exec('update offer and remove offer',
+            buildTransaction({
+                ...generalParams,
+                operations: [
+                    Operation
+                        .manageSellOffer({
+                            selling: USDA_asset,
+                            buying: XLM,
+                            amount: '110',
+                            price: 1,
+                            offerId: lastOfferId
+                        }),
+                    Operation
+                        .manageSellOffer({
+                            selling: USDA_asset,
+                            buying: XLM,
+                            amount: '0',
+                            price: 1,
+                            offerId: lastOfferId
+                        })
+                ],
+                signerKeys: [accountA.keypair]
             }))
     }
 
@@ -582,6 +724,100 @@ async function generateTestVectors({
             }))
     }
 
+    async function setOptions() {
+        await exec('set home domain, set inflation destination, set signer, set thresholds, set flags',
+            buildTransaction({
+                ...generalParams,
+                operations: [
+                    Operation
+                        .setOptions({
+                            inflationDest: accountB.address,
+                            masterWeight: 4,
+                            lowThreshold: 1,
+                            medThreshold: 2,
+                            highThreshold: 3,
+                            homeDomain: 'test'
+                        }),
+                    //revert changes
+                    Operation
+                        .setOptions({
+                            inflationDest: null,
+                            masterWeight: 1,
+                            lowThreshold: 0,
+                            medThreshold: 0,
+                            highThreshold: 0,
+                            homeDomain: ''
+                        })
+                ],
+                signerKeys: [accountA.keypair]
+            }))
+    }
+
+    async function inflation() {
+        await exec('inflation',
+            buildTransaction({
+                ...generalParams,
+                operations: [
+                    Operation
+                        .inflation({})
+                ],
+                signerKeys: [accountA.keypair]
+            }))
+    }
+
+    async function signers() {
+        await exec('create signer',
+            buildTransaction({
+                ...generalParams,
+                operations: [
+                    Operation
+                        .setOptions({
+                            signer: {
+                                ed25519PublicKey: accountB.address,
+                                weight: 1
+                            }
+                        })
+                ],
+                signerKeys: [accountA.keypair]
+            }))
+
+        await exec('update signer',
+            buildTransaction({
+                ...generalParams,
+                operations: [
+                    Operation
+                        .setOptions({
+                            signer: {
+                                ed25519PublicKey: accountB.address,
+                                weight: 2
+                            }
+                        }),
+                    Operation
+                        .setOptions({
+                            signer: {
+                                ed25519PublicKey: accountB.address,
+                                weight: 1
+                            }
+                        })
+                ],
+                signerKeys: [accountA.keypair]
+            }))
+        await exec('remove signer',
+            buildTransaction({
+                ...generalParams,
+                operations: [
+                    Operation
+                        .setOptions({
+                            signer: {
+                                ed25519PublicKey: accountB.address,
+                                weight: 0
+                            }
+                        })
+                ],
+                signerKeys: [accountA.keypair]
+            }))
+    }
+
     async function createAccount() {
         await exec('create account, set options, bump sequence, run inflation',
             buildTransaction({
@@ -595,7 +831,7 @@ async function generateTestVectors({
                         }),
                     Operation
                         .bumpSequence({
-                            bumpTo: '100',
+                            bumpTo: Date.now().toString(),
                             source: accountB.address
                         })
                     //Todo: this operation is not supported by horizon

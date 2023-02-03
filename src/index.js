@@ -41,7 +41,7 @@ function parseTxOperationsMeta({network, tx, result, meta}) {
     }
 
     //normalize operation source and effects container
-    for (let op of parsedTx.operations) {
+    for (const op of parsedTx.operations) {
         if (!op.source) {
             op.source = parsedTx.source
         }

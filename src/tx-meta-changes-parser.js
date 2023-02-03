@@ -11,15 +11,15 @@ function parseTxMetaChanges(meta) {
 
     switch (meta.arm()) {
         case 'v1':
-            for (let ch of transactionMeta.txChanges()) {
+            for (const ch of transactionMeta.txChanges()) {
                 txMetaChanges.push(parseLedgerEntryChanges(ch))
             }
             break
         case 'v2':
-            for (let ch of transactionMeta.txChangesBefore()) {
+            for (const ch of transactionMeta.txChangesBefore()) {
                 txMetaChanges.push(parseLedgerEntryChanges(ch))
             }
-            for (let ch of transactionMeta.txChangesAfter()) {
+            for (const ch of transactionMeta.txChangesAfter()) {
                 txMetaChanges.push(parseLedgerEntryChanges(ch))
             }
             break
