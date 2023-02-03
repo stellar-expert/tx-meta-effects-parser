@@ -1,5 +1,5 @@
 const {xdr} = require('stellar-sdk')
-const {xdrParseLong, xdrParseAccountAddress, xdrParseTradeAtom, xdrParseClaimedOffer, xdrParseAsset} = require('./tx-xdr-parser-utils')
+const {xdrParseAccountAddress, xdrParseTradeAtom, xdrParseClaimedOffer, xdrParseAsset} = require('./tx-xdr-parser-utils')
 
 /**
  * Parse extra data from operation result
@@ -27,7 +27,7 @@ function parseRawOpResult(rawOpResult) {
                 const paymentValue = opResult.value().last()
                 res.payment = {
                     account: xdrParseAccountAddress(paymentValue.destination()),
-                    amount: xdrParseLong(paymentValue.amount()),
+                    amount: paymentValue.amount().toString(),
                     asset: xdrParseAsset(paymentValue.asset())
                 }
             }
@@ -42,12 +42,12 @@ function parseRawOpResult(rawOpResult) {
             break
         case 'accountMergeSuccess':
             //retrieve the actual amount of transferred XLM
-            res.actualMergedAmount = xdrParseLong(opResult.sourceAccountBalance())
+            res.actualMergedAmount = opResult.sourceAccountBalance().toString()
             break
         case 'inflationSuccess':
             res.inflationPayouts = (opResult.payouts() || []).map(payout => ({
                 account: xdrParseAccountAddress(payout.destination()),
-                amount: xdrParseLong(payout.amount())
+                amount: payout.amount().toString()
             }))
             break
         case 'createClaimableBalanceSuccess':
@@ -94,7 +94,7 @@ function parseTxResult(result) {
     }
     const innerResult = result.result()
     const txResultState = innerResult.switch()
-    const feeCharged = xdrParseLong(result.feeCharged())
+    const feeCharged = result.feeCharged().toString()
     const success = txResultState.value >= 0
 
     let opResults = []

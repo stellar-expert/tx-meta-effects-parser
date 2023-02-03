@@ -1,5 +1,4 @@
 const {StrKey, LiquidityPoolId} = require('stellar-sdk')
-const Bignumber = require('bignumber.js')
 
 /**
  * Parse account address from XDR representation
@@ -18,7 +17,7 @@ function xdrParseAccountAddress(accountId, muxedAccountsSupported = false) {
                     throw new Error(`Muxed accounts not supported here`)
                 return {
                     primary: StrKey.encodeEd25519PublicKey(accountId.value().ed25519()),
-                    muxedId: xdrParseLong(accountId.value().id())
+                    muxedId: accountId.value().id().toString()
                 }
             default:
                 throw new Error(`Unsupported muxed account type: ${accountId.arm()}`)
@@ -28,16 +27,6 @@ function xdrParseAccountAddress(accountId, muxedAccountsSupported = false) {
         return StrKey.encodeEd25519PublicKey(accountId)
     }
     throw new TypeError(`Failed to identify and parse account address: ${accountId}`)
-}
-
-/**
- * Parse XDR-encoded int64 to BSON Long.
- * @param {{low:Number, high:Number}} value - XDR-encoded int64.
- * @return {String}
- */
-function xdrParseLong(value) {
-    if (!value) return '0'
-    return new Bignumber(value.high).mul(new Bignumber(4294967295)).add(value.low).toString()
 }
 
 /**
@@ -86,11 +75,11 @@ function xdrParseSignerKey(signer) {
  */
 function xdrParseTradeAtom(offerXdr) {
     return {
-        offerId: xdrParseLong(offerXdr.offerId()),
+        offerId: offerXdr.offerId().toString(),
         account: xdrParseAccountAddress(offerXdr.sellerId()),
         asset: [xdrParseAsset(offerXdr.selling()).toString(), xdrParseAsset(offerXdr.buying()).toString()],
         //offer amount is always stored in terms of a selling asset, even for buy offers
-        amount: xdrParseLong(offerXdr.amount() || offerXdr.buyAmount()),
+        amount: (offerXdr.amount() || offerXdr.buyAmount()).toString(),
         //flags: offerXdr.flags()
         price: xdrParsePrice(offerXdr.price())
     }
@@ -109,14 +98,14 @@ function xdrParseClaimedOffer(claimedAtom) {
             claimedAtom = claimedAtom.v0()
             res = {
                 account: xdrParseAccountAddress(claimedAtom.sellerEd25519()),
-                offerId: xdrParseLong(claimedAtom.offerId())
+                offerId: claimedAtom.offerId().toString()
             }
             break
         case 'orderBook':
             claimedAtom = claimedAtom.orderBook()
             res = {
                 account: xdrParseAccountAddress(claimedAtom.sellerId()),
-                offerId: xdrParseLong(claimedAtom.offerId())
+                offerId: claimedAtom.offerId().toString()
             }
             break
         case 'liquidityPool':
@@ -134,8 +123,8 @@ function xdrParseClaimedOffer(claimedAtom) {
             xdrParseAsset(claimedAtom.assetBought())
         ],
         amount: [
-            xdrParseLong(claimedAtom.amountSold()),
-            xdrParseLong(claimedAtom.amountBought())
+            claimedAtom.amountSold().toString(),
+            claimedAtom.amountBought().toString()
         ],
         ...res
     }
@@ -155,9 +144,9 @@ function xdrParseClaimantPredicate(predicate) {
         case 'claimPredicateNot':
             return {not: xdrParseClaimantPredicate(value)}
         case 'claimPredicateBeforeAbsoluteTime':
-            return {absBefore: xdrParseLong(value)}
+            return {absBefore: value.toString()}
         case 'claimPredicateBeforeRelativeTime':
-            return {relBefore: xdrParseLong(value)}
+            return {relBefore: value.toString()}
         default:
             throw new Error(`Unknown claim condition predicate: ${type}`)
     }
@@ -224,6 +213,5 @@ module.exports = {
     xdrParseClaimedOffer,
     xdrParseTradeAtom,
     xdrParseSignerKey,
-    xdrParsePrice,
-    xdrParseLong
+    xdrParsePrice
 }

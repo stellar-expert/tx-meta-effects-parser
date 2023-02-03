@@ -2,7 +2,6 @@ const {
     xdrParseAsset,
     xdrParseAccountAddress,
     xdrParseClaimant,
-    xdrParseLong,
     xdrParsePrice,
     xdrParseSignerKey
 } = require('./tx-xdr-parser-utils')
@@ -102,8 +101,8 @@ function parseAccountEntry(value) {
     const data = {
         entry: 'account',
         address: xdrParseAccountAddress(accountEntryXdr.accountId()),
-        sequence: xdrParseLong(accountEntryXdr.seqNum()),
-        balance: xdrParseLong(accountEntryXdr.balance()),
+        sequence: accountEntryXdr.seqNum().toString(),
+        balance: accountEntryXdr.balance().toString(),
         numSubEntries: accountEntryXdr.numSubEntries(),
         homeDomain: accountEntryXdr.homeDomain().toString('UTF8'),
         inflationDest: xdrParseAccountAddress(accountEntryXdr.inflationDest()),
@@ -124,8 +123,8 @@ function parseAccountEntry(value) {
     if (extV1) {
         const liabilities = extV1.liabilities()
         data.liabilities = [
-            xdrParseLong(liabilities.buying()),
-            xdrParseLong(liabilities.selling())
+            liabilities.buying().toString(),
+            liabilities.selling().toString()
         ]
         const extV2 = extV1.ext()?.v2()
         if (extV2) {
@@ -135,7 +134,7 @@ function parseAccountEntry(value) {
             const extV3 = extV2.ext()?.v3()
             if (extV3) {
                 data.seqLedger = extV3.seqLedger()
-                data.seqTime = xdrParseLong(extV3.seqTime())
+                data.seqTime = extV3.seqTime().toString()
             }
         }
     }
@@ -148,8 +147,8 @@ function parseTrustlineEntry(value) {
     const trustlineType = trustlineAsset.switch()
     const data = {
         account: xdrParseAccountAddress(trustlineEntryXdr.accountId()),
-        balance: xdrParseLong(trustlineEntryXdr.balance()),
-        limit: xdrParseLong(trustlineEntryXdr.limit()),
+        balance: trustlineEntryXdr.balance().toString(),
+        limit: trustlineEntryXdr.limit().toString(),
         flags: trustlineEntryXdr.flags()
     }
 
@@ -171,8 +170,8 @@ function parseTrustlineEntry(value) {
     const extV1 = trustlineEntryXdr.ext()?.v1()
     if (extV1) {
         const liabilities = extV1.liabilities()
-        data.buying_liabilities = xdrParseLong(liabilities.buying())
-        data.selling_liabilities = xdrParseLong(liabilities.selling())
+        data.buying_liabilities = liabilities.buying().toString()
+        data.selling_liabilities = liabilities.selling().toString()
     }
 
     return data
@@ -198,9 +197,9 @@ function parseLiquidityPoolEntry(value) {
         asset: [xdrParseAsset(params.assetA()), xdrParseAsset(params.assetB())],
         fee: params.fee(),
         pool_type: 0,
-        amount: [xdrParseLong(body.reserveA()), xdrParseLong(body.reserveB())],
-        shares: xdrParseLong(body.totalPoolShares()),
-        accounts: xdrParseLong(body.poolSharesTrustLineCount())
+        amount: [body.reserveA().toString(), body.reserveB().toString()],
+        shares: body.totalPoolShares().toString(),
+        accounts: body.poolSharesTrustLineCount().toString()
     }
     return data
 }
@@ -209,10 +208,10 @@ function parseOfferEntry(value) {
     const offerEntryXdr = value.value()
     const data = {
         entry: 'offer',
-        id: xdrParseLong(offerEntryXdr.offerId()),
+        id: offerEntryXdr.offerId().toString(),
         account: xdrParseAccountAddress(offerEntryXdr.sellerId()),
         asset: [xdrParseAsset(offerEntryXdr.selling()), xdrParseAsset(offerEntryXdr.buying())],
-        amount: xdrParseLong(offerEntryXdr.amount()),
+        amount: offerEntryXdr.amount().toString(),
         price: xdrParsePrice(offerEntryXdr.price()),
         flags: offerEntryXdr.flags()
     }
@@ -225,7 +224,7 @@ function parseClaimableBalanceEntry(value) {
         balanceId: Buffer.from(claimableBalanceXdr.balanceId().value()).toString('hex'),
         entry: 'claimableBalance',
         asset: xdrParseAsset(claimableBalanceXdr.asset()),
-        amount: xdrParseLong(claimableBalanceXdr.amount()),
+        amount: claimableBalanceXdr.amount().toString(),
         claimants: claimableBalanceXdr.claimants().map(claimant => xdrParseClaimant(claimant))
     }
     const extV1 = claimableBalanceXdr.ext()?.v1()

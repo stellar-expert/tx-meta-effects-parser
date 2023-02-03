@@ -11,13 +11,13 @@
             "type": "accountDebited",
             "source": "GBWCS2C42PQYMDQVBIVUOWDPSM2T3BRJWG2ENQJQU3N75J4CSKJ6DXHN",
             "asset": "XLM",
-            "amount": "9999.9999977"
+            "amount": "10000"
           },
           {
             "type": "accountCredited",
             "source": "GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI",
             "asset": "XLM",
-            "amount": "9999.9999977"
+            "amount": "10000"
           },
           {
             "type": "accountRemoved",
@@ -59,7 +59,7 @@
           {
             "type": "sequenceBumped",
             "source": "GBWCS2C42PQYMDQVBIVUOWDPSM2T3BRJWG2ENQJQU3N75J4CSKJ6DXHN",
-            "sequence": "3313129457127527"
+            "sequence": "3313129457898925"
           }
         ],
         []
@@ -408,14 +408,14 @@
             "assets": [
               {
                 "asset": "XLM",
-                "amount": "999.9999998"
+                "amount": "1000"
               },
               {
                 "asset": "USD-GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI-1",
-                "amount": "999.9999998"
+                "amount": "1000"
               }
             ],
-            "shares": "9999999998"
+            "shares": "10000000000"
           },
           {
             "type": "liquidityPoolUpdated",
@@ -424,14 +424,14 @@
             "reserves": [
               {
                 "asset": "XLM",
-                "amount": "999.9999998"
+                "amount": "1000"
               },
               {
                 "asset": "USD-GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI-1",
-                "amount": "999.9999998"
+                "amount": "1000"
               }
             ],
-            "shares": "9999999998"
+            "shares": "10000000000"
           }
         ],
         [
@@ -442,14 +442,14 @@
             "assets": [
               {
                 "asset": "XLM",
-                "amount": "499.9999999"
+                "amount": "500"
               },
               {
                 "asset": "USD-GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI-1",
-                "amount": "499.9999999"
+                "amount": "500"
               }
             ],
-            "shares": "4999999999"
+            "shares": "5000000000"
           },
           {
             "type": "liquidityPoolUpdated",
@@ -458,14 +458,14 @@
             "reserves": [
               {
                 "asset": "XLM",
-                "amount": "499.9999999"
+                "amount": "500"
               },
               {
                 "asset": "USD-GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI-1",
-                "amount": "499.9999999"
+                "amount": "500"
               }
             ],
-            "shares": "4999999999"
+            "shares": "5000000000"
           }
         ],
         [
@@ -476,14 +476,14 @@
             "assets": [
               {
                 "asset": "XLM",
-                "amount": "499.9999999"
+                "amount": "500"
               },
               {
                 "asset": "USD-GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI-1",
-                "amount": "499.9999999"
+                "amount": "500"
               }
             ],
-            "shares": "4999999999"
+            "shares": "5000000000"
           },
           {
             "type": "liquidityPoolUpdated",
@@ -574,7 +574,7 @@
               {
                 "destination": "GBWCS2C42PQYMDQVBIVUOWDPSM2T3BRJWG2ENQJQU3N75J4CSKJ6DXHN",
                 "predicate": {
-                  "absBefore": "1671220240191"
+                  "absBefore": "1671220240580"
                 }
               }
             ]
@@ -603,7 +603,7 @@
               {
                 "destination": "GBWCS2C42PQYMDQVBIVUOWDPSM2T3BRJWG2ENQJQU3N75J4CSKJ6DXHN",
                 "predicate": {
-                  "absBefore": "1671220240192"
+                  "absBefore": "1671220240581"
                 }
               }
             ]
@@ -1020,7 +1020,7 @@
               {
                 "destination": "GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI",
                 "predicate": {
-                  "absBefore": "1670643457884"
+                  "absBefore": "1674938425569"
                 }
               }
             ]
@@ -1093,14 +1093,14 @@
             "assets": [
               {
                 "asset": "EUR-GDNPPDR6QACI25Q3D4LIRTDZFDGWWPUP55XMU3ERR5C7A3LRGIXPCMXH-1",
-                "amount": "999.9999998"
+                "amount": "1000"
               },
               {
                 "asset": "USD-GDNPPDR6QACI25Q3D4LIRTDZFDGWWPUP55XMU3ERR5C7A3LRGIXPCMXH-1",
-                "amount": "999.9999998"
+                "amount": "1000"
               }
             ],
-            "shares": "9999999998"
+            "shares": "10000000000"
           },
           {
             "type": "liquidityPoolUpdated",
@@ -1109,14 +1109,14 @@
             "reserves": [
               {
                 "asset": "EUR-GDNPPDR6QACI25Q3D4LIRTDZFDGWWPUP55XMU3ERR5C7A3LRGIXPCMXH-1",
-                "amount": "999.9999998"
+                "amount": "1000"
               },
               {
                 "asset": "USD-GDNPPDR6QACI25Q3D4LIRTDZFDGWWPUP55XMU3ERR5C7A3LRGIXPCMXH-1",
-                "amount": "999.9999998"
+                "amount": "1000"
               }
             ],
-            "shares": "9999999998"
+            "shares": "10000000000"
           }
         ],
         []
@@ -1302,14 +1302,14 @@
             "assets": [
               {
                 "asset": "EUR-GDNPPDR6QACI25Q3D4LIRTDZFDGWWPUP55XMU3ERR5C7A3LRGIXPCMXH-1",
-                "amount": "999.9999998"
+                "amount": "1000"
               },
               {
                 "asset": "USD-GDNPPDR6QACI25Q3D4LIRTDZFDGWWPUP55XMU3ERR5C7A3LRGIXPCMXH-1",
-                "amount": "999.9999998"
+                "amount": "1000"
               }
             ],
-            "shares": "9999999998"
+            "shares": "10000000000"
           },
           {
             "type": "liquidityPoolUpdated",
