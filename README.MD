@@ -19,10 +19,10 @@ npm i github:@stellar-expert/tx-meta-effects-parser
 const {parseTxOperationsMeta} = require('@stellar-expert/tx-meta-effects-parser')
 
 const res = parseTxOperationsMeta({
-    network:  'Public Global Stellar Network ; September 2015',
-    tx:  '_base64-encoded_transaction_envelope_XDR_',
-    result:  '_base64-encoded_transaction_result_XDR_',
-    meta:  '_base64-encoded_transaction_result_meta_XDR_'
+  network: 'Public Global Stellar Network ; September 2015',
+  tx: '_base64-encoded_transaction_envelope_XDR_',
+  result: '_base64-encoded_transaction_result_XDR_',
+  meta: '_base64-encoded_transaction_result_meta_XDR_'
 })
 
 console.log(res.effects)
@@ -45,11 +45,11 @@ console.log(res.operations[0].effects)
 
 ```js
 {
-  type:  'feeCharged',
-  source:  'GBKP…YDLI',
-  asset:  'XLM',
-  feeBid:  '10000',
-  charged:  '400'
+  type: 'feeCharged',
+  source: 'GBKP…YDLI',
+  asset: 'XLM',
+  feeBid: '10000',
+  charged: '400'
 }
 ```
 </td>
@@ -64,9 +64,9 @@ console.log(res.operations[0].effects)
 
 ```js
 {
-  type:  'accountCreated',
-  source:  'GBKP…YDLI',
-  account:  'GBWC…DXHN'
+  type: 'accountCreated',
+  source: 'GBKP…YDLI',
+  account: 'GBWC…DXHN'
 }
 ```
 </td>
@@ -81,8 +81,8 @@ console.log(res.operations[0].effects)
 
 ```js
 {
-    type:  'accountRemoved',
-    account:  'GBWC…DXHN'
+  type: 'accountRemoved',
+  account: 'GBWC…DXHN'
 }
 ```
 </td>
@@ -98,10 +98,10 @@ PathPaymentStrictSendOp, CreateClaimableBalanceOp, ClawbackOp</td>
 
 ```js
 {
-  type:  'accountDebited',
-  source:  'GBKP…YDLI',
-  asset:  'XLM',
-  amount:  '100.0000000'
+  type: 'accountDebited',
+  source: 'GBKP…YDLI',
+  asset: 'XLM',
+  amount: '100.0000000'
 }
 ```
 </td>
@@ -118,10 +118,10 @@ ClawbackClaimableBalance, InflationOp</td>
 
 ```js
 {
-    type:  'accountCredited',
-    source:  'GBWC…DXHN',
-    asset:  'XLM',
-    amount:  '100.0000000'
+  type: 'accountCredited',
+  source: 'GBWC…DXHN',
+  asset: 'XLM',
+  amount: '100.0000000'
 }
 ```
 </td>
@@ -136,9 +136,9 @@ ClawbackClaimableBalance, InflationOp</td>
 
 ```js
 {
-  type:  'accountHomeDomainUpdated',
-  source:  'GBWC…DXHN',
-  domain:  'example.com'
+  type: 'accountHomeDomainUpdated',
+  source: 'GBWC…DXHN',
+  domain: 'example.com'
 }
 ```
 </td>
@@ -153,9 +153,9 @@ ClawbackClaimableBalance, InflationOp</td>
 
 ```js
 {
-  type:  'accountThresholdsUpdated',
-  source:  'GBWC…DXHN',
-  thresholds:  [1,1,3]
+  type: 'accountThresholdsUpdated',
+  source: 'GBWC…DXHN',
+  thresholds: [1, 1 ,3]
 }
 ```
 </td>
@@ -170,9 +170,9 @@ ClawbackClaimableBalance, InflationOp</td>
 
 ```js
 {
-  type:  'accountFlagsUpdated',
-  source:  'GBWC…DXHN',
-  flags:  2
+  type: 'accountFlagsUpdated',
+  source: 'GBWC…DXHN',
+  flags: 2
 }
 ```
 </td>
@@ -187,9 +187,9 @@ ClawbackClaimableBalance, InflationOp</td>
 
 ```js
 {
-  type:  'accountInflationDestinationUpdated',
-  source:  'GBWC…DXHN',
-  inflationDestination:  'GBKP…YDLI'
+  type: 'accountInflationDestinationUpdated',
+  source: 'GBWC…DXHN',
+  inflationDestination: 'GBKP…YDLI'
 }
 ```
 </td>
@@ -204,15 +204,15 @@ ClawbackClaimableBalance, InflationOp</td>
 
 ```js 
 {
-    type:  'accountSignerCreated',
-    source:  'GBWC…DXHN',
-    signer:  'GBKP…YDLI',
-    weight:  1,
-    masterWeight:  1,
-    signers:  [
-        {key:  'GBWC…DXHN', weight:  1},
-        {key:  'GBKP…YDLI', weight:  1}
-    ]
+  type: 'accountSignerCreated',
+  source: 'GBWC…DXHN',
+  signer: 'GBKP…YDLI',
+  weight: 1,
+  masterWeight: 1,
+  signers: [
+    {key: 'GBWC…DXHN', weight: 1},
+    {key: 'GBKP…YDLI', weight: 1}
+  ]
 }
 ```
 
@@ -228,15 +228,15 @@ ClawbackClaimableBalance, InflationOp</td>
 
 ```js 
 {
-  type:  'accountSignerCreated',
-    source:  'GBWC…DXHN',
-    signer:  'GBKP…YDLI',
-    weight:  2,
-    masterWeight:  1,
-    signers:  [
-        {key:  'GBWC…DXHN', weight:  2},
-        {key:  'GBKP…YDLI', weight:  1}
-    ]
+  type: 'accountSignerCreated',
+  source: 'GBWC…DXHN',
+  signer: 'GBKP…YDLI',
+  weight: 2,
+  masterWeight: 1,
+  signers: [
+    {key: 'GBWC…DXHN', weight: 2},
+    {key: 'GBKP…YDLI', weight: 1}
+  ]
 }
 ```
 
@@ -252,12 +252,12 @@ ClawbackClaimableBalance, InflationOp</td>
 
 ```js
 {
-  type:  'accountSignerRemoved',
-  source:  'GBWC…DXHN',
-  weight:  0,
-  masterWeight:  1,
-  signers:  [
-      {key:  'GBWC…DXHN', weight:  1}
+  type: 'accountSignerRemoved',
+  source: 'GBWC…DXHN',
+  weight: 0,
+  masterWeight: 1,
+  signers: [
+    {key: 'GBWC…DXHN', weight: 1}
   ]
 }
 ```
@@ -274,10 +274,10 @@ ClawbackClaimableBalance, InflationOp</td>
 
 ```js
 {
-  type:  'trustlineCreated',
-  source:  'GBWC…DXHN',
-  asset:  'USD:GBKP…YDLI',
-  limit:  '100.0000000'
+  type: 'trustlineCreated',
+  source: 'GBWC…DXHN',
+  asset: 'USD:GBKP…YDLI',
+  limit: '100.0000000'
 }
 ```
 
@@ -293,10 +293,10 @@ ClawbackClaimableBalance, InflationOp</td>
 
 ```js
 {
-  type:  'trustlineUpdated',
-  source:  'GBWC…DXHN',
-  asset:  'USD:GBKP…YDLI',
-  limit:  '200.0000000'
+  type: 'trustlineUpdated',
+  source: 'GBWC…DXHN',
+  asset: 'USD:GBKP…YDLI',
+  limit: '200.0000000'
 }
 ```
 
@@ -312,9 +312,9 @@ ClawbackClaimableBalance, InflationOp</td>
 
 ```js
 {
-  type:  'trustlineRemoved',
-  source:  'GBWC…DXHN',
-  asset:  'USD:GBKP…YDLI'
+  type: 'trustlineRemoved',
+  source: 'GBWC…DXHN',
+  asset: 'USD:GBKP…YDLI'
 }
 ```
 
@@ -328,22 +328,22 @@ ClawbackClaimableBalance, InflationOp</td>
 <td>ChangeTrustOp</td>
 <td>
 
-```js  
+```js
 {
-  type:  'liquidityPoolCreated',
-  source:   'GBWC…DXHN',
-  pool:   '52a8...76f8',
-  reserves:  [
+  type: 'liquidityPoolCreated',
+  source: 'GBWC…DXHN',
+  pool: '52a8...76f8',
+  reserves: [
     {
-      asset:  'XLM',
-      amount:  '0'
+      asset: 'XLM',
+      amount: '0'
     },
     {
-      asset:  'USD:GBKP…YDLI',
-      amount:  '0'
+      asset: 'USD:GBKP…YDLI',
+      amount: '0'
     }
   ],
-  shares:  '0'
+  shares: '0'
 }
 ```
 
@@ -357,22 +357,22 @@ ClawbackClaimableBalance, InflationOp</td>
 <td>DepositLiquidityOp, WithdrawLiquidityOp</td>
 <td>
 
-```js  
+```js
 {
-  type:  'liquidityPoolUpdated',
-  source:  'GBWC…DXHN',
-  pool:  '52a8...76f8',
-  reserves:  [
+  type: 'liquidityPoolUpdated',
+  source: 'GBWC…DXHN',
+  pool: '52a8...76f8',
+  reserves: [
     {
-      asset:  'XLM',
-      amount:  '1000'
+      asset: 'XLM',
+      amount: '1000'
     },
     {
-      asset:  'USD:GBKP…YDLI',
-      amount:  '1000'
+      asset: 'USD:GBKP…YDLI',
+      amount: '1000'
     }
   ],
-  shares:  '10000000000'
+  shares: '10000000000'
 }
 ```
 
@@ -386,22 +386,22 @@ ClawbackClaimableBalance, InflationOp</td>
 <td>DepositLiquidityOp</td>
 <td>
 
-```js  
+```js
 {
-  type:  'liquidityPoolDeposited',
-  source:  'GBWC…DXHN',
-  pool:  '52a8...76f8',
-  reserves:  [
+  type: 'liquidityPoolDeposited',
+  source: 'GBWC…DXHN',
+  pool: '52a8...76f8',
+  reserves: [
     {
-      asset:  'XLM',
-      amount:  '1000'
+      asset: 'XLM',
+      amount: '1000'
     },
     {
-      asset:  'USD:GBKP…YDLI',
-      amount:  '1000'
+      asset: 'USD:GBKP…YDLI',
+      amount: '1000'
     }
   ],
-  shares:  '10000000000'
+  shares: '10000000000'
 }
 ```
 
@@ -415,22 +415,22 @@ ClawbackClaimableBalance, InflationOp</td>
 <td>WithdrawLiquidityOp</td>
 <td>
 
-```js  
+```js
 {
-  type:  'liquidityPoolWithdrew',
-  source:  'GBWC…DXHN',
-  pool:  '52a8...76f8',
-  reserves:  [
+  type: 'liquidityPoolWithdrew',
+  source: 'GBWC…DXHN',
+  pool: '52a8...76f8',
+  reserves: [
     {
-      asset:  'XLM',
-      amount:  '1000'
+      asset: 'XLM',
+      amount: '1000'
     },
     {
-      asset:  'USD:GBKP…YDLI',
-      amount:  '1000'
+      asset: 'USD:GBKP…YDLI',
+      amount: '1000'
     }
   ],
-  shares:  '10000000000'
+  shares: '10000000000'
 }
 ```
 
@@ -444,11 +444,11 @@ ClawbackClaimableBalance, InflationOp</td>
 <td>ChangeTrustOp</td>
 <td>
 
-```js  
+```js
 {
-  type:  'liquidityPoolRemoved',
-  source:  'GBWC…DXHN',
-  pool:  '52a8...76f8'
+  type: 'liquidityPoolRemoved',
+  source: 'GBWC…DXHN',
+  pool: '52a8...76f8'
 }
 ```
 
@@ -464,11 +464,11 @@ ClawbackClaimableBalance, InflationOp</td>
 
 ```js
 {
-  type:  'trustlineAuthorizationUpdated',
-  source:  'GBWC…DXHN',
-  trustor:  'GBKP…YDLI',
-  asset:  'USD:GBWC…DXHN',
-  authorize:  5
+  type: 'trustlineAuthorizationUpdated',
+  source: 'GBWC…DXHN',
+  trustor: 'GBKP…YDLI',
+  asset: 'USD:GBWC…DXHN',
+  authorize: 5
 }
 ```
 
@@ -484,11 +484,11 @@ ClawbackClaimableBalance, InflationOp</td>
 
 ```js
 {
-  type:  'trustlineDeauthorized',
-  source:  'GBWC…DXHN',
-  trustor:  'GBKP…YDLI',
-  asset:  'USD:GBWC…DXHN',
-  authorize:  4
+  type: 'trustlineDeauthorized',
+  source: 'GBWC…DXHN',
+  trustor: 'GBKP…YDLI',
+  asset: 'USD:GBWC…DXHN',
+  authorize: 4
 }
 ```
 
@@ -504,17 +504,17 @@ ClawbackClaimableBalance, InflationOp</td>
 
 ```js
 {
-  type:  'offerCreated',
-  source:  'GBWC…DXHN',
-  owner:  'GBWC…DXHN',
-  offer:  '1',
-  amount:  '100',
-  asset:  [
+  type: 'offerCreated',
+  source: 'GBWC…DXHN',
+  owner: 'GBWC…DXHN',
+  offer: '1',
+  amount: '100',
+  asset: [
     'USD:GBKP…YDLI',
     'XLM'
-    ],
-  price:  1
-  flags:  0
+  ],
+  price: 1,
+  flags: 0
 }
 ```
 
@@ -530,17 +530,17 @@ ClawbackClaimableBalance, InflationOp</td>
 
 ```js
 {
-  type:  'offerUpdated',
-  source:  'GBWC…DXHN',
-  owner:  'GBWC…DXHN',
-  offer:  '1',
-  amount:  '90',
-  asset:  [
+  type: 'offerUpdated',
+  source: 'GBWC…DXHN',
+  owner: 'GBWC…DXHN',
+  offer: '1',
+  amount: '90',
+  asset: [
     'USD:GBKP…YDLI',
     'XLM'
-    ],
-  price:  1
-  flags:  0
+  ],
+  price: 1,
+  flags: 0
 }
 ```
 
@@ -556,15 +556,15 @@ ClawbackClaimableBalance, InflationOp</td>
 
 ```js
 {
-  type:  'trade',
-  source:  'GBWC…DXHN',
-  offer:  '1',
-  amount:  ['10', '10'],
-  asset:  [
+  type: 'trade',
+  source: 'GBWC…DXHN',
+  offer: '1',
+  amount: ['10', '10'],
+  asset: [
     'USD:GBKP…YDLI',
     'XLM'
   ],
-  seller:  'GBKP…YDLI'
+  seller: 'GBKP…YDLI'
 }
 ```
 
@@ -580,15 +580,15 @@ ClawbackClaimableBalance, InflationOp</td>
 
 ```js
 {
-  type:  'offerRemoved',
-  source:  'GBWC…DXHN',
-  owner:  'GBWC…DXHN',
-  offer:  '1',
-  asset:  [
+  type: 'offerRemoved',
+  source: 'GBWC…DXHN',
+  owner: 'GBWC…DXHN',
+  offer: '1',
+  asset: [
     'USD:GBKP…YDLI',
     'XLM'
   ],
-  flags:  1
+  flags: 1
 }
 ```
 </td>
@@ -604,10 +604,10 @@ ClawbackClaimableBalance, InflationOp</td>
 
 ```js
 {
-  type:  'inflation',
-  source:  'GBWC…DXHN',
-  asset:  'XLM',
-  amount:  '1000000000'
+  type: 'inflation',
+  source: 'GBWC…DXHN',
+  asset: 'XLM',
+  amount: '1000000000'
 }
 ```
 
@@ -624,10 +624,10 @@ ClawbackClaimableBalance, InflationOp</td>
 
 ```js
 {
-  type:  'dataEntryCreated',
-  source:  'GBWC…DXHN',
-  name:  'test',
-  value:  'dGVzdA=='
+  type: 'dataEntryCreated',
+  source: 'GBWC…DXHN',
+  name: 'test',
+  value: 'dGVzdA=='
 }
 ```
 
@@ -643,10 +643,10 @@ ClawbackClaimableBalance, InflationOp</td>
 
 ```js
 {
-  type:  'dataEntryUpdated',
-  source:  'GBWC…DXHN',
-  name:  'test',
-  value:  'dGVzVA=='
+  type: 'dataEntryUpdated',
+  source: 'GBWC…DXHN',
+  name: 'test',
+  value: 'dGVzVA=='
 }
 ```
 
@@ -662,9 +662,9 @@ ClawbackClaimableBalance, InflationOp</td>
 
 ```js
 {
-  type:  'dataEntryRemoved',
-  source:  'GBWC…DXHN',
-  name:  'test'
+  type: 'dataEntryRemoved',
+  source: 'GBWC…DXHN',
+  name: 'test'
 }
 ```
 
@@ -680,9 +680,9 @@ ClawbackClaimableBalance, InflationOp</td>
 
 ```js
 {
-  type:  'sequenceBumped',
-  source:  'GBWC…DXHN',
-  sequence:  '100'
+  type: 'sequenceBumped',
+  source: 'GBWC…DXHN',
+  sequence: '100'
 }
 ```
 
@@ -698,16 +698,16 @@ ClawbackClaimableBalance, InflationOp</td>
 
 ```js
 {
-  type:  'claimableBalanceCreated',
-  source:  'GBWC…DXHN',
-  balance:  '7aba...6f9d',
-  asset:  'XLM',
-  amount:  '100',
-  claimants:  [
+  type: 'claimableBalanceCreated',
+  source: 'GBWC…DXHN',
+  balance: '7aba...6f9d',
+  asset: 'XLM',
+  amount: '100',
+  claimants: [
     {
-      destination:  'GBKP…YDLI',
-      predicate:  {
-        absBefore:  '1671220240580'
+      destination: 'GBKP…YDLI',
+      predicate: {
+        absBefore: '1671220240580'
       }
     }
   ]
@@ -726,9 +726,9 @@ ClawbackClaimableBalance, InflationOp</td>
 
 ```js
 {
-  type:  'claimableBalanceRemoved',
-  source:  'GBWC…DXHN',
-  balance:  '7aba...6f9d'
+  type: 'claimableBalanceRemoved',
+  source: 'GBWC…DXHN',
+  balance: '7aba...6f9d'
 }
 ```
 
@@ -744,10 +744,10 @@ ClawbackClaimableBalance, InflationOp</td>
 
 ```js
 {
-  type:  'accountSponsorshipCreated',
-  source:  'GBWC…DXHN',
-  sponsor:  'GBWC…DXHN',
-  account:  'GBKP…YDLI'
+  type: 'accountSponsorshipCreated',
+  source: 'GBWC…DXHN',
+  sponsor: 'GBWC…DXHN',
+  account: 'GBKP…YDLI'
 }
 ```
 
@@ -763,11 +763,11 @@ ClawbackClaimableBalance, InflationOp</td>
 
 ```js
 {
-  type:  'accountSponsorshipUpdated',
-  source:  'GBWC…DXHN',
-  sponsor:  'GDNP…CMXH',
-  prevSponsor:  'GBWC…DXHN',
-  account:  'GBKP…YDLI'
+  type: 'accountSponsorshipUpdated',
+  source: 'GBWC…DXHN',
+  sponsor: 'GDNP…CMXH',
+  prevSponsor: 'GBWC…DXHN',
+  account: 'GBKP…YDLI'
 }
 ```
 
@@ -783,10 +783,10 @@ ClawbackClaimableBalance, InflationOp</td>
 
 ```js
 {
-  type:  'accountSponsorshipRemoved',
-  source:  'GBWC…DXHN',
-  prevSponsor:  'GBWC…DXHN',
-  account:  'GBKP…YDLI'
+  type: 'accountSponsorshipRemoved',
+  source: 'GBWC…DXHN',
+  prevSponsor: 'GBWC…DXHN',
+  account: 'GBKP…YDLI'
 }
 ```
 
@@ -802,11 +802,11 @@ ClawbackClaimableBalance, InflationOp</td>
 
 ```js
 {
-  type:  'trustlineSponsorshipCreated',
-  source:  'GBWC…DXHN',
-  sponsor:  'GBWC…DXHN',
-  account:  'GBKP…YDLI',
-  asset:  'USD:GBKP…YDLI'
+  type: 'trustlineSponsorshipCreated',
+  source: 'GBWC…DXHN',
+  sponsor: 'GBWC…DXHN',
+  account: 'GBKP…YDLI',
+  asset: 'USD:GBKP…YDLI'
 }
 ```
 
@@ -822,12 +822,12 @@ ClawbackClaimableBalance, InflationOp</td>
 
 ```js
 {
-  type:  'trustlineSponsorshipUpdated',
-  source:  'GBWC…DXHN',
-  sponsor:  'GDNP…CMXH',
-  prevSponsor:  'GBWC…DXHN',
-  account:  'GBKP…YDLI',
-  asset:  'USD:GBKP…YDLI'
+  type: 'trustlineSponsorshipUpdated',
+  source: 'GBWC…DXHN',
+  sponsor: 'GDNP…CMXH',
+  prevSponsor: 'GBWC…DXHN',
+  account: 'GBKP…YDLI',
+  asset: 'USD:GBKP…YDLI'
 }
 ```
 
@@ -843,11 +843,11 @@ ClawbackClaimableBalance, InflationOp</td>
 
 ```js
 {
-  type:  'trustlineSponsorshipRemoved',
-  source:  'GBWC…DXHN',
-  prevSponsor:  'GBWC…DXHN',
-  account:  'GBKP…YDLI',
-  asset:  'USD:GBKP…YDLI'
+  type: 'trustlineSponsorshipRemoved',
+  source: 'GBWC…DXHN',
+  prevSponsor: 'GBWC…DXHN',
+  account: 'GBKP…YDLI',
+  asset: 'USD:GBKP…YDLI'
 }
 ```
 
@@ -863,11 +863,11 @@ ClawbackClaimableBalance, InflationOp</td>
 
 ```js
 {
-  type:  'liquidityPoolStakeSponsorshipCreated',
-  source:  'GBWC…DXHN',
-  sponsor:  'GBWC…DXHN',
-  account:  'GBKP…YDLI',
-  pool:  '7aba...6f9d'
+  type: 'liquidityPoolStakeSponsorshipCreated',
+  source: 'GBWC…DXHN',
+  sponsor: 'GBWC…DXHN',
+  account: 'GBKP…YDLI',
+  pool: '7aba...6f9d'
 }
 ```
 
@@ -883,12 +883,12 @@ ClawbackClaimableBalance, InflationOp</td>
 
 ```js
 {
-  type:  'liquidityPoolStakeSponsorshipUpdated',
-  source:  'GBWC…DXHN',
-  sponsor:  'GDNP…CMXH',
-  prevSponsor:  'GBWC…DXHN',
-  account:  'GBKP…YDLI',
-  pool:  '7aba...6f9d'
+  type: 'liquidityPoolStakeSponsorshipUpdated',
+  source: 'GBWC…DXHN',
+  sponsor: 'GDNP…CMXH',
+  prevSponsor: 'GBWC…DXHN',
+  account: 'GBKP…YDLI',
+  pool: '7aba...6f9d'
 }
 ```
 
@@ -904,11 +904,11 @@ ClawbackClaimableBalance, InflationOp</td>
 
 ```js
 {
-  type:  'liquidityPoolStakeSponsorshipRemoved',
-  source:  'GBWC…DXHN',
-  prevSponsor:  'GBWC…DXHN',
-  account:  'GBKP…YDLI',
-  pool:  '7aba...6f9d'
+  type: 'liquidityPoolStakeSponsorshipRemoved',
+  source: 'GBWC…DXHN',
+  prevSponsor: 'GBWC…DXHN',
+  account: 'GBKP…YDLI',
+  pool: '7aba...6f9d'
 }
 ```
 
@@ -924,11 +924,11 @@ ClawbackClaimableBalance, InflationOp</td>
 
 ```js
 {
-  type:  'offerSponsorshipCreated',
-  source:  'GBWC…DXHN',
-  sponsor:  'GBWC…DXHN',
-  account:  'GBKP…YDLI',
-  offer:  '100'
+  type: 'offerSponsorshipCreated',
+  source: 'GBWC…DXHN',
+  sponsor: 'GBWC…DXHN',
+  account: 'GBKP…YDLI',
+  offer: '100'
 }
 ```
 
@@ -944,12 +944,12 @@ ClawbackClaimableBalance, InflationOp</td>
 
 ```js
 {
-  type:  'offerSponsorshipUpdated',
-  source:  'GBWC…DXHN',
-  sponsor:  'GDNP…CMXH',
-  prevSponsor:  'GBWC…DXHN',
-  account:  'GBKP…YDLI',
-  offer:  '100'
+  type: 'offerSponsorshipUpdated',
+  source: 'GBWC…DXHN',
+  sponsor: 'GDNP…CMXH',
+  prevSponsor: 'GBWC…DXHN',
+  account: 'GBKP…YDLI',
+  offer: '100'
 }
 ```
 
@@ -965,11 +965,11 @@ ClawbackClaimableBalance, InflationOp</td>
 
 ```js
 {
-  type:  'offerSponsorshipRemoved',
-  source:  'GBWC…DXHN',
-  prevSponsor:  'GBWC…DXHN',
-  account:  'GBKP…YDLI',
-  offer:  '100'
+  type: 'offerSponsorshipRemoved',
+  source: 'GBWC…DXHN',
+  prevSponsor: 'GBWC…DXHN',
+  account: 'GBKP…YDLI',
+  offer: '100'
 }
 ```
 
@@ -985,11 +985,11 @@ ClawbackClaimableBalance, InflationOp</td>
 
 ```js
 {
-  type:  'dataSponsorshipCreated',
-  source:  'GBWC…DXHN',
-  sponsor:  'GBWC…DXHN',
-  account:  'GBKP…YDLI',
-  name:  'name'
+  type: 'dataSponsorshipCreated',
+  source: 'GBWC…DXHN',
+  sponsor: 'GBWC…DXHN',
+  account: 'GBKP…YDLI',
+  name: 'name'
 }
 ```
 
@@ -1005,12 +1005,12 @@ ClawbackClaimableBalance, InflationOp</td>
 
 ```js
 {
-  type:  'dataSponsorshipUpdated',
-  source:  'GBWC…DXHN',
-  sponsor:  'GDNP…CMXH',
-  prevSponsor:  'GBWC…DXHN',
-  account:  'GBKP…YDLI',
-  name:  'name'
+  type: 'dataSponsorshipUpdated',
+  source: 'GBWC…DXHN',
+  sponsor: 'GDNP…CMXH',
+  prevSponsor: 'GBWC…DXHN',
+  account: 'GBKP…YDLI',
+  name: 'name'
 }
 ```
 
@@ -1026,11 +1026,11 @@ ClawbackClaimableBalance, InflationOp</td>
 
 ```js
 {
-  type:  'dataSponsorshipRemoved',
-  source:  'GBWC…DXHN',
-  prevSponsor:  'GBWC…DXHN',
-  account:  'GBKP…YDLI',
-  name:  'name'
+  type: 'dataSponsorshipRemoved',
+  source: 'GBWC…DXHN',
+  prevSponsor: 'GBWC…DXHN',
+  account: 'GBKP…YDLI',
+  name: 'name'
 }
 ```
 
@@ -1046,10 +1046,10 @@ ClawbackClaimableBalance, InflationOp</td>
 
 ```js
 {
-  type:  'claimableBalanceSponsorshipCreated',
-  source:  'GBWC…DXHN',
-  sponsor:  'GBWC…DXHN',
-  balance:  '7aba…6f9d'
+  type: 'claimableBalanceSponsorshipCreated',
+  source: 'GBWC…DXHN',
+  sponsor: 'GBWC…DXHN',
+  balance: '7aba…6f9d'
 }
 ```
 
@@ -1065,11 +1065,11 @@ ClawbackClaimableBalance, InflationOp</td>
 
 ```js
 {
-  type:  'claimableBalanceSponsorshipUpdated',
-  source:  'GBWC…DXHN',
-  sponsor:  'GDNP…CMXH',
-  prevSponsor:  'GBWC…DXHN',
-  balance:  '7aba…6f9d'
+  type: 'claimableBalanceSponsorshipUpdated',
+  source: 'GBWC…DXHN',
+  sponsor: 'GDNP…CMXH',
+  prevSponsor: 'GBWC…DXHN',
+  balance: '7aba…6f9d'
 }
 ```
 
@@ -1085,10 +1085,10 @@ ClawbackClaimableBalance, InflationOp</td>
 
 ```js
 {
-  type:  'claimableBalanceSponsorshipRemoved',
-  source:  'GBWC…DXHN',
-  prevSponsor:  'GBWC…DXHN',
-  balance:  '7aba…6f9d'
+  type: 'claimableBalanceSponsorshipRemoved',
+  source: 'GBWC…DXHN',
+  prevSponsor: 'GBWC…DXHN',
+  balance: '7aba…6f9d'
 }
 ```
 
@@ -1104,11 +1104,11 @@ ClawbackClaimableBalance, InflationOp</td>
 
 ```js
 {
-  type:  'signerSponsorshipCreated',
-  source:  'GBWC…DXHN',
-  sponsor:  'GBWC…DXHN',
-  signer:  'GALF…CR2V'
-  account:  'GBKP…YDLI'
+  type: 'signerSponsorshipCreated',
+  source: 'GBWC…DXHN',
+  sponsor: 'GBWC…DXHN',
+  signer: 'GALF…CR2V',
+  account: 'GBKP…YDLI'
 }
 ```
 
@@ -1124,12 +1124,12 @@ ClawbackClaimableBalance, InflationOp</td>
 
 ```js 
 {
-  type:  'signerSponsorshipUpdated',
-  source:  'GBWC…DXHN',
-  sponsor:  'GDNP…CMXH',
-  prevSponsor:  'GBWC…DXHN',
-  signer:  'GALF…CR2V'
-  account:  'GBKP…YDLI'
+  type: 'signerSponsorshipUpdated',
+  source: 'GBWC…DXHN',
+  sponsor: 'GDNP…CMXH',
+  prevSponsor: 'GBWC…DXHN',
+  signer: 'GALF…CR2V',
+  account: 'GBKP…YDLI'
 }
 ```
 
@@ -1145,11 +1145,11 @@ ClawbackClaimableBalance, InflationOp</td>
 
 ```js
 {
-  type:  'signerSponsorshipRemoved',
-  source:  'GBWC…DXHN',
-  prevSponsor:  'GBWC…DXHN',
-  signer:  'GALF…CR2V'
-  account:  'GBKP…YDLI'
+  type: 'signerSponsorshipRemoved',
+  source: 'GBWC…DXHN',
+  prevSponsor: 'GBWC…DXHN',
+  signer: 'GALF…CR2V',
+  account: 'GBKP…YDLI'
 }
 ```
 
@@ -1165,9 +1165,9 @@ ClawbackClaimableBalance, InflationOp</td>
 
 ```js
 {
-  type:  'liquidityPoolSponsorshipCreated',
-  source:  'GBWC…DXHN',
-  sponsor:  'GBWC…DXHN'
+  type: 'liquidityPoolSponsorshipCreated',
+  source: 'GBWC…DXHN',
+  sponsor: 'GBWC…DXHN'
 }
 ```
 
@@ -1183,10 +1183,10 @@ ClawbackClaimableBalance, InflationOp</td>
 
 ```js
 {
-  type:  'liquidityPoolSponsorshipUpdated',
-  source:  'GBWC…DXHN',
-  sponsor:  'GDNP…CMXH',
-  prevSponsor:  'GBWC…DXHN'
+  type: 'liquidityPoolSponsorshipUpdated',
+  source: 'GBWC…DXHN',
+  sponsor: 'GDNP…CMXH',
+  prevSponsor: 'GBWC…DXHN'
 }
 ```
 
@@ -1202,9 +1202,9 @@ ClawbackClaimableBalance, InflationOp</td>
 
 ```js
 {
-  type:  'liquidityPoolSponsorshipRemoved',
-  source:  'GBWC…DXHN',
-  prevSponsor:  'GBWC…DXHN'
+  type: 'liquidityPoolSponsorshipRemoved',
+  source: 'GBWC…DXHN',
+  prevSponsor: 'GBWC…DXHN'
 }
 ```
 
