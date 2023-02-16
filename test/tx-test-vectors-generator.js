@@ -827,11 +827,15 @@ async function generateTestVectors({
                         .createAccount({destination: accountB.address, startingBalance: '100'}),
                     Operation
                         .setOptions({
+                            clearFlags: AuthClawbackEnabledFlag | AuthRevocableFlag
+                        }),
+                    Operation
+                        .setOptions({
                             setFlags: AuthClawbackEnabledFlag | AuthRevocableFlag
                         }),
                     Operation
                         .bumpSequence({
-                            bumpTo: Date.now().toString(),
+                            bumpTo: '9223372036854775707', //int64 max value - 100 (to avoid bad_sequence error)
                             source: accountB.address
                         })
                     //Todo: this operation is not supported by horizon
