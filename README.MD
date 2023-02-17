@@ -280,7 +280,7 @@ ClawbackClaimableBalance, InflationOp</td>
   source: 'GBWC…DXHN',
   asset: 'USD-GBKP…YDLI-1',
   limit: '100',
-  authorized: true
+  flags: 1
 }
 ```
 
@@ -300,7 +300,7 @@ ClawbackClaimableBalance, InflationOp</td>
   source: 'GBWC…DXHN',
   asset: 'USD-GBKP…YDLI-1',
   limit: '200',
-  authorized: true
+  flags: 5
 }
 ```
 
@@ -318,7 +318,8 @@ ClawbackClaimableBalance, InflationOp</td>
 {
   type: 'trustlineRemoved',
   source: 'GBWC…DXHN',
-  asset: 'USD-GBKP…YDLI-1'
+  asset: 'USD-GBKP…YDLI-1',
+  flags: 1
 }
 ```
 

@@ -290,11 +290,12 @@ function processSetOptionsEffects({operation, changes}) {
 
 function processChangeTrustEffects({operation, changes}) {
     const trustChange = changes.find(ch => ch.type === 'trustline' || ch.type === 'liquidityPoolStake')
-    const trustedAsset = operation.line.fee ? (trustChange.before || trustChange.after).pool : xdrParseAsset(operation.line)
+    const trustedAsset = operation.line.fee ? (trustChange.after || trustChange.before).pool : xdrParseAsset(operation.line)
     const trustEffect = {
         type: '',
         source: operation.source,
-        asset: trustedAsset
+        asset: trustedAsset,
+        flags: (trustChange.after || trustChange.before).flags
     }
 
     const effects = [trustEffect]
@@ -321,9 +322,6 @@ function processChangeTrustEffects({operation, changes}) {
                     shares: '0'
                 })
             }
-            trustEffect.authorized = true
-        } else {
-            trustEffect.authorized = (trustChange.after.flags & 1) === 1
         }
     }
     return effects
