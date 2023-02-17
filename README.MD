@@ -48,8 +48,8 @@ console.log(res.operations[0].effects)
   type: 'feeCharged',
   source: 'GBKP…YDLI',
   asset: 'XLM',
-  feeBid: '10000',
-  charged: '400'
+  feeBid: '0.0010000',
+  charged: '0.0000100'
 }
 ```
 </td>
@@ -82,6 +82,7 @@ console.log(res.operations[0].effects)
 ```js
 {
   type: 'accountRemoved',
+  source: 'GBKP…YDLI',
   account: 'GBWC…DXHN'
 }
 ```
@@ -101,7 +102,7 @@ PathPaymentStrictSendOp, CreateClaimableBalanceOp, ClawbackOp</td>
   type: 'accountDebited',
   source: 'GBKP…YDLI',
   asset: 'XLM',
-  amount: '100.0000000'
+  amount: '100'
 }
 ```
 </td>
@@ -121,7 +122,7 @@ ClawbackClaimableBalance, InflationOp</td>
   type: 'accountCredited',
   source: 'GBWC…DXHN',
   asset: 'XLM',
-  amount: '100.0000000'
+  amount: '100'
 }
 ```
 </td>
@@ -228,7 +229,7 @@ ClawbackClaimableBalance, InflationOp</td>
 
 ```js 
 {
-  type: 'accountSignerCreated',
+  type: 'accountSignerUpdated',
   source: 'GBWC…DXHN',
   signer: 'GBKP…YDLI',
   weight: 2,
@@ -256,6 +257,7 @@ ClawbackClaimableBalance, InflationOp</td>
   source: 'GBWC…DXHN',
   weight: 0,
   masterWeight: 1,
+  signer: 'GBKP…YDLI',
   signers: [
     {key: 'GBWC…DXHN', weight: 1}
   ]
@@ -276,8 +278,8 @@ ClawbackClaimableBalance, InflationOp</td>
 {
   type: 'trustlineCreated',
   source: 'GBWC…DXHN',
-  asset: 'USD:GBKP…YDLI',
-  limit: '100.0000000'
+  asset: 'USD-GBKP…YDLI-1',
+  limit: '100'
 }
 ```
 
@@ -295,8 +297,8 @@ ClawbackClaimableBalance, InflationOp</td>
 {
   type: 'trustlineUpdated',
   source: 'GBWC…DXHN',
-  asset: 'USD:GBKP…YDLI',
-  limit: '200.0000000'
+  asset: 'USD-GBKP…YDLI-1',
+  limit: '200'
 }
 ```
 
@@ -314,7 +316,7 @@ ClawbackClaimableBalance, InflationOp</td>
 {
   type: 'trustlineRemoved',
   source: 'GBWC…DXHN',
-  asset: 'USD:GBKP…YDLI'
+  asset: 'USD-GBKP…YDLI-1'
 }
 ```
 
@@ -332,14 +334,14 @@ ClawbackClaimableBalance, InflationOp</td>
 {
   type: 'liquidityPoolCreated',
   source: 'GBWC…DXHN',
-  pool: '52a8...76f8',
+  pool: '52a8…76f8',
   reserves: [
     {
       asset: 'XLM',
       amount: '0'
     },
     {
-      asset: 'USD:GBKP…YDLI',
+      asset: 'USD-GBKP…YDLI-1',
       amount: '0'
     }
   ],
@@ -361,14 +363,14 @@ ClawbackClaimableBalance, InflationOp</td>
 {
   type: 'liquidityPoolUpdated',
   source: 'GBWC…DXHN',
-  pool: '52a8...76f8',
+  pool: '52a8…76f8',
   reserves: [
     {
       asset: 'XLM',
       amount: '1000'
     },
     {
-      asset: 'USD:GBKP…YDLI',
+      asset: 'USD-GBKP…YDLI-1',
       amount: '1000'
     }
   ],
@@ -390,14 +392,14 @@ ClawbackClaimableBalance, InflationOp</td>
 {
   type: 'liquidityPoolDeposited',
   source: 'GBWC…DXHN',
-  pool: '52a8...76f8',
-  reserves: [
+  pool: '52a8…76f8',
+  assets: [
     {
       asset: 'XLM',
       amount: '1000'
     },
     {
-      asset: 'USD:GBKP…YDLI',
+      asset: 'USD-GBKP…YDLI-1',
       amount: '1000'
     }
   ],
@@ -419,14 +421,14 @@ ClawbackClaimableBalance, InflationOp</td>
 {
   type: 'liquidityPoolWithdrew',
   source: 'GBWC…DXHN',
-  pool: '52a8...76f8',
-  reserves: [
+  pool: '52a8…76f8',
+  assets: [
     {
       asset: 'XLM',
       amount: '1000'
     },
     {
-      asset: 'USD:GBKP…YDLI',
+      asset: 'USD-GBKP…YDLI-1',
       amount: '1000'
     }
   ],
@@ -448,7 +450,7 @@ ClawbackClaimableBalance, InflationOp</td>
 {
   type: 'liquidityPoolRemoved',
   source: 'GBWC…DXHN',
-  pool: '52a8...76f8'
+  pool: '52a8…76f8'
 }
 ```
 
@@ -467,8 +469,8 @@ ClawbackClaimableBalance, InflationOp</td>
   type: 'trustlineAuthorizationUpdated',
   source: 'GBWC…DXHN',
   trustor: 'GBKP…YDLI',
-  asset: 'USD:GBWC…DXHN',
-  authorize: 5
+  asset: 'USD-GBWC…DXHN-1',
+  flags: 5
 }
 ```
 
@@ -487,8 +489,8 @@ ClawbackClaimableBalance, InflationOp</td>
   type: 'trustlineDeauthorized',
   source: 'GBWC…DXHN',
   trustor: 'GBKP…YDLI',
-  asset: 'USD:GBWC…DXHN',
-  authorize: 4
+  asset: 'USD-GBWC…DXHN-1',
+  flags: 4
 }
 ```
 
@@ -510,7 +512,7 @@ ClawbackClaimableBalance, InflationOp</td>
   offer: '1',
   amount: '100',
   asset: [
-    'USD:GBKP…YDLI',
+    'USD-GBKP…YDLI-1',
     'XLM'
   ],
   price: 1,
@@ -536,7 +538,7 @@ ClawbackClaimableBalance, InflationOp</td>
   offer: '1',
   amount: '90',
   asset: [
-    'USD:GBKP…YDLI',
+    'USD-GBKP…YDLI-1',
     'XLM'
   ],
   price: 1,
@@ -561,7 +563,7 @@ ClawbackClaimableBalance, InflationOp</td>
   offer: '1',
   amount: ['10', '10'],
   asset: [
-    'USD:GBKP…YDLI',
+    'USD-GBKP…YDLI-1',
     'XLM'
   ],
   seller: 'GBKP…YDLI'
@@ -585,7 +587,7 @@ ClawbackClaimableBalance, InflationOp</td>
   owner: 'GBWC…DXHN',
   offer: '1',
   asset: [
-    'USD:GBKP…YDLI',
+    'USD-GBKP…YDLI-1',
     'XLM'
   ],
   flags: 1
@@ -700,7 +702,7 @@ ClawbackClaimableBalance, InflationOp</td>
 {
   type: 'claimableBalanceCreated',
   source: 'GBWC…DXHN',
-  balance: '7aba...6f9d',
+  balance: '7aba…6f9d',
   asset: 'XLM',
   amount: '100',
   claimants: [
@@ -728,7 +730,7 @@ ClawbackClaimableBalance, InflationOp</td>
 {
   type: 'claimableBalanceRemoved',
   source: 'GBWC…DXHN',
-  balance: '7aba...6f9d'
+  balance: '7aba…6f9d'
 }
 ```
 
@@ -806,7 +808,7 @@ ClawbackClaimableBalance, InflationOp</td>
   source: 'GBWC…DXHN',
   sponsor: 'GBWC…DXHN',
   account: 'GBKP…YDLI',
-  asset: 'USD:GBKP…YDLI'
+  asset: 'USD-GBKP…YDLI-1'
 }
 ```
 
@@ -827,7 +829,7 @@ ClawbackClaimableBalance, InflationOp</td>
   sponsor: 'GDNP…CMXH',
   prevSponsor: 'GBWC…DXHN',
   account: 'GBKP…YDLI',
-  asset: 'USD:GBKP…YDLI'
+  asset: 'USD-GBKP…YDLI-1'
 }
 ```
 
@@ -847,7 +849,7 @@ ClawbackClaimableBalance, InflationOp</td>
   source: 'GBWC…DXHN',
   prevSponsor: 'GBWC…DXHN',
   account: 'GBKP…YDLI',
-  asset: 'USD:GBKP…YDLI'
+  asset: 'USD-GBKP…YDLI-1'
 }
 ```
 
@@ -867,7 +869,7 @@ ClawbackClaimableBalance, InflationOp</td>
   source: 'GBWC…DXHN',
   sponsor: 'GBWC…DXHN',
   account: 'GBKP…YDLI',
-  pool: '7aba...6f9d'
+  pool: '7aba…6f9d'
 }
 ```
 
@@ -888,7 +890,7 @@ ClawbackClaimableBalance, InflationOp</td>
   sponsor: 'GDNP…CMXH',
   prevSponsor: 'GBWC…DXHN',
   account: 'GBKP…YDLI',
-  pool: '7aba...6f9d'
+  pool: '7aba…6f9d'
 }
 ```
 
@@ -908,7 +910,7 @@ ClawbackClaimableBalance, InflationOp</td>
   source: 'GBWC…DXHN',
   prevSponsor: 'GBWC…DXHN',
   account: 'GBKP…YDLI',
-  pool: '7aba...6f9d'
+  pool: '7aba…6f9d'
 }
 ```
 
