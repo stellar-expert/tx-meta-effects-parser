@@ -428,14 +428,14 @@ ClawbackClaimableBalance, InflationOp</td>
   assets: [
     {
       asset: 'XLM',
-      amount: '1000'
+      amount: '500'
     },
     {
       asset: 'USD-GBKP…YDLI-1',
-      amount: '1000'
+      amount: '500'
     }
   ],
-  shares: '10000000000'
+  shares: '5000000000'
 }
 ```
 
