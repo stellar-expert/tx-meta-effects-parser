@@ -253,7 +253,8 @@
             "type": "trustlineCreated",
             "source": "GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI",
             "asset": "USD-GBWCS2C42PQYMDQVBIVUOWDPSM2T3BRJWG2ENQJQU3N75J4CSKJ6DXHN-1",
-            "limit": "922337203685.4775807"
+            "limit": "922337203685.4775807",
+            "authorized": true
           }
         ],
         [
@@ -306,7 +307,8 @@
             "type": "trustlineCreated",
             "source": "GBWCS2C42PQYMDQVBIVUOWDPSM2T3BRJWG2ENQJQU3N75J4CSKJ6DXHN",
             "asset": "USD-GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI-1",
-            "limit": "100"
+            "limit": "100",
+            "authorized": true
           }
         ],
         [
@@ -314,7 +316,8 @@
             "type": "trustlineUpdated",
             "source": "GBWCS2C42PQYMDQVBIVUOWDPSM2T3BRJWG2ENQJQU3N75J4CSKJ6DXHN",
             "asset": "USD-GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI-1",
-            "limit": "200"
+            "limit": "200",
+            "authorized": true
           }
         ],
         [
@@ -394,7 +397,8 @@
             "type": "trustlineCreated",
             "source": "GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI",
             "asset": "52a8ac14451ebfa8418271b75b64fe657426d38096e5ad98a72786b4f3f6d6f8",
-            "limit": "100000"
+            "limit": "100000",
+            "authorized": true
           },
           {
             "type": "liquidityPoolCreated",
@@ -721,7 +725,8 @@
             "type": "trustlineCreated",
             "source": "GBWCS2C42PQYMDQVBIVUOWDPSM2T3BRJWG2ENQJQU3N75J4CSKJ6DXHN",
             "asset": "USD-GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI-1",
-            "limit": "922337203685.4775807"
+            "limit": "922337203685.4775807",
+            "authorized": true
           }
         ],
         [
@@ -767,7 +772,8 @@
             "type": "trustlineCreated",
             "source": "GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI",
             "asset": "3e5988f56d66c7d5946b32f844ae3cee0ff72a5d822809b9d5027cc1b897a473",
-            "limit": "10000000"
+            "limit": "10000000",
+            "authorized": true
           },
           {
             "type": "liquidityPoolCreated",
@@ -991,7 +997,8 @@
             "type": "trustlineCreated",
             "source": "GDNPPDR6QACI25Q3D4LIRTDZFDGWWPUP55XMU3ERR5C7A3LRGIXPCMXH",
             "asset": "USD-GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI-1",
-            "limit": "10000000"
+            "limit": "10000000",
+            "authorized": true
           },
           {
             "type": "trustlineSponsorshipCreated",
@@ -1072,7 +1079,8 @@
             "type": "trustlineCreated",
             "source": "GDNPPDR6QACI25Q3D4LIRTDZFDGWWPUP55XMU3ERR5C7A3LRGIXPCMXH",
             "asset": "e275415f9a73dd3d67207777469de4104875604a13d6b19d4cd4733f4f1695f2",
-            "limit": "100000"
+            "limit": "100000",
+            "authorized": true
           },
           {
             "type": "liquidityPoolCreated",

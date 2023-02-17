@@ -7,71 +7,71 @@ const {xdrParseAsset, xdrParseClaimantPredicate} = require('./tx-xdr-parser-util
  * @readonly
  */
 const effectTypes = {
-    feeCharged: "feeCharged",
-    accountCreated: "accountCreated",
-    accountDebited: "accountDebited",
-    accountCredited: "accountCredited",
-    accountRemoved: "accountRemoved",
-    accountHomeDomainUpdated: "accountHomeDomainUpdated",
-    accountThresholdsUpdated: "accountThresholdsUpdated",
-    accountFlagsUpdated: "accountFlagsUpdated",
-    accountInflationDestinationUpdated: "accountInflationDestinationUpdated",
-    accountSignerUpdated: "accountSignerUpdated",
-    accountSignerRemoved: "accountSignerRemoved",
-    accountSignerCreated: "accountSignerCreated",
-    trustlineRemoved: "trustlineRemoved",
-    liquidityPoolRemoved: "liquidityPoolRemoved",
-    trustlineCreated: "trustlineCreated",
-    trustlineUpdated: "trustlineUpdated",
-    liquidityPoolCreated: "liquidityPoolCreated",
-    trustlineAuthorizationUpdated: "trustlineAuthorizationUpdated",
-    trustlineDeauthorized: "trustlineDeauthorized",
-    trade: "trade",
-    liquidityPoolUpdated: "liquidityPoolUpdated",
-    offerCreated: "offerCreated",
-    offerUpdated: "offerUpdated",
-    offerRemoved: "offerRemoved",
-    inflation: "inflation",
-    dataEntryCreated: "dataEntryCreated",
-    dataEntryUpdated: "dataEntryUpdated",
-    dataEntryRemoved: "dataEntryRemoved",
-    sequenceBumped: "sequenceBumped",
-    claimableBalanceCreated: "claimableBalanceCreated",
-    claimableBalanceRemoved: "claimableBalanceRemoved",
-    liquidityPoolDeposited: "liquidityPoolDeposited",
-    liquidityPoolWithdrew: "liquidityPoolWithdrew",
+    feeCharged: 'feeCharged',
+    accountCreated: 'accountCreated',
+    accountDebited: 'accountDebited',
+    accountCredited: 'accountCredited',
+    accountRemoved: 'accountRemoved',
+    accountHomeDomainUpdated: 'accountHomeDomainUpdated',
+    accountThresholdsUpdated: 'accountThresholdsUpdated',
+    accountFlagsUpdated: 'accountFlagsUpdated',
+    accountInflationDestinationUpdated: 'accountInflationDestinationUpdated',
+    accountSignerUpdated: 'accountSignerUpdated',
+    accountSignerRemoved: 'accountSignerRemoved',
+    accountSignerCreated: 'accountSignerCreated',
+    trustlineRemoved: 'trustlineRemoved',
+    liquidityPoolRemoved: 'liquidityPoolRemoved',
+    trustlineCreated: 'trustlineCreated',
+    trustlineUpdated: 'trustlineUpdated',
+    liquidityPoolCreated: 'liquidityPoolCreated',
+    trustlineAuthorizationUpdated: 'trustlineAuthorizationUpdated',
+    trustlineDeauthorized: 'trustlineDeauthorized',
+    trade: 'trade',
+    liquidityPoolUpdated: 'liquidityPoolUpdated',
+    offerCreated: 'offerCreated',
+    offerUpdated: 'offerUpdated',
+    offerRemoved: 'offerRemoved',
+    inflation: 'inflation',
+    dataEntryCreated: 'dataEntryCreated',
+    dataEntryUpdated: 'dataEntryUpdated',
+    dataEntryRemoved: 'dataEntryRemoved',
+    sequenceBumped: 'sequenceBumped',
+    claimableBalanceCreated: 'claimableBalanceCreated',
+    claimableBalanceRemoved: 'claimableBalanceRemoved',
+    liquidityPoolDeposited: 'liquidityPoolDeposited',
+    liquidityPoolWithdrew: 'liquidityPoolWithdrew',
 
-    accountSponsorshipCreated: "accountSponsorshipCreated",
-    accountSponsorshipUpdated: "accountSponsorshipUpdated",
-    accountSponsorshipRemoved: "accountSponsorshipRemoved",
+    accountSponsorshipCreated: 'accountSponsorshipCreated',
+    accountSponsorshipUpdated: 'accountSponsorshipUpdated',
+    accountSponsorshipRemoved: 'accountSponsorshipRemoved',
 
-    trustlineSponsorshipCreated: "trustlineSponsorshipCreated",
-    trustlineSponsorshipUpdated: "trustlineSponsorshipUpdated",
-    trustlineSponsorshipRemoved: "trustlineSponsorshipRemoved",
+    trustlineSponsorshipCreated: 'trustlineSponsorshipCreated',
+    trustlineSponsorshipUpdated: 'trustlineSponsorshipUpdated',
+    trustlineSponsorshipRemoved: 'trustlineSponsorshipRemoved',
 
-    liquidityPoolStakeSponsorshipCreated: "liquidityPoolStakeSponsorshipCreated",
-    liquidityPoolStakeSponsorshipUpdated: "liquidityPoolStakeSponsorshipUpdated",
-    liquidityPoolStakeSponsorshipRemoved: "liquidityPoolStakeSponsorshipRemoved",
+    liquidityPoolStakeSponsorshipCreated: 'liquidityPoolStakeSponsorshipCreated',
+    liquidityPoolStakeSponsorshipUpdated: 'liquidityPoolStakeSponsorshipUpdated',
+    liquidityPoolStakeSponsorshipRemoved: 'liquidityPoolStakeSponsorshipRemoved',
 
-    offerSponsorshipCreated: "offerSponsorshipCreated",
-    offerSponsorshipUpdated: "offerSponsorshipUpdated",
-    offerSponsorshipRemoved: "offerSponsorshipRemoved",
+    offerSponsorshipCreated: 'offerSponsorshipCreated',
+    offerSponsorshipUpdated: 'offerSponsorshipUpdated',
+    offerSponsorshipRemoved: 'offerSponsorshipRemoved',
 
-    dataSponsorshipCreated: "dataSponsorshipCreated",
-    dataSponsorshipUpdated: "dataSponsorshipUpdated",
-    dataSponsorshipRemoved: "dataSponsorshipRemoved",
+    dataSponsorshipCreated: 'dataSponsorshipCreated',
+    dataSponsorshipUpdated: 'dataSponsorshipUpdated',
+    dataSponsorshipRemoved: 'dataSponsorshipRemoved',
 
-    claimableBalanceSponsorshipCreated: "claimableBalanceSponsorshipCreated",
-    claimableBalanceSponsorshipUpdated: "claimableBalanceSponsorshipUpdated",
-    claimableBalanceSponsorshipRemoved: "claimableBalanceSponsorshipRemoved",
+    claimableBalanceSponsorshipCreated: 'claimableBalanceSponsorshipCreated',
+    claimableBalanceSponsorshipUpdated: 'claimableBalanceSponsorshipUpdated',
+    claimableBalanceSponsorshipRemoved: 'claimableBalanceSponsorshipRemoved',
 
-    liquidityPoolSponsorshipCreated: "liquidityPoolSponsorshipCreated",
-    liquidityPoolSponsorshipUpdated: "liquidityPoolSponsorshipUpdated",
-    liquidityPoolSponsorshipRemoved: "liquidityPoolSponsorshipRemoved",
+    liquidityPoolSponsorshipCreated: 'liquidityPoolSponsorshipCreated',
+    liquidityPoolSponsorshipUpdated: 'liquidityPoolSponsorshipUpdated',
+    liquidityPoolSponsorshipRemoved: 'liquidityPoolSponsorshipRemoved',
 
-    signerSponsorshipRemoved: "signerSponsorshipRemoved",
-    signerSponsorshipUpdated: "signerSponsorshipUpdated",
-    signerSponsorshipCreated: "signerSponsorshipCreated"
+    signerSponsorshipRemoved: 'signerSponsorshipRemoved',
+    signerSponsorshipUpdated: 'signerSponsorshipUpdated',
+    signerSponsorshipCreated: 'signerSponsorshipCreated'
 }
 
 /**
@@ -321,6 +321,9 @@ function processChangeTrustEffects({operation, changes}) {
                     shares: '0'
                 })
             }
+            trustEffect.authorized = true
+        } else {
+            trustEffect.authorized = (trustChange.after.flags & 1) === 1
         }
     }
     return effects
