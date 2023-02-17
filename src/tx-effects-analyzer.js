@@ -587,6 +587,7 @@ function processCreateClaimableBalanceEffects({operation, result}) {
         {
             type: effectTypes.claimableBalanceCreated,
             source: operation.source,
+            sponsor: operation.source,
             balance: result.balanceId,
             asset,
             amount: trimZeros(operation.amount),
@@ -600,17 +601,22 @@ function processCreateClaimableBalanceEffects({operation, result}) {
 
 function processClaimClaimableBalanceEffects({operation, changes}) {
     const {before} = changes.find(ch => ch.type === 'claimableBalance')
+    const amount = adjustPrecision(before.amount)
     return [
         {
             type: effectTypes.accountCredited,
             source: operation.source,
             asset: before.asset,
-            amount: adjustPrecision(before.amount)
+            amount
         },
         {
             type: effectTypes.claimableBalanceRemoved,
             source: operation.source,
-            balance: before.balanceId
+            sponsor: before.sponsor,
+            balance: before.balanceId,
+            asset: before.asset,
+            amount,
+            claimants: before.claimants
         }
     ]
 }
@@ -709,17 +715,22 @@ function processClawbackEffects({operation}) {
 
 function processClawbackClaimableBalanceEffects({operation, changes}) {
     const {before} = changes.find(ch => ch.type === 'claimableBalance')
+    const amount = adjustPrecision(before.amount)
     return [
         {
             type: effectTypes.accountCredited,
             source: operation.source,
             asset: before.asset,
-            amount: adjustPrecision(before.amount)
+            amount
         },
         {
             type: effectTypes.claimableBalanceRemoved,
             source: operation.source,
-            balance: before.balanceId
+            sponsor: before.sponsor,
+            balance: before.balanceId,
+            asset: before.asset,
+            amount,
+            claimants: before.claimants
         }
     ]
 }

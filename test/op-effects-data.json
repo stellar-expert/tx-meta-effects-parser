@@ -587,6 +587,7 @@
           {
             "type": "claimableBalanceCreated",
             "source": "GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI",
+            "sponsor": "GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI",
             "balance": "7abaaab818259c315c9cf2d48717c27eb9b33d7294cbc7278348f6ee5d8e6f9d",
             "asset": "XLM",
             "amount": "100",
@@ -616,6 +617,7 @@
           {
             "type": "claimableBalanceCreated",
             "source": "GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI",
+            "sponsor": "GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI",
             "balance": "582fc80a93b7b2e5021780cccf01b1610532ccd4fd5403b582d28d4559a34236",
             "asset": "USD-GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI-1",
             "amount": "100",
@@ -655,7 +657,18 @@
           {
             "type": "claimableBalanceRemoved",
             "source": "GBWCS2C42PQYMDQVBIVUOWDPSM2T3BRJWG2ENQJQU3N75J4CSKJ6DXHN",
-            "balance": "7abaaab818259c315c9cf2d48717c27eb9b33d7294cbc7278348f6ee5d8e6f9d"
+            "sponsor": "GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI",
+            "balance": "7abaaab818259c315c9cf2d48717c27eb9b33d7294cbc7278348f6ee5d8e6f9d",
+            "asset": "XLM",
+            "amount": "100",
+            "claimants": [
+              {
+                "destination": "GBWCS2C42PQYMDQVBIVUOWDPSM2T3BRJWG2ENQJQU3N75J4CSKJ6DXHN",
+                "predicate": {
+                  "absBefore": "1671220240580"
+                }
+              }
+            ]
           },
           {
             "type": "claimableBalanceSponsorshipRemoved",
@@ -674,7 +687,18 @@
           {
             "type": "claimableBalanceRemoved",
             "source": "GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI",
-            "balance": "582fc80a93b7b2e5021780cccf01b1610532ccd4fd5403b582d28d4559a34236"
+            "sponsor": "GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI",
+            "balance": "582fc80a93b7b2e5021780cccf01b1610532ccd4fd5403b582d28d4559a34236",
+            "asset": "USD-GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI-1",
+            "amount": "100",
+            "claimants": [
+              {
+                "destination": "GBWCS2C42PQYMDQVBIVUOWDPSM2T3BRJWG2ENQJQU3N75J4CSKJ6DXHN",
+                "predicate": {
+                  "absBefore": "1671220240581"
+                }
+              }
+            ]
           },
           {
             "type": "claimableBalanceSponsorshipRemoved",
@@ -1037,6 +1061,7 @@
           {
             "type": "claimableBalanceCreated",
             "source": "GDNPPDR6QACI25Q3D4LIRTDZFDGWWPUP55XMU3ERR5C7A3LRGIXPCMXH",
+            "sponsor": "GDNPPDR6QACI25Q3D4LIRTDZFDGWWPUP55XMU3ERR5C7A3LRGIXPCMXH",
             "balance": "573fa2e04c989788c696ef2987e7c9a1cc123483a1eca8c5720945f67094724b",
             "asset": "USD-GDNPPDR6QACI25Q3D4LIRTDZFDGWWPUP55XMU3ERR5C7A3LRGIXPCMXH-1",
             "amount": "10",
@@ -1291,7 +1316,18 @@
           {
             "type": "claimableBalanceRemoved",
             "source": "GDNPPDR6QACI25Q3D4LIRTDZFDGWWPUP55XMU3ERR5C7A3LRGIXPCMXH",
-            "balance": "573fa2e04c989788c696ef2987e7c9a1cc123483a1eca8c5720945f67094724b"
+            "sponsor": "GBDO5AGQ4PCURSK623QQNGSLCRKQBPOV2KQBNGBD2TM65UEEFDGYXPCB",
+            "amount": "10",
+            "asset": "USD-GDNPPDR6QACI25Q3D4LIRTDZFDGWWPUP55XMU3ERR5C7A3LRGIXPCMXH-1",
+            "balance": "573fa2e04c989788c696ef2987e7c9a1cc123483a1eca8c5720945f67094724b",
+            "claimants": [
+              {
+                "destination": "GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI",
+                "predicate": {
+                  "absBefore": "1674938425569"
+                }
+              }
+            ]
           },
           {
             "type": "claimableBalanceSponsorshipRemoved",

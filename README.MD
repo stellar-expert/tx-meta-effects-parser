@@ -705,6 +705,7 @@ ClawbackClaimableBalance, InflationOp</td>
 {
   type: 'claimableBalanceCreated',
   source: 'GBWC…DXHN',
+  sponsor: 'GBWC…DXHN',
   balance: '7aba…6f9d',
   asset: 'XLM',
   amount: '100',
@@ -732,8 +733,19 @@ ClawbackClaimableBalance, InflationOp</td>
 ```js
 {
   type: 'claimableBalanceRemoved',
-  source: 'GBWC…DXHN',
-  balance: '7aba…6f9d'
+  source: 'GBKP…YDLI',
+  sponsor: 'GBWC…DXHN',
+  balance: '7aba…6f9d',
+  asset: 'XLM',
+  amount: '100',
+  claimants: [
+    {
+      destination: 'GBKP…YDLI',
+      predicate: {
+        absBefore: '1671220240580'
+      }
+    }
+  ]
 }
 ```
 
