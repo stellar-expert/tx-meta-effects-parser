@@ -21,8 +21,7 @@
           },
           {
             "type": "accountRemoved",
-            "source": "GBWCS2C42PQYMDQVBIVUOWDPSM2T3BRJWG2ENQJQU3N75J4CSKJ6DXHN",
-            "account": "GBWCS2C42PQYMDQVBIVUOWDPSM2T3BRJWG2ENQJQU3N75J4CSKJ6DXHN"
+            "source": "GBWCS2C42PQYMDQVBIVUOWDPSM2T3BRJWG2ENQJQU3N75J4CSKJ6DXHN"
           }
         ]
       ]
@@ -321,15 +320,7 @@
             "flags": 5
           }
         ],
-        [
-          {
-            "type": "trustlineAuthorizationUpdated",
-            "source": "GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI",
-            "trustor": "GBWCS2C42PQYMDQVBIVUOWDPSM2T3BRJWG2ENQJQU3N75J4CSKJ6DXHN",
-            "asset": "USD-GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI-1",
-            "flags": 5
-          }
-        ],
+        [],
         [
           {
             "type": "accountDebited",
@@ -350,16 +341,18 @@
             "source": "GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI",
             "trustor": "GBWCS2C42PQYMDQVBIVUOWDPSM2T3BRJWG2ENQJQU3N75J4CSKJ6DXHN",
             "asset": "USD-GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI-1",
-            "flags": 6
+            "flags": 6,
+            "prevFlags": 5
           }
         ],
         [
           {
-            "type": "trustlineDeauthorized",
+            "type": "trustlineAuthorizationUpdated",
             "source": "GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI",
             "trustor": "GBWCS2C42PQYMDQVBIVUOWDPSM2T3BRJWG2ENQJQU3N75J4CSKJ6DXHN",
             "asset": "USD-GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI-1",
-            "flags": 4
+            "flags": 4,
+            "prevFlags": 6
           }
         ],
         [
@@ -760,15 +753,7 @@
             "flags": 5
           }
         ],
-        [
-          {
-            "type": "trustlineAuthorizationUpdated",
-            "source": "GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI",
-            "trustor": "GBWCS2C42PQYMDQVBIVUOWDPSM2T3BRJWG2ENQJQU3N75J4CSKJ6DXHN",
-            "asset": "USD-GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI-1",
-            "flags": 5
-          }
-        ],
+        [],
         [
           {
             "type": "trade",
@@ -1423,8 +1408,7 @@
         [
           {
             "type": "accountRemoved",
-            "source": "GDNPPDR6QACI25Q3D4LIRTDZFDGWWPUP55XMU3ERR5C7A3LRGIXPCMXH",
-            "account": "GDNPPDR6QACI25Q3D4LIRTDZFDGWWPUP55XMU3ERR5C7A3LRGIXPCMXH"
+            "source": "GDNPPDR6QACI25Q3D4LIRTDZFDGWWPUP55XMU3ERR5C7A3LRGIXPCMXH"
           },
           {
             "type": "accountSponsorshipRemoved",

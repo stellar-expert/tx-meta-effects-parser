@@ -82,8 +82,7 @@ console.log(res.operations[0].effects)
 ```js
 {
   type: 'accountRemoved',
-  source: 'GBKP…YDLI',
-  account: 'GBWC…DXHN'
+  source: 'GBKP…YDLI'
 }
 ```
 </td>
@@ -475,27 +474,8 @@ ClawbackClaimableBalance, InflationOp</td>
   source: 'GBWC…DXHN',
   trustor: 'GBKP…YDLI',
   asset: 'USD-GBWC…DXHN-1',
-  flags: 5
-}
-```
-
-</td>
-</tr>
-
-<tr>
-<td>
-<code>trustlineDeauthorized</code>
-</td>
-<td>AllowTrustOp</td>
-<td>
-
-```js
-{
-  type: 'trustlineDeauthorized',
-  source: 'GBWC…DXHN',
-  trustor: 'GBKP…YDLI',
-  asset: 'USD-GBWC…DXHN-1',
-  flags: 4
+  flags: 5,
+  prevFlags: 2
 }
 ```
 

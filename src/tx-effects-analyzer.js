@@ -1,6 +1,7 @@
 const Bignumber = require('bignumber.js')
 const {parseLedgerEntryChanges} = require('./ledger-entry-changes-parser')
 const {xdrParseAsset, xdrParseClaimantPredicate} = require('./tx-xdr-parser-utils')
+const {re} = require('@babel/core/lib/vendor/import-meta-resolve')
 
 /**
  * All possible effects types
@@ -22,7 +23,6 @@ const effectTypes = {
     trustlineCreated: 'trustlineCreated',
     trustlineUpdated: 'trustlineUpdated',
     trustlineRemoved: 'trustlineRemoved',
-    trustlineDeauthorized: 'trustlineDeauthorized',
     trustlineAuthorizationUpdated: 'trustlineAuthorizationUpdated',
     liquidityPoolCreated: 'liquidityPoolCreated',
     liquidityPoolUpdated: 'liquidityPoolUpdated',
@@ -179,8 +179,7 @@ function processCreateAccountEffects({operation}) {
 function processMergeAccountEffects({operation, result}) {
     const removedEffect = {
         type: effectTypes.accountRemoved,
-        source: operation.source,
-        account: operation.source
+        source: operation.source
     }
     if (parseFloat(result.actualMergedAmount) === 0)
         return [removedEffect]
@@ -329,36 +328,18 @@ function processChangeTrustEffects({operation, changes}) {
 }
 
 function processAllowTrustEffects({operation, changes}) {
-    let effectType
     if (!changes.length)
         return []
-
-    if (operation.flags) {
-        if (operation.flags.authorized || operation.flags.authorizedToMaintainLiabilities || operation.flags.clawbackEnabled) {
-            effectType = effectTypes.trustlineAuthorizationUpdated
-        } else {
-            effectType = effectTypes.trustlineDeauthorized
-        }
-    } else {
-        switch (operation.authorize) {
-            case false:
-            case 0:
-                effectType = effectTypes.trustlineDeauthorized
-                break
-            case true:
-            case 1:
-            default:
-                effectType = effectTypes.trustlineAuthorizationUpdated
-                break
-        }
-    }
-    const {after} = changes[0]
+    const {before, after} = changes[0]
+    if (before.flags === after.flags)
+        return []
     return [{
-        type: effectType,
+        type: effectTypes.trustlineAuthorizationUpdated,
         source: operation.source,
         trustor: operation.trustor,
         asset: after.asset,
-        flags: after.flags
+        flags: after.flags,
+        prevFlags: before.flags
     }]
 }
 
