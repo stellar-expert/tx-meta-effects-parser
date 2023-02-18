@@ -348,7 +348,8 @@ ClawbackClaimableBalance, InflationOp</td>
       amount: '0'
     }
   ],
-  shares: '0'
+  shares: '0',
+  accounts: 1
 }
 ```
 
@@ -377,7 +378,8 @@ ClawbackClaimableBalance, InflationOp</td>
       amount: '1000'
     }
   ],
-  shares: '10000000000'
+  shares: '10000000000',
+  accounts: 2
 }
 ```
 

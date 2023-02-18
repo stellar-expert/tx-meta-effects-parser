@@ -416,7 +416,8 @@
                 "amount": "0"
               }
             ],
-            "shares": "0"
+            "shares": "0",
+            "accounts": 1
           }
         ],
         [
@@ -450,7 +451,8 @@
                 "amount": "1000"
               }
             ],
-            "shares": "10000000000"
+            "shares": "10000000000",
+            "accounts": 1
           }
         ],
         [
@@ -484,7 +486,8 @@
                 "amount": "500"
               }
             ],
-            "shares": "5000000000"
+            "shares": "5000000000",
+            "accounts": 1
           }
         ],
         [
@@ -518,7 +521,8 @@
                 "amount": "0"
               }
             ],
-            "shares": "0"
+            "shares": "0",
+            "accounts": 1
           }
         ],
         [
@@ -816,7 +820,8 @@
                 "amount": "0"
               }
             ],
-            "shares": "0"
+            "shares": "0",
+            "accounts": 1
           }
         ],
         [
@@ -850,7 +855,8 @@
                 "amount": "100"
               }
             ],
-            "shares": "1000000000"
+            "shares": "1000000000",
+            "accounts": 1
           }
         ],
         [
@@ -942,15 +948,16 @@
           {
             "type": "liquidityPoolUpdated",
             "source": "GBWCS2C42PQYMDQVBIVUOWDPSM2T3BRJWG2ENQJQU3N75J4CSKJ6DXHN",
-            "amount": [
-              "90.9338911",
-              "110"
+            "reserves": [
+              {
+                "amount": "90.9338911",
+                "asset": "EUR-GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI-1"
+              },
+              {
+                "amount": "110",
+                "asset": "USD-GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI-1"
+              }
             ],
-            "asset": [
-              "EUR-GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI-1",
-              "USD-GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI-1"
-            ],
-            "price": 0.8266717372727272,
             "shares": "1000000000",
             "accounts": 1
           },
@@ -1125,7 +1132,8 @@
                 "amount": "0"
               }
             ],
-            "shares": "0"
+            "shares": "0",
+            "accounts": 1
           },
           {
             "type": "liquidityPoolStakeSponsorshipCreated",
@@ -1166,7 +1174,8 @@
                 "amount": "1000"
               }
             ],
-            "shares": "10000000000"
+            "shares": "10000000000",
+            "accounts": 1
           }
         ],
         []
@@ -1387,7 +1396,8 @@
                 "amount": "0"
               }
             ],
-            "shares": "0"
+            "shares": "0",
+            "accounts": 1
           }
         ],
         [

@@ -9,9 +9,9 @@ const {xdrParseAsset, xdrParseClaimantPredicate} = require('./tx-xdr-parser-util
 const effectTypes = {
     feeCharged: 'feeCharged',
     accountCreated: 'accountCreated',
+    accountRemoved: 'accountRemoved',
     accountDebited: 'accountDebited',
     accountCredited: 'accountCredited',
-    accountRemoved: 'accountRemoved',
     accountHomeDomainUpdated: 'accountHomeDomainUpdated',
     accountThresholdsUpdated: 'accountThresholdsUpdated',
     accountFlagsUpdated: 'accountFlagsUpdated',
@@ -19,23 +19,23 @@ const effectTypes = {
     accountSignerUpdated: 'accountSignerUpdated',
     accountSignerRemoved: 'accountSignerRemoved',
     accountSignerCreated: 'accountSignerCreated',
-    trustlineRemoved: 'trustlineRemoved',
-    liquidityPoolRemoved: 'liquidityPoolRemoved',
     trustlineCreated: 'trustlineCreated',
     trustlineUpdated: 'trustlineUpdated',
-    liquidityPoolCreated: 'liquidityPoolCreated',
-    trustlineAuthorizationUpdated: 'trustlineAuthorizationUpdated',
+    trustlineRemoved: 'trustlineRemoved',
     trustlineDeauthorized: 'trustlineDeauthorized',
-    trade: 'trade',
+    trustlineAuthorizationUpdated: 'trustlineAuthorizationUpdated',
+    liquidityPoolCreated: 'liquidityPoolCreated',
     liquidityPoolUpdated: 'liquidityPoolUpdated',
+    liquidityPoolRemoved: 'liquidityPoolRemoved',
     offerCreated: 'offerCreated',
     offerUpdated: 'offerUpdated',
     offerRemoved: 'offerRemoved',
+    trade: 'trade',
     inflation: 'inflation',
+    sequenceBumped: 'sequenceBumped',
     dataEntryCreated: 'dataEntryCreated',
     dataEntryUpdated: 'dataEntryUpdated',
     dataEntryRemoved: 'dataEntryRemoved',
-    sequenceBumped: 'sequenceBumped',
     claimableBalanceCreated: 'claimableBalanceCreated',
     claimableBalanceRemoved: 'claimableBalanceRemoved',
     liquidityPoolDeposited: 'liquidityPoolDeposited',
@@ -319,7 +319,8 @@ function processChangeTrustEffects({operation, changes}) {
                     source: operation.source,
                     pool: trustedAsset,
                     reserves: lpChange.after.asset.map(asset => ({asset, amount: '0'})),
-                    shares: '0'
+                    shares: '0',
+                    accounts: 1
                 })
             }
         }
@@ -461,9 +462,10 @@ function processDexOperationEffects({operation, changes, result}) {
                 effects.push({ //updated token amount after the trade against a liquidity
                     type: effectTypes.liquidityPoolUpdated,
                     source: operation.source,
-                    amount: after.amount.map(adjustPrecision),
-                    asset: after.asset,
-                    price: new Bignumber(after.amount[0]).div(new Bignumber(after.amount[1])).toNumber(),
+                    reserves: after.asset.map((asset, i) => ({
+                        asset,
+                        amount: adjustPrecision(after.amount[i])
+                    })),
                     shares: after.shares,
                     accounts: parseInt(after.accounts, 10)
                 })
@@ -646,7 +648,8 @@ function processLiquidityPoolDepositEffects({operation, changes}) {
                         asset,
                         amount: adjustPrecision(after.amount[i])
                     })),
-                    shares: after.shares
+                    shares: after.shares,
+                    accounts: parseInt(after.accounts, 10)
                 })
                 break
             default:
@@ -683,7 +686,8 @@ function processLiquidityPoolWithdrawEffects({operation, changes}) {
                         asset,
                         amount: adjustPrecision(after.amount[i])
                     })),
-                    shares: after.shares
+                    shares: after.shares,
+                    accounts: parseInt(after.accounts, 10)
                 })
                 break
             default:
