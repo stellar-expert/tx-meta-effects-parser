@@ -7,17 +7,25 @@ const {parseTxMetaChanges} = require('./tx-meta-changes-parser')
 /**
  * Retrieve effects from transaction execution result metadata
  * @param {String} network - Network identifier or passphrase
- * @param {String} tx - Base64-encoded tx envelope xdr
- * @param {String} result? - Base64-encoded tx envelope result
- * @param {String} meta? - Base64-encoded tx envelope meta
+ * @param {String|Buffer|xdr.TransactionEnvelope} tx - Base64-encoded tx envelope xdr
+ * @param {String|Buffer|xdr.TransactionResult} result? - Base64-encoded tx envelope result
+ * @param {String|Buffer|xdr.TransactionMeta} meta? - Base64-encoded tx envelope meta
  * @return {ParsedTxOperationsMetadata}
  */
 function parseTxOperationsMeta({network, tx, result, meta}) {
+    if (!network)
+        throw new TypeError(`Network passphrase/identifier argument is required.`)
+    if (typeof network !== 'string')
+        throw new TypeError(`Invalid network passphrase or identifier: "${network}".`)
+    if (!tx)
+        throw new TypeError(`Transaction envelope argument is required.`)
     const isEphemeral = !meta
     //parse tx, result, and meta xdr
+    tx = ensureXdrInputType(tx, xdr.TransactionEnvelope)
+    result = ensureXdrInputType(result, xdr.TransactionResult)
+    meta = ensureXdrInputType(meta, xdr.TransactionMeta)
+
     let parsedTx = tx = TransactionBuilder.fromXDR(tx, Networks[network.toUpperCase()] || network)
-    let rawResult = result ? xdr.TransactionResult.fromXDR(result, 'base64') : null
-    const rawMeta = meta ? xdr.TransactionMeta.fromXDR(meta, 'base64') : null
 
     const txEffects = []
     const isFeeBump = !!parsedTx.innerTransaction
@@ -27,10 +35,10 @@ function parseTxOperationsMeta({network, tx, result, meta}) {
     if (isFeeBump) {
         parsedTx = parsedTx.innerTransaction
         if (!isEphemeral) { //add fee bump charge effect
-            txEffects.push(processFeeChargedEffect(parsedTx, rawResult.feeCharged().toString(), true))
+            txEffects.push(processFeeChargedEffect(parsedTx, result.feeCharged().toString(), true))
         }
-        rawResult = rawResult.result().innerResultPair().result()
-        feeBumpSuccess = rawResult.result().switch().value >= 0
+        result = result.result().innerResultPair().result()
+        feeBumpSuccess = result.result().switch().value >= 0
     }
 
     const res = {
@@ -53,10 +61,10 @@ function parseTxOperationsMeta({network, tx, result, meta}) {
         return res
 
     //add fee charge effect
-    txEffects.push(processFeeChargedEffect(parsedTx, rawResult.feeCharged().toString()))
+    txEffects.push(processFeeChargedEffect(parsedTx, result.feeCharged().toString()))
     //retrieve operations result metadata
-    const opMeta = rawMeta.value().operations()
-    const {success, opResults} = parseTxResult(rawResult)
+    const opMeta = meta.value().operations()
+    const {success, opResults} = parseTxResult(result)
     if (!success || isFeeBump && !feeBumpSuccess) {
         res.failed = true
         return res
@@ -73,6 +81,16 @@ function parseTxOperationsMeta({network, tx, result, meta}) {
         }
     }
     return res
+}
+
+function ensureXdrInputType(value, xdrType) {
+    if (value) {
+        if (!(value instanceof xdrType))
+            return xdrType.fromXDR(value, typeof value === 'string' ? 'base64' : 'raw')
+        if (!(value instanceof xdrType))
+            throw new TypeError(`Invalid input format. Expected xdr.${xdrType.name} (raw, buffer, or bas64-encoded).`)
+    }
+    return value
 }
 
 /**

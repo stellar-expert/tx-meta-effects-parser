@@ -3,7 +3,7 @@ const {Networks} = require('stellar-sdk')
 const {parseTxOperationsMeta} = require('../src/index')
 
 
-describe('Effects analyzer', () => {
+describe('Effects', () => {
     test.each(require('./op-effects-data.json'))('Analyze operation effects - %s', (description, {tx, result, meta, expected}) => {
         //merge account
         const res = parseTxOperationsMeta({
@@ -26,5 +26,9 @@ describe('Effects analyzer', () => {
             result,
             meta
         })
+
+        for (let i = 0; i < res.effects.length; i++) {
+            expect(res.effects[i]).toStrictEqual(expected[i])
+        }
     })
 })

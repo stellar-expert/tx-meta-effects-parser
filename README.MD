@@ -16,7 +16,7 @@ npm i github:@stellar-expert/tx-meta-effects-parser
 To install a specific version of this library, use `#` tag notation: 
 
 ```
-npm i github:@stellar-expert/tx-meta-effects-parser#v1.9.0
+npm i github:@stellar-expert/tx-meta-effects-parser#v1.10.0
 ```
 
 ## Usage
