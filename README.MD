@@ -13,6 +13,12 @@ directly from the transaction execution result and metadata.
 npm i github:@stellar-expert/tx-meta-effects-parser
 ```
 
+To install a specific version of this library, use `#` tag notation: 
+
+```
+npm i github:@stellar-expert/tx-meta-effects-parser#v1.9.0
+```
+
 ## Usage
 
 ```js
@@ -327,6 +333,103 @@ ClawbackClaimableBalance, InflationOp</td>
 
 <tr>
 <td>
+<code>trustlineAuthorizationUpdated</code>
+</td>
+<td>AllowTrustOp</td>
+<td>
+
+```js
+{
+  type: 'trustlineAuthorizationUpdated',
+  source: 'GBWC…DXHN',
+  trustor: 'GBKP…YDLI',
+  asset: 'USD-GBWC…DXHN-1',
+  flags: 5,
+  prevFlags: 2
+}
+```
+
+</td>
+</tr>
+
+<tr>
+<td>
+<code>offerCreated</code>
+</td>
+<td>CreatePassiveOfferOp, ManageBuyOfferOp, ManageSellOfferOp</td>
+<td>
+
+```js
+{
+  type: 'offerCreated',
+  source: 'GBWC…DXHN',
+  offer: '90427',
+  owner: 'GBWC…DXHN',
+  amount: '100',
+  asset: [
+    'USD-GBKP…YDLI-1',
+    'XLM'
+  ],
+  price: 0.09215,
+  flags: 0
+}
+```
+
+</td>
+</tr>
+
+<tr>
+<td>
+<code>offerUpdated</code>
+</td>
+<td>CreatePassiveOfferOp, ManageBuyOfferOp, ManageSellOfferOp, PathPaymentOp</td>
+<td>
+
+```js
+{
+  type: 'offerUpdated',
+  source: 'GBWC…DXHN',
+  offer: '90427',
+  owner: 'GBWC…DXHN',
+  amount: '90',
+  asset: [
+    'USD-GBKP…YDLI-1',
+    'XLM'
+  ],
+  price: 0.09215,
+  flags: 0
+}
+```
+
+</td>
+</tr>
+
+<tr>
+<td>
+<code>offerRemoved</code>
+</td>
+<td>CreatePassiveOfferOp, ManageBuyOfferOp, ManageSellOfferOp, PathPaymentOp</td>
+<td>
+
+```js
+{
+  type: 'offerRemoved',
+  source: 'GBWC…DXHN',
+  offer: '90427',
+  owner: 'GBWC…DXHN',
+  asset: [
+    'USD-GBKP…YDLI-1',
+    'XLM'
+  ],
+  flags: 0
+}
+```
+
+</td>
+</tr>
+
+<tr>
+<td>
 <code>liquidityPoolCreated</code>
 </td>
 <td>ChangeTrustOp</td>
@@ -463,79 +566,6 @@ ClawbackClaimableBalance, InflationOp</td>
 
 <tr>
 <td>
-<code>trustlineAuthorizationUpdated</code>
-</td>
-<td>AllowTrustOp</td>
-<td>
-
-```js
-{
-  type: 'trustlineAuthorizationUpdated',
-  source: 'GBWC…DXHN',
-  trustor: 'GBKP…YDLI',
-  asset: 'USD-GBWC…DXHN-1',
-  flags: 5,
-  prevFlags: 2
-}
-```
-
-</td>
-</tr>
-
-<tr>
-<td>
-<code>offerCreated</code>
-</td>
-<td>CreatePassiveOfferOp, ManageBuyOfferOp, ManageSellOfferOp</td>
-<td>
-
-```js
-{
-  type: 'offerCreated',
-  source: 'GBWC…DXHN',
-  owner: 'GBWC…DXHN',
-  offer: '1',
-  amount: '100',
-  asset: [
-    'USD-GBKP…YDLI-1',
-    'XLM'
-  ],
-  price: 1,
-  flags: 0
-}
-```
-
-</td>
-</tr>
-
-<tr>
-<td>
-<code>offerUpdated</code>
-</td>
-<td>CreatePassiveOfferOp, ManageBuyOfferOp, ManageSellOfferOp, PathPaymentOp</td>
-<td>
-
-```js
-{
-  type: 'offerUpdated',
-  source: 'GBWC…DXHN',
-  owner: 'GBWC…DXHN',
-  offer: '1',
-  amount: '90',
-  asset: [
-    'USD-GBKP…YDLI-1',
-    'XLM'
-  ],
-  price: 1,
-  flags: 0
-}
-```
-
-</td>
-</tr>
-
-<tr>
-<td>
 <code>trade</code>
 </td>
 <td>CreatePassiveOfferOp, ManageBuyOfferOp, ManageSellOfferOp, PathPaymentOp</td>
@@ -557,50 +587,6 @@ ClawbackClaimableBalance, InflationOp</td>
 
 </td>
 </tr>
-
-<tr>
-<td>
-<code>offerRemoved</code>
-</td>
-<td>CreatePassiveOfferOp, ManageBuyOfferOp, ManageSellOfferOp, PathPaymentOp</td>
-<td>
-
-```js
-{
-  type: 'offerRemoved',
-  source: 'GBWC…DXHN',
-  owner: 'GBWC…DXHN',
-  offer: '1',
-  asset: [
-    'USD-GBKP…YDLI-1',
-    'XLM'
-  ],
-  flags: 1
-}
-```
-</td>
-</tr>
-
-
-<tr>
-<td>
-<code>inflation</code>
-</td>
-<td>InflationOp</td>
-<td>
-
-```js
-{
-  type: 'inflation',
-  source: 'GBWC…DXHN',
-  asset: 'XLM',
-  amount: '1000000000'
-}
-```
-
-</td>
-</tr>
-
 
 <tr>
 <td>
@@ -670,6 +656,23 @@ ClawbackClaimableBalance, InflationOp</td>
   type: 'sequenceBumped',
   source: 'GBWC…DXHN',
   sequence: '100'
+}
+```
+
+</td>
+</tr>
+
+<tr>
+<td>
+<code>inflation</code>
+</td>
+<td>InflationOp</td>
+<td>
+
+```js
+{
+  type: 'inflation',
+  source: 'GBWC…DXHN'
 }
 ```
 

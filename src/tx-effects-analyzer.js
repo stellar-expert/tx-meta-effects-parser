@@ -9,35 +9,48 @@ const {re} = require('@babel/core/lib/vendor/import-meta-resolve')
  */
 const effectTypes = {
     feeCharged: 'feeCharged',
+
     accountCreated: 'accountCreated',
     accountRemoved: 'accountRemoved',
+
     accountDebited: 'accountDebited',
     accountCredited: 'accountCredited',
+
     accountHomeDomainUpdated: 'accountHomeDomainUpdated',
     accountThresholdsUpdated: 'accountThresholdsUpdated',
     accountFlagsUpdated: 'accountFlagsUpdated',
     accountInflationDestinationUpdated: 'accountInflationDestinationUpdated',
+
     accountSignerUpdated: 'accountSignerUpdated',
     accountSignerRemoved: 'accountSignerRemoved',
     accountSignerCreated: 'accountSignerCreated',
+
     trustlineCreated: 'trustlineCreated',
     trustlineUpdated: 'trustlineUpdated',
     trustlineRemoved: 'trustlineRemoved',
     trustlineAuthorizationUpdated: 'trustlineAuthorizationUpdated',
+
     liquidityPoolCreated: 'liquidityPoolCreated',
     liquidityPoolUpdated: 'liquidityPoolUpdated',
     liquidityPoolRemoved: 'liquidityPoolRemoved',
+
     offerCreated: 'offerCreated',
     offerUpdated: 'offerUpdated',
     offerRemoved: 'offerRemoved',
+
     trade: 'trade',
+
     inflation: 'inflation',
+
     sequenceBumped: 'sequenceBumped',
+
     dataEntryCreated: 'dataEntryCreated',
     dataEntryUpdated: 'dataEntryUpdated',
     dataEntryRemoved: 'dataEntryRemoved',
+
     claimableBalanceCreated: 'claimableBalanceCreated',
     claimableBalanceRemoved: 'claimableBalanceRemoved',
+
     liquidityPoolDeposited: 'liquidityPoolDeposited',
     liquidityPoolWithdrew: 'liquidityPoolWithdrew',
 
@@ -311,16 +324,35 @@ function processChangeTrustEffects({operation, changes}) {
         trustEffect.type = trustChange.action === 'created' ? effectTypes.trustlineCreated : effectTypes.trustlineUpdated
         trustEffect.limit = trimZeros(operation.limit)
         if (trustChange.type === 'liquidityPoolStake') {
-            const lpChange = changes.find(ch => ch.type === 'liquidityPool' && ch.action === 'created')
+            const lpChange = changes.find(ch => ch.type === 'liquidityPool')
             if (lpChange) {
-                effects.push({
-                    type: effectTypes.liquidityPoolCreated,
-                    source: operation.source,
-                    pool: trustedAsset,
-                    reserves: lpChange.after.asset.map(asset => ({asset, amount: '0'})),
-                    shares: '0',
-                    accounts: 1
-                })
+                const {after} = lpChange
+                switch (lpChange.action) {
+                    case 'created':
+                        effects.push({
+                            type: effectTypes.liquidityPoolCreated,
+                            source: operation.source,
+                            pool: trustedAsset,
+                            reserves: after.asset.map(asset => ({asset, amount: '0'})),
+                            shares: '0',
+                            accounts: 1
+                        })
+                        break
+                    case 'updated':
+                        effects.push({
+                            type: effectTypes.liquidityPoolUpdated,
+                            source: operation.source,
+                            pool: lpChange.pool,
+                            reserves: after.asset.map((asset, i) => ({
+                                asset,
+                                amount: adjustPrecision(after.amount[i])
+                            })),
+                            shares: after.shares,
+                            accounts: parseInt(after.accounts, 10)
+                        })
+                        break
+                }
+
             }
         }
     }
@@ -443,6 +475,7 @@ function processDexOperationEffects({operation, changes, result}) {
                 effects.push({ //updated token amount after the trade against a liquidity
                     type: effectTypes.liquidityPoolUpdated,
                     source: operation.source,
+                    pool: after.pool,
                     reserves: after.asset.map((asset, i) => ({
                         asset,
                         amount: adjustPrecision(after.amount[i])
@@ -679,6 +712,8 @@ function processLiquidityPoolWithdrawEffects({operation, changes}) {
 }
 
 function processClawbackEffects({operation}) {
+    if (operation.from === operation.source)
+        return []
     const asset = xdrParseAsset(operation.asset)
     if (!asset.includes(operation.source))
         throw new Error(`Asset ${asset} clawed back by account ${operation.source}`)

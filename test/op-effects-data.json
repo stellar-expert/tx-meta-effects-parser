@@ -933,6 +933,7 @@
           {
             "type": "liquidityPoolUpdated",
             "source": "GBWCS2C42PQYMDQVBIVUOWDPSM2T3BRJWG2ENQJQU3N75J4CSKJ6DXHN",
+            "pool": "3e5988f56d66c7d5946b32f844ae3cee0ff72a5d822809b9d5027cc1b897a473",
             "reserves": [
               {
                 "amount": "90.9338911",

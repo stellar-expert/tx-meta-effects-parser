@@ -11,11 +11,11 @@ const {
     Claimant,
     AuthClawbackEnabledFlag,
     AuthRevocableFlag,
-    getLiquidityPoolId,
-    LiquidityPoolId
+    LiquidityPoolId,
+    getLiquidityPoolId
 } = require('stellar-sdk')
 
-//TODO: generate inflation, liquidityPoolSponsorshipCreated, liquidityPoolSponsorshipUpdated and liquidityPoolSponsorshipRemoved effects
+//TODO: generate liquidityPoolSponsorshipCreated/Updated/Removed effects
 
 /**
  * Generate test vectors for various combinations of transaction effects
