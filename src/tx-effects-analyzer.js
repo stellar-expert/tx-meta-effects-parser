@@ -129,16 +129,16 @@ const effectProcessorMap = {
     liquidityPoolWithdraw: processLiquidityPoolWithdrawEffects,
     clawback: processClawbackEffects,
     clawbackClaimableBalance: processClawbackClaimableBalanceEffects,
-    beginSponsoringFutureReserves: empty,
-    endSponsoringFutureReserves: empty,
-    revokeSponsorship: empty,
-    revokeAccountSponsorship: empty,
-    revokeTrustlineSponsorship: empty,
-    revokeOfferSponsorship: empty,
-    revokeDataSponsorship: empty,
-    revokeClaimableBalanceSponsorship: empty,
-    revokeLiquidityPoolSponsorship: empty,
-    revokeSignerSponsorship: empty
+    beginSponsoringFutureReserves: noEffects,
+    endSponsoringFutureReserves: noEffects,
+    revokeSponsorship: noEffects,
+    revokeAccountSponsorship: noEffects,
+    revokeTrustlineSponsorship: noEffects,
+    revokeOfferSponsorship: noEffects,
+    revokeDataSponsorship: noEffects,
+    revokeClaimableBalanceSponsorship: noEffects,
+    revokeLiquidityPoolSponsorship: noEffects,
+    revokeSignerSponsorship: noEffects
 }
 
 /**
@@ -409,7 +409,7 @@ function processPathPaymentStrictReceiveEffects({operation, changes, result}) {
             break
         srcAmounts.push(amount[1])
     }
-    const srcAmount = srcAmounts.reduce((prev, v) => prev.add(v), new Bignumber(0)).toString()
+    const srcAmount = trimZeros(srcAmounts.reduce((prev, v) => prev.add(v), new Bignumber(0)).toFixed(7))
     return [
         {
             type: effectTypes.accountDebited,
@@ -654,7 +654,7 @@ function processLiquidityPoolDepositEffects({operation, changes}) {
                         asset,
                         amount: adjustPrecision(new Bignumber(after.amount[i]).minus(before.amount[i]))
                     })),
-                    shares: new Bignumber(after.shares).minus(before.shares).toString()
+                    shares: trimZeros(new Bignumber(after.shares).minus(before.shares).toFixed(7))
                 })
                 effects.push({
                     type: effectTypes.liquidityPoolUpdated,
@@ -692,7 +692,7 @@ function processLiquidityPoolWithdrawEffects({operation, changes}) {
                         asset,
                         amount: adjustPrecision(new Bignumber(before.amount[i]).minus(after.amount[i]))
                     })),
-                    shares: new Bignumber(before.shares).minus(after.shares).toString()
+                    shares: trimZeros(new Bignumber(before.shares).minus(after.shares).toFixed(7))
                 })
                 effects.push({
                     type: effectTypes.liquidityPoolUpdated,
@@ -890,7 +890,7 @@ function processSignerSponsorshipEffects({operation, changes}) {
     }
 }
 
-function empty() {
+function noEffects() {
     return []
 }
 
