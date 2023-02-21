@@ -346,7 +346,7 @@ function processChangeTrustEffects({operation, changes}) {
                     effects.push({
                         type: effectTypes.liquidityPoolUpdated,
                         source: operation.source,
-                        pool: lpChange.pool,
+                        pool: trustedAsset,
                         reserves: after.asset.map((asset, i) => ({
                             asset,
                             amount: adjustPrecision(after.amount[i])
