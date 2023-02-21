@@ -191,7 +191,7 @@ function parseLiquidityPoolEntry(value) {
     const liquidityPoolEntryXdr = value.value()
     const body = liquidityPoolEntryXdr.body().value()
     const params = body.params()
-    const data = {
+    return {
         entry: 'liquidityPool',
         pool: liquidityPoolEntryXdr.liquidityPoolId().toString('hex'),
         asset: [xdrParseAsset(params.assetA()), xdrParseAsset(params.assetB())],
@@ -199,9 +199,8 @@ function parseLiquidityPoolEntry(value) {
         pool_type: 0,
         amount: [body.reserveA().toString(), body.reserveB().toString()],
         shares: body.totalPoolShares().toString(),
-        accounts: body.poolSharesTrustLineCount().toString()
+        accounts: body.poolSharesTrustLineCount().low
     }
-    return data
 }
 
 function parseOfferEntry(value) {

@@ -266,7 +266,7 @@ function processSetOptionsEffects({operation, changes}) {
         }
     }
     if (operation.signer !== undefined && JSON.stringify(before.signers) !== JSON.stringify(after.signers)) {
-        const weight = parseInt(operation.signer.weight || 0, 10)
+        const weight = operation.signer.weight || 0
         const key = operation.signer.ed25519PublicKey || operation.signer.sha256Hash || operation.signer.preAuthTx || operation.signer.ed25519SignedPayload
         if (weight === 0) {
             effects.push({
@@ -321,38 +321,36 @@ function processChangeTrustEffects({operation, changes}) {
             })
         }
     } else {
-        trustEffect.type = trustChange.action === 'created' ? effectTypes.trustlineCreated : effectTypes.trustlineUpdated
+        trustEffect.type = trustChange.action === 'created' ?
+            effectTypes.trustlineCreated :
+            effectTypes.trustlineUpdated
         trustEffect.limit = trimZeros(operation.limit)
         if (trustChange.type === 'liquidityPoolStake') {
             const lpChange = changes.find(ch => ch.type === 'liquidityPool')
             if (lpChange) {
                 const {after} = lpChange
-                switch (lpChange.action) {
-                    case 'created':
-                        effects.push({
-                            type: effectTypes.liquidityPoolCreated,
-                            source: operation.source,
-                            pool: trustedAsset,
-                            reserves: after.asset.map(asset => ({asset, amount: '0'})),
-                            shares: '0',
-                            accounts: 1
-                        })
-                        break
-                    case 'updated':
-                        effects.push({
-                            type: effectTypes.liquidityPoolUpdated,
-                            source: operation.source,
-                            pool: lpChange.pool,
-                            reserves: after.asset.map((asset, i) => ({
-                                asset,
-                                amount: adjustPrecision(after.amount[i])
-                            })),
-                            shares: after.shares,
-                            accounts: parseInt(after.accounts, 10)
-                        })
-                        break
+                if (lpChange.action === 'created') {
+                    effects.unshift({
+                        type: effectTypes.liquidityPoolCreated,
+                        source: operation.source,
+                        pool: trustedAsset,
+                        reserves: after.asset.map(asset => ({asset, amount: '0'})),
+                        shares: '0',
+                        accounts: 1
+                    })
+                } else {
+                    effects.push({
+                        type: effectTypes.liquidityPoolUpdated,
+                        source: operation.source,
+                        pool: lpChange.pool,
+                        reserves: after.asset.map((asset, i) => ({
+                            asset,
+                            amount: adjustPrecision(after.amount[i])
+                        })),
+                        shares: after.shares,
+                        accounts: after.accounts
+                    })
                 }
-
             }
         }
     }
@@ -481,7 +479,7 @@ function processDexOperationEffects({operation, changes, result}) {
                         amount: adjustPrecision(after.amount[i])
                     })),
                     shares: after.shares,
-                    accounts: parseInt(after.accounts, 10)
+                    accounts: after.accounts
                 })
                 break
             case 'offer':
@@ -663,7 +661,7 @@ function processLiquidityPoolDepositEffects({operation, changes}) {
                         amount: adjustPrecision(after.amount[i])
                     })),
                     shares: after.shares,
-                    accounts: parseInt(after.accounts, 10)
+                    accounts: after.accounts
                 })
                 break
             default:
@@ -701,7 +699,7 @@ function processLiquidityPoolWithdrawEffects({operation, changes}) {
                         amount: adjustPrecision(after.amount[i])
                     })),
                     shares: after.shares,
-                    accounts: parseInt(after.accounts, 10)
+                    accounts: after.accounts
                 })
                 break
             default:
