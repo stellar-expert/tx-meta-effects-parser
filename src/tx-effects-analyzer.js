@@ -1,7 +1,6 @@
 const Bignumber = require('bignumber.js')
 const {parseLedgerEntryChanges} = require('./ledger-entry-changes-parser')
 const {xdrParseAsset, xdrParseClaimantPredicate} = require('./tx-xdr-parser-utils')
-const {re} = require('@babel/core/lib/vendor/import-meta-resolve')
 
 /**
  * All possible effects types
@@ -898,7 +897,7 @@ function empty() {
 function adjustPrecision(value) {
     if (value === '0')
         return value
-    return trimZeros(new Bignumber(value).div(10000000).toString())
+    return trimZeros(new Bignumber(value).div(10000000).toFixed(7))
 }
 
 function trimZeros(value) {
