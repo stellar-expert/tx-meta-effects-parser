@@ -301,8 +301,13 @@ function processSetOptionsEffects({operation, changes}) {
 }
 
 function processChangeTrustEffects({operation, changes}) {
-    const trustChange = changes.find(ch => ch.type === 'trustline' || ch.type === 'liquidityPoolStake')
-    const trustedAsset = operation.line.fee ? (trustChange.after || trustChange.before).pool : xdrParseAsset(operation.line)
+    const entityType = operation.line.fee ?
+        'liquidityPoolStake' :
+        'trustline'
+    const trustChange = changes.find(ch => ch.type === entityType)
+    const trustedAsset = entityType === 'liquidityPoolStake' ?
+        (trustChange.after || trustChange.before).pool :
+        xdrParseAsset(operation.line)
     const trustEffect = {
         type: '',
         source: operation.source,
