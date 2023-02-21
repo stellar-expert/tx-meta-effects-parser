@@ -23,7 +23,6 @@ function parseTxOperationsMeta({network, tx, result, meta}) {
     //parse tx, result, and meta xdr
     tx = ensureXdrInputType(tx, xdr.TransactionEnvelope)
     result = ensureXdrInputType(result, xdr.TransactionResult)
-    meta = ensureXdrInputType(meta, xdr.TransactionMeta)
 
     let parsedTx = tx = TransactionBuilder.fromXDR(tx, Networks[network.toUpperCase()] || network)
 
@@ -56,19 +55,22 @@ function parseTxOperationsMeta({network, tx, result, meta}) {
         op.effects = []
     }
 
-    //do not parse meta for unsubmitted/rejected transactions
-    if (isEphemeral)
-        return res
-
     //add fee charge effect
     txEffects.push(processFeeChargedEffect(parsedTx, result.feeCharged().toString()))
-    //retrieve operations result metadata
-    const opMeta = meta.value().operations()
     const {success, opResults} = parseTxResult(result)
     if (!success || isFeeBump && !feeBumpSuccess) {
         res.failed = true
         return res
     }
+
+    //do not parse meta for unsubmitted/rejected transactions
+    if (isEphemeral)
+        return res
+
+    //retrieve operations result metadata
+    meta = ensureXdrInputType(meta, xdr.TransactionMeta)
+    const opMeta = meta.value().operations()
+
     //analyze operation effects for each operation
     for (let i = 0; i < parsedTx.operations.length; i++) {
         const operation = parsedTx.operations[i]
