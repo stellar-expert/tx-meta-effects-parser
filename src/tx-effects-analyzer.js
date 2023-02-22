@@ -449,30 +449,25 @@ function processPathPaymentStrictSendEffects({operation, changes, result}) {
 
 function processDexOperationEffects({operation, changes, result}) {
     const effects = []
-    for (const {action, type, before, after} of changes) {
-        //add trade effect
-        if (type === 'liquidityPool' || type === 'offer' && action !== 'created') {
-            const id = before?.id || after?.id
-            //process trade effects
-            for (const claimedOffer of result.claimedOffers)
-                if (claimedOffer.offerId === id) {
-                    const trade = {
-                        type: effectTypes.trade,
-                        source: operation.source,
-                        amount: claimedOffer.amount.map(adjustPrecision),
-                        asset: claimedOffer.asset
-                    }
-                    if (type === 'liquidityPool') {
-                        trade.pool = before.pool
-                    } else {
-                        trade.offer = before.id
-                        trade.seller = before.account
-                        if (claimedOffer.account !== before.account)
-                            throw new Error('Claimed offer seller doesn\'t match meta changes account.')
-                    }
-                    effects.push(trade)
-                }
+    //process trades first
+    for (const claimedOffer of result.claimedOffers) {
+        const trade = {
+            type: effectTypes.trade,
+            source: operation.source,
+            amount: claimedOffer.amount.map(adjustPrecision),
+            asset: claimedOffer.asset
         }
+        if (claimedOffer.poolId) {
+            trade.pool = claimedOffer.poolId.toString('hex')
+        } else {
+            trade.offer = claimedOffer.offerId
+            trade.seller = claimedOffer.account
+        }
+        effects.push(trade)
+    }
+
+    for (const {action, type, before, after} of changes) {
+        //process state changes
         switch (type) {
             case 'liquidityPool':
                 effects.push({ //updated token amount after the trade against a liquidity

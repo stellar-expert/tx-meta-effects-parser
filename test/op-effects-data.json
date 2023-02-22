@@ -866,19 +866,6 @@
             "seller": "GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI"
           },
           {
-            "type": "offerUpdated",
-            "source": "GBWCS2C42PQYMDQVBIVUOWDPSM2T3BRJWG2ENQJQU3N75J4CSKJ6DXHN",
-            "owner": "GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI",
-            "offer": "14834",
-            "amount": "0.9",
-            "asset": [
-              "USD-GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI-1",
-              "XLM"
-            ],
-            "price": 1,
-            "flags": 0
-          },
-          {
             "type": "trade",
             "source": "GBWCS2C42PQYMDQVBIVUOWDPSM2T3BRJWG2ENQJQU3N75J4CSKJ6DXHN",
             "amount": [
@@ -891,6 +878,19 @@
             ],
             "offer": "14835",
             "seller": "GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI"
+          },
+          {
+            "type": "offerUpdated",
+            "source": "GBWCS2C42PQYMDQVBIVUOWDPSM2T3BRJWG2ENQJQU3N75J4CSKJ6DXHN",
+            "owner": "GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI",
+            "offer": "14834",
+            "amount": "0.9",
+            "asset": [
+              "USD-GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI-1",
+              "XLM"
+            ],
+            "price": 1,
+            "flags": 0
           },
           {
             "type": "offerRemoved",
