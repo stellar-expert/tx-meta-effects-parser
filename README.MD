@@ -16,7 +16,7 @@ npm i github:@stellar-expert/tx-meta-effects-parser
 To install a specific version of this library, use `#` tag notation: 
 
 ```
-npm i github:@stellar-expert/tx-meta-effects-parser#v1.10.0
+npm i github:@stellar-expert/tx-meta-effects-parser#v2.0.0
 ```
 
 ## Usage
@@ -31,7 +31,7 @@ const res = parseTxOperationsMeta({
   meta: '_base64-encoded_transaction_result_meta_XDR_'
 })
 
-console.log(res.effects)
+console.log(res.fee)
 console.log(res.operations[0].effects)
 ```
 
@@ -54,8 +54,8 @@ console.log(res.operations[0].effects)
   type: 'feeCharged',
   source: 'GBKP…YDLI',
   asset: 'XLM',
-  feeBid: '0.0010000',
-  charged: '0.0000100'
+  bid: '0.001',
+  charged: '0.00001'
 }
 ```
 </td>

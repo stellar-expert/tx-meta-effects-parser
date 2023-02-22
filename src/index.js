@@ -26,26 +26,26 @@ function parseTxOperationsMeta({network, tx, result, meta}) {
 
     let parsedTx = tx = TransactionBuilder.fromXDR(tx, Networks[network.toUpperCase()] || network)
 
-    const txEffects = []
     const isFeeBump = !!parsedTx.innerTransaction
     let feeBumpSuccess
+    const res = {
+        tx,
+        isEphemeral
+    }
+
+    if (!isEphemeral) {
+        res.fee = processFeeChargedEffect(parsedTx, result.feeCharged().toString(), isFeeBump)
+    }
 
     //take inner transaction if parsed tx is a fee bump tx
     if (isFeeBump) {
         parsedTx = parsedTx.innerTransaction
-        if (!isEphemeral) { //add fee bump charge effect
-            txEffects.push(processFeeChargedEffect(parsedTx, result.feeCharged().toString(), true))
+        if (!isEphemeral) {
+            result = result.result().innerResultPair().result()
+            feeBumpSuccess = result.result().switch().value >= 0
         }
-        result = result.result().innerResultPair().result()
-        feeBumpSuccess = result.result().switch().value >= 0
     }
-
-    const res = {
-        tx,
-        operations: parsedTx.operations,
-        effects: txEffects,
-        isEphemeral
-    }
+    res.operations = parsedTx.operations
 
     //normalize operation source and effects container
     for (const op of parsedTx.operations) {
@@ -55,8 +55,6 @@ function parseTxOperationsMeta({network, tx, result, meta}) {
         op.effects = []
     }
 
-    //add fee charge effect
-    txEffects.push(processFeeChargedEffect(parsedTx, result.feeCharged().toString()))
     const {success, opResults} = parseTxResult(result)
     if (!success || isFeeBump && !feeBumpSuccess) {
         res.failed = true
@@ -99,7 +97,7 @@ function ensureXdrInputType(value, xdrType) {
  * @typedef {{}} ParsedTxOperationsMetadata
  * @property {Transaction|FeeBumpTransaction} tx
  * @property {BaseOperation[]} operations
- * @property {{}[]} effects
+ * @property {{}} fee
  * @property {Boolean} isEphemeral
  * @property {Boolean} failed?
  */

@@ -27,8 +27,6 @@ describe('Effects', () => {
             meta
         })
 
-        for (let i = 0; i < res.effects.length; i++) {
-            expect(res.effects[i]).toStrictEqual(expected[i])
-        }
+        expect(res.fee).toStrictEqual(expected)
     })
 })

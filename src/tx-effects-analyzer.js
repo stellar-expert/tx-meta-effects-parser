@@ -143,22 +143,21 @@ const effectProcessorMap = {
 
 /**
  * Generates fee charged effect
- * @param {any} tx - transaction
- * @param {string} chargedAmount - charged amount
- * @param {boolean} feeBump - is fee bump
- * @returns {any} - fee charged effect
+ * @param {{}} tx - transaction
+ * @param {String} chargedAmount - charged amount
+ * @param {Boolean} feeBump - is fee bump
+ * @returns {{}} - fee charged effect
  */
 function processFeeChargedEffect(tx, chargedAmount, feeBump = false) {
     const res = {
         type: effectTypes.feeCharged,
         source: tx.feeSource || tx.source,
         asset: 'XLM',
-        feeBid: adjustPrecision(tx.fee),
+        bid: adjustPrecision(tx.fee),
         charged: adjustPrecision(chargedAmount)
-
     }
     if (feeBump) {
-        res.isFeeBump = true
+        res.bump = true
     }
     return res
 }
@@ -455,22 +454,24 @@ function processDexOperationEffects({operation, changes, result}) {
         if (type === 'liquidityPool' || type === 'offer' && action !== 'created') {
             const id = before?.id || after?.id
             //process trade effects
-            const claimedOffers = result.claimedOffers.filter(co => co.offerId === id)
-            for (const claimedOffer of claimedOffers) {
-                const trade = {
-                    type: effectTypes.trade,
-                    source: operation.source,
-                    amount: claimedOffer.amount.map(adjustPrecision),
-                    asset: claimedOffer.asset
+            for (const claimedOffer of result.claimedOffers)
+                if (claimedOffer.offerId === id) {
+                    const trade = {
+                        type: effectTypes.trade,
+                        source: operation.source,
+                        amount: claimedOffer.amount.map(adjustPrecision),
+                        asset: claimedOffer.asset
+                    }
+                    if (type === 'liquidityPool') {
+                        trade.pool = before.pool
+                    } else {
+                        trade.offer = before.id
+                        trade.seller = before.account
+                        if (claimedOffer.account !== before.account)
+                            throw new Error('Claimed offer seller doesn\'t match meta changes account.')
+                    }
+                    effects.push(trade)
                 }
-                if (type === 'liquidityPool') {
-                    trade.pool = before.pool
-                } else {
-                    trade.offer = before.id
-                    trade.seller = before.account
-                }
-                effects.push(trade)
-            }
         }
         switch (type) {
             case 'liquidityPool':
