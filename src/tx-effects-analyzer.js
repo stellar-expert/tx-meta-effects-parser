@@ -222,7 +222,8 @@ function processMergeAccountEffects({operation, changes, result}) {
 
 function processSetOptionsEffects({operation, changes}) {
     const effects = []
-    const {before, after} = changes.find(ch => ch.type === 'account' && ch.before.address === operation.source)
+    const srcAccount = operation.source[0] === 'M' ? extractBaseAddress(operation.source) : operation.source
+    const {before, after} = changes.find(ch => ch.type === 'account' && ch.before.address === srcAccount)
     if (before.homeDomain !== after.homeDomain) {
         effects.push({
             type: effectTypes.accountHomeDomainUpdated,
