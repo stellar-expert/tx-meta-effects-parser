@@ -25,16 +25,11 @@ const {
  * @param {Number} baseFee - Base fee amount
  * @return {Promise}
  */
-async function generateTestVectors({
-    seed,
-    network = Networks.TESTNET,
-    horizonUrl = 'https://horizon-testnet.stellar.org/',
-    baseFee = 10000
-}) {
+async function generateTestVectors({seed, horizonUrl, network = Networks.TESTNET, baseFee = 10000}) {
     if (typeof baseFee === 'string') {
         baseFee = parseInt(baseFee, 10)
     }
-    const horizon = new Server(horizonUrl, {allowHttp: true})
+    const horizon = new Server(horizonUrl || 'https://horizon-testnet.stellar.org/', {allowHttp: true})
     const accountA = await createVectorAccount(seed, 'A', horizon)
     const accountB = await createVectorAccount(seed, 'B', horizon)
     const accountC = await createVectorAccount(seed, 'C', horizon)
@@ -81,7 +76,7 @@ async function generateTestVectors({
 
     const USDE_EURE_poolId = getLiquidityPoolId('constant_product',
         USDE_EURE_poolAsset.getLiquidityPoolParameters())
-        .toString("hex")
+        .toString('hex')
 
     const generalParams = {
         source: accountA,
@@ -135,6 +130,8 @@ async function generateTestVectors({
     await offers()
 
     await sponsorships()
+
+    await deauthorization()
 
     await feeBumpTx()
 
@@ -752,6 +749,66 @@ async function generateTestVectors({
                 signerKeys: [accountA.keypair]
             }))
     }
+
+    async function deauthorization() {
+        const tx = buildTransaction({
+            ...generalParams,
+            source: accountB,
+            operations: [
+                Operation
+                    .changeTrust({
+                        asset: USDA_asset
+                    }),
+                Operation
+                    .allowTrust({
+                        trustor: accountB.address,
+                        assetCode: USDA_asset.code,
+                        authorize: 1,
+                        source: accountA.address
+                    }),
+                Operation
+                    .payment({
+                        destination: accountB.address,
+                        amount: '100000',
+                        asset: USDA_asset,
+                        source: accountA.address
+                    }),
+                Operation
+                    .manageSellOffer({
+                        selling: USDA_asset,
+                        buying: XLM,
+                        amount: '110',
+                        price: 1,
+                        offerId: 0
+                    }),
+                Operation
+                    .changeTrust({
+                        asset: XLM_USDA_poolAsset
+                    }),
+                Operation
+                    .liquidityPoolDeposit({
+                        liquidityPoolId: XLM_USDA_poolId,
+                        maxAmountA: '100',
+                        maxAmountB: '100',
+                        minPrice: '0.1',
+                        maxPrice: '10'
+                    }),
+                Operation
+                    .setTrustLineFlags({
+                        trustor: accountB.address,
+                        asset: USDA_asset,
+                        flags: {
+                            authorized: false
+                        },
+                        source: accountA.address
+                    })
+            ],
+            signerKeys: [accountA.keypair, accountB.keypair]
+        })
+
+        await exec('deauthorize trustline with active offer and liquidity pool stake', tx)
+    }
+
 
     async function inflation() {
         await exec('inflation',

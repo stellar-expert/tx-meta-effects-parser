@@ -162,16 +162,20 @@ function processFeeChargedEffect(tx, chargedAmount, feeBump = false) {
     return res
 }
 
-function processCreateAccountEffects({operation}) {
-    const effect = {
+function processCreateAccountEffects({operation, changes}) {
+    const accountCreated = {
         type: effectTypes.accountCreated,
         source: operation.source,
         account: operation.destination
     }
+    const {after} = changes.find(c => c.type === 'account' && c.action === 'created')
+    if (after.sponsor) {
+        accountCreated.sponsor = after.sponsor
+    }
     if (parseFloat(operation.startingBalance) === 0)
-        return [effect]
+        return [accountCreated]
     return [
-        effect,
+        accountCreated,
         {
             type: effectTypes.accountDebited,
             source: operation.source,
@@ -187,13 +191,17 @@ function processCreateAccountEffects({operation}) {
     ]
 }
 
-function processMergeAccountEffects({operation, result}) {
-    const removedEffect = {
+function processMergeAccountEffects({operation, changes, result}) {
+    const accountRemoved = {
         type: effectTypes.accountRemoved,
         source: operation.source
     }
+    const {before} = changes.find(c => c.type === 'account' && c.action === 'removed')
+    if (before.sponsor) {
+        accountRemoved.sponsor = before.sponsor
+    }
     if (parseFloat(result.actualMergedAmount) === 0)
-        return [removedEffect]
+        return [accountRemoved]
     return [
         {
             type: effectTypes.accountDebited,
@@ -207,7 +215,7 @@ function processMergeAccountEffects({operation, result}) {
             asset: 'XLM',
             amount: adjustPrecision(result.actualMergedAmount)
         },
-        removedEffect
+        accountRemoved
     ]
 }
 
@@ -299,81 +307,38 @@ function processSetOptionsEffects({operation, changes}) {
 }
 
 function processChangeTrustEffects({operation, changes}) {
-    const entityType = operation.line.fee ?
-        'liquidityPoolStake' :
-        'trustline'
-    const trustChange = changes.find(ch => ch.type === entityType)
-    const trustedAsset = entityType === 'liquidityPoolStake' ?
-        (trustChange.after || trustChange.before).pool :
-        xdrParseAsset(operation.line)
-    const trustEffect = {
-        type: '',
-        source: operation.source,
-        asset: trustedAsset,
-        flags: (trustChange.after || trustChange.before).flags
-    }
-
-    const effects = [trustEffect]
-    if (parseFloat(operation.limit) === 0) {
-        trustEffect.type = effectTypes.trustlineRemoved
-        if (trustChange.type === 'liquidityPoolStake' && changes.some(ch => ch.type === 'liquidityPool' && ch.action === 'removed')) {
-            effects.push({
-                type: effectTypes.liquidityPoolRemoved,
-                source: operation.source,
-                pool: trustedAsset
-            })
-        }
-    } else {
-        trustEffect.type = trustChange.action === 'created' ?
-            effectTypes.trustlineCreated :
-            effectTypes.trustlineUpdated
-        trustEffect.limit = trimZeros(operation.limit)
-        if (trustChange.type === 'liquidityPoolStake') {
-            const lpChange = changes.find(ch => ch.type === 'liquidityPool')
-            if (lpChange) {
-                const {after} = lpChange
-                if (lpChange.action === 'created') {
-                    effects.unshift({
-                        type: effectTypes.liquidityPoolCreated,
-                        source: operation.source,
-                        pool: trustedAsset,
-                        reserves: after.asset.map(asset => ({asset, amount: '0'})),
-                        shares: '0',
-                        accounts: 1
-                    })
-                } else {
-                    effects.push({
-                        type: effectTypes.liquidityPoolUpdated,
-                        source: operation.source,
-                        pool: trustedAsset,
-                        reserves: after.asset.map((asset, i) => ({
-                            asset,
-                            amount: adjustPrecision(after.amount[i])
-                        })),
-                        shares: after.shares,
-                        accounts: after.accounts
-                    })
-                }
-            }
-        }
-    }
-    return effects
+    return [
+        ...processLiquidityPoolChanges({operation, changes}),
+        ...processTrustlineEffectsChanges({operation, changes})
+    ]
 }
 
 function processAllowTrustEffects({operation, changes}) {
     if (!changes.length)
         return []
-    const {before, after} = changes[0]
-    if (before.flags === after.flags)
-        return []
-    return [{
-        type: effectTypes.trustlineAuthorizationUpdated,
-        source: operation.source,
-        trustor: operation.trustor,
-        asset: after.asset,
-        flags: after.flags,
-        prevFlags: before.flags
-    }]
+    const trustlineChange = changes.find(ch => ch.type === 'trustline')
+    const effects = []
+    if (trustlineChange) {
+        const {before, after} = trustlineChange
+        if (before.flags !== after.flags) {
+            effects.push({
+                type: effectTypes.trustlineAuthorizationUpdated,
+                source: operation.source,
+                trustor: operation.trustor,
+                asset: after.asset,
+                flags: after.flags,
+                prevFlags: before.flags
+            })
+        }
+    }
+
+    return [
+        ...effects,
+        ...processTrustlineEffectsChanges({operation, changes}),
+        ...processLiquidityPoolChanges({operation, changes}),
+        ...processOfferChanges({operation, changes}),
+        ...processClaimableBalanceChanges({operation, changes})
+    ]
 }
 
 function processPaymentEffects({operation}) {
@@ -466,71 +431,11 @@ function processDexOperationEffects({operation, changes, result}) {
         effects.push(trade)
     }
 
-    for (const {action, type, before, after} of changes) {
-        //process state changes
-        switch (type) {
-            case 'liquidityPool':
-                effects.push({ //updated token amount after the trade against a liquidity
-                    type: effectTypes.liquidityPoolUpdated,
-                    source: operation.source,
-                    pool: after.pool,
-                    reserves: after.asset.map((asset, i) => ({
-                        asset,
-                        amount: adjustPrecision(after.amount[i])
-                    })),
-                    shares: after.shares,
-                    accounts: after.accounts
-                })
-                break
-            case 'offer':
-                switch (action) {
-                    case 'created': //new offer created as a result of manage offer operation
-                        effects.push({
-                            type: effectTypes.offerCreated,
-                            source: operation.source,
-                            owner: after.account,
-                            offer: after.id,
-                            amount: adjustPrecision(after.amount),
-                            asset: after.asset,
-                            price: after.price,
-                            flags: after.flags
-                        })
-                        break
-                    case 'updated': //offer changed as a result of a trade
-                        effects.push({
-                            type: effectTypes.offerUpdated,
-                            source: operation.source,
-                            owner: after.account,
-                            offer: after.id,
-                            amount: adjustPrecision(after.amount),
-                            asset: after.asset,
-                            price: after.price,
-                            flags: after.flags
-                        })
-                        break
-                    case 'removed': //offer removed - either as a result of trade or canceling operation
-                        effects.push({
-                            type: effectTypes.offerRemoved,
-                            source: operation.source,
-                            owner: before.account,
-                            offer: before.id,
-                            asset: before.asset,
-                            flags: before.flags
-                        })
-                        break
-                    default:
-                        throw new UnexpectedMetaChangeError({action, type})
-                }
-                break
-            case 'account':
-            case 'trustline':
-                //no need to process these ledger entry types - skip
-                break
-            default:
-                throw new UnexpectedMetaChangeError({action, type})
-        }
-    }
-    return effects
+    return [
+        ...effects,
+        ...processOfferChanges({operation, changes}),
+        ...processLiquidityPoolChanges({operation, changes})
+    ]
 }
 
 function processInflationEffects({operation, result}) {
@@ -552,13 +457,17 @@ function processInflationEffects({operation, result}) {
 function processManageDataEffects({operation, changes}) {
     if (!changes.length)
         return [] //data entries not updated
-    const change = changes.find(ch => ch.type === 'data')
+    const {action, before, after} = changes.find(ch => ch.type === 'data')
     const effect = {
         type: '',
         source: operation.source,
         name: operation.name
     }
-    switch (change.action) {
+    const {sponsor} = after || before
+    if (sponsor) {
+        effect.sponsor = sponsor
+    }
+    switch (action) {
         case 'created':
             effect.type = effectTypes.dataEntryCreated
             effect.value = operation.value.toString('base64')
@@ -589,7 +498,7 @@ function processBumpSequenceEffects({operation, changes}) {
     ]
 }
 
-function processCreateClaimableBalanceEffects({operation, result}) {
+function processCreateClaimableBalanceEffects({operation, changes}) {
     const asset = xdrParseAsset(operation.asset)
     return [
         {
@@ -598,18 +507,7 @@ function processCreateClaimableBalanceEffects({operation, result}) {
             asset,
             amount: trimZeros(operation.amount)
         },
-        {
-            type: effectTypes.claimableBalanceCreated,
-            source: operation.source,
-            sponsor: operation.source,
-            balance: result.balanceId,
-            asset,
-            amount: trimZeros(operation.amount),
-            claimants: operation.claimants.map(c => ({
-                destination: c.destination,
-                predicate: xdrParseClaimantPredicate(c.predicate)
-            }))
-        }
+        ...processClaimableBalanceChanges({operation, changes})
     ]
 }
 
@@ -623,90 +521,42 @@ function processClaimClaimableBalanceEffects({operation, changes}) {
             asset: before.asset,
             amount
         },
-        {
-            type: effectTypes.claimableBalanceRemoved,
-            source: operation.source,
-            sponsor: before.sponsor,
-            balance: before.balanceId,
-            asset: before.asset,
-            amount,
-            claimants: before.claimants
-        }
+        ...processClaimableBalanceChanges({operation, changes})
     ]
 }
 
 function processLiquidityPoolDepositEffects({operation, changes}) {
-    const effects = []
-    for (const {action, type, before, after} of changes) {
-        if (type !== 'liquidityPool')
-            continue
-        switch (action) {
-            case 'updated':
-                effects.push({
-                    type: effectTypes.liquidityPoolDeposited,
-                    source: operation.source,
-                    pool: operation.liquidityPoolId,
-                    assets: after.asset.map((asset, i) => ({
-                        asset,
-                        amount: adjustPrecision(new Bignumber(after.amount[i]).minus(before.amount[i]))
-                    })),
-                    shares: trimZeros(new Bignumber(after.shares).minus(before.shares).toFixed(7))
-                })
-                effects.push({
-                    type: effectTypes.liquidityPoolUpdated,
-                    source: operation.source,
-                    pool: operation.liquidityPoolId,
-                    reserves: after.asset.map((asset, i) => ({
-                        asset,
-                        amount: adjustPrecision(after.amount[i])
-                    })),
-                    shares: after.shares,
-                    accounts: after.accounts
-                })
-                break
-            default:
-                throw new UnexpectedMetaChangeError({action, type})
-        }
-
-    }
-    return effects
+    const {before, after} = changes.find(ch => ch.type === 'liquidityPool' && ch.action === 'updated')
+    return [
+        {
+            type: effectTypes.liquidityPoolDeposited,
+            source: operation.source,
+            pool: operation.liquidityPoolId,
+            assets: after.asset.map((asset, i) => ({
+                asset,
+                amount: adjustPrecision(new Bignumber(after.amount[i]).minus(before.amount[i]))
+            })),
+            shares: trimZeros(new Bignumber(after.shares).minus(before.shares).toFixed(7))
+        },
+        ...processLiquidityPoolChanges({operation, changes})
+    ]
 }
 
 function processLiquidityPoolWithdrawEffects({operation, changes}) {
-    const effects = []
-    for (const ch of changes) {
-        if (ch.type !== 'liquidityPool')
-            continue
-        const {action, before, after} = ch
-        switch (action) {
-            case 'updated':
-                effects.push({
-                    type: effectTypes.liquidityPoolWithdrew,
-                    source: operation.source,
-                    pool: operation.liquidityPoolId,
-                    assets: before.asset.map((asset, i) => ({
-                        asset,
-                        amount: adjustPrecision(new Bignumber(before.amount[i]).minus(after.amount[i]))
-                    })),
-                    shares: trimZeros(new Bignumber(before.shares).minus(after.shares).toFixed(7))
-                })
-                effects.push({
-                    type: effectTypes.liquidityPoolUpdated,
-                    source: operation.source,
-                    pool: operation.liquidityPoolId,
-                    reserves: after.asset.map((asset, i) => ({
-                        asset,
-                        amount: adjustPrecision(after.amount[i])
-                    })),
-                    shares: after.shares,
-                    accounts: after.accounts
-                })
-                break
-            default:
-                throw new UnexpectedMetaChangeError(ch)
-        }
-    }
-    return effects
+    const {before, after} = changes.find(ch => ch.type === 'liquidityPool' && ch.action === 'updated')
+    return [
+        {
+            type: effectTypes.liquidityPoolWithdrew,
+            source: operation.source,
+            pool: before.pool,
+            assets: before.asset.map((asset, i) => ({
+                asset,
+                amount: adjustPrecision(new Bignumber(before.amount[i]).minus(after.amount[i]))
+            })),
+            shares: trimZeros(new Bignumber(before.shares).minus(after.shares).toFixed(7))
+        },
+        ...processLiquidityPoolChanges({operation, changes})
+    ]
 }
 
 function processClawbackEffects({operation}) {
@@ -741,15 +591,7 @@ function processClawbackClaimableBalanceEffects({operation, changes}) {
             asset: before.asset,
             amount
         },
-        {
-            type: effectTypes.claimableBalanceRemoved,
-            source: operation.source,
-            sponsor: before.sponsor,
-            balance: before.balanceId,
-            asset: before.asset,
-            amount,
-            claimants: before.claimants
-        }
+        ...processClaimableBalanceChanges({operation, changes})
     ]
 }
 
@@ -886,6 +728,152 @@ function processSignerSponsorshipEffects({operation, changes}) {
     }
 }
 
+function processLiquidityPoolChanges({operation, changes}) {
+    const effects = []
+    for (const change of changes)
+        if (change.type === 'liquidityPool') {
+            const {action, before, after} = change
+            const snapshot = after || before
+            const effect = {
+                type: effectTypes.liquidityPoolRemoved,
+                source: operation.source,
+                pool: snapshot.pool
+            }
+            if (snapshot.sponsor) {
+                effect.sponsor = snapshot.sponsor
+            }
+            switch (action) {
+                case 'created':
+                    Object.assign(effect, {
+                        type: effectTypes.liquidityPoolCreated,
+                        reserves: after.asset.map(asset => ({asset, amount: '0'})),
+                        shares: '0',
+                        accounts: 1
+                    })
+                    break
+                case 'updated':
+                    Object.assign(effect, {
+                        type: effectTypes.liquidityPoolUpdated,
+                        reserves: after.asset.map((asset, i) => ({
+                            asset,
+                            amount: adjustPrecision(after.amount[i])
+                        })),
+                        shares: after.shares,
+                        accounts: after.accounts
+                    })
+                    break
+            }
+            effects.push(effect)
+        }
+    return effects
+}
+
+function processTrustlineEffectsChanges({operation, changes}) {
+    const effects = []
+    for (const change of changes)
+        if (change.type === 'liquidityPoolStake' || change.type === 'trustline') {
+            const {type, action, before, after} = change
+            const snapshot = (after || before)
+            const trustedAsset = type === 'liquidityPoolStake' ? snapshot.pool : snapshot.asset
+            const source = snapshot.account
+            const trustEffect = {
+                type: effectTypes.trustlineRemoved,
+                source: source,
+                asset: trustedAsset
+            }
+            if (snapshot.sponsor) {
+                trustEffect.sponsor = snapshot.sponsor
+            }
+            switch (action) {
+                case 'created':
+                    trustEffect.type = effectTypes.trustlineCreated
+                    trustEffect.limit = adjustPrecision(snapshot.limit)
+                    trustEffect.flags = snapshot.flags
+                    break
+                case 'updated':
+                    if (before.limit === after.limit && before.flags === after.flags)
+                        continue
+                    trustEffect.type = effectTypes.trustlineUpdated
+                    trustEffect.limit = adjustPrecision(snapshot.limit)
+                    trustEffect.flags = snapshot.flags
+                    break
+            }
+            effects.push(trustEffect)
+            break
+        }
+    return effects
+}
+
+function processOfferChanges({operation, changes}) {
+    const effects = []
+    for (const change of changes)
+        if (change.type === 'offer') {
+            const {action, before, after} = change
+            const snapshot = after || before
+            const effect = {
+                type: effectTypes.offerRemoved,
+                source: operation.source,
+                owner: snapshot.account,
+                offer: snapshot.id,
+                asset: snapshot.asset,
+                flags: snapshot.flags
+            }
+            if (snapshot.sponsor) {
+                effect.sponsor = snapshot.sponsor
+            }
+            switch (action) {
+                case 'created':
+                    effect.type = effectTypes.offerCreated
+                    effect.amount = adjustPrecision(after.amount)
+                    effect.price = after.price
+                    break
+                case 'updated':
+                    effect.type = effectTypes.offerUpdated
+                    effect.amount = adjustPrecision(after.amount)
+                    effect.price = after.price
+                    break
+            }
+            effects.push(effect)
+        }
+    return effects
+}
+
+function processClaimableBalanceChanges({operation, changes}) {
+    const effects = []
+    for (const change of changes)
+        if (change.type === 'claimableBalance') {
+            const {action, before, after} = change
+            switch (action) {
+                case 'created':
+                    effects.push({
+                        type: effectTypes.claimableBalanceCreated,
+                        source: operation.source,
+                        sponsor: after.sponsor,
+                        balance: after.balanceId,
+                        asset: after.asset,
+                        amount: adjustPrecision(after.amount),
+                        claimants: after.claimants
+                    })
+                    break
+                case 'removed':
+                    effects.push({
+                        type: effectTypes.claimableBalanceRemoved,
+                        source: operation.source,
+                        sponsor: before.sponsor,
+                        balance: before.balanceId,
+                        asset: before.asset,
+                        amount: adjustPrecision(before.amount),
+                        claimants: before.claimants
+                    })
+                    break
+                default:
+                    throw new UnexpectedMetaChangeError(change)
+            }
+
+        }
+    return effects
+}
+
 function noEffects() {
     return []
 }
@@ -908,7 +896,7 @@ function trimZeros(value) {
 
 class UnexpectedMetaChangeError extends Error {
     constructor(change) {
-        super(`Unexpected meta changes: ${change.action} ${change.type}`)
+        super(`Unexpected meta changes: "${change.type}" "${change.action}"`)
     }
 }
 

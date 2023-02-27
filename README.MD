@@ -16,7 +16,7 @@ npm i github:@stellar-expert/tx-meta-effects-parser
 To install a specific version of this library, use `#` tag notation: 
 
 ```
-npm i github:@stellar-expert/tx-meta-effects-parser#v2.0.0
+npm i github:@stellar-expert/tx-meta-effects-parser#v2.2.0
 ```
 
 ## Usage
@@ -296,7 +296,7 @@ ClawbackClaimableBalance, InflationOp</td>
 <td>
 <code>trustlineUpdated</code>
 </td>
-<td>ChangeTrustOp, AllowTrustOp</td>
+<td>ChangeTrustOp, AllowTrustOp, SetTrustLineFlagsOp</td>
 <td>
 
 ```js
@@ -323,8 +323,7 @@ ClawbackClaimableBalance, InflationOp</td>
 {
   type: 'trustlineRemoved',
   source: 'GBWC…DXHN',
-  asset: 'USD-GBKP…YDLI-1',
-  flags: 1
+  asset: 'USD-GBKP…YDLI-1'
 }
 ```
 
@@ -335,7 +334,7 @@ ClawbackClaimableBalance, InflationOp</td>
 <td>
 <code>trustlineAuthorizationUpdated</code>
 </td>
-<td>AllowTrustOp</td>
+<td>AllowTrustOp, SetTrustLineFlagsOp</td>
 <td>
 
 ```js
@@ -408,7 +407,7 @@ ClawbackClaimableBalance, InflationOp</td>
 <td>
 <code>offerRemoved</code>
 </td>
-<td>CreatePassiveOfferOp, ManageBuyOfferOp, ManageSellOfferOp, PathPaymentOp</td>
+<td>CreatePassiveOfferOp, ManageBuyOfferOp, ManageSellOfferOp, PathPaymentOp, AllowTrustOp, SetTrustLineFlagsOp</td>
 <td>
 
 ```js
@@ -462,7 +461,7 @@ ClawbackClaimableBalance, InflationOp</td>
 <td>
 <code>liquidityPoolUpdated</code>
 </td>
-<td>DepositLiquidityOp, WithdrawLiquidityOp</td>
+<td>DepositLiquidityOp, WithdrawLiquidityOp, AllowTrustOp, SetTrustLineFlagsOp</td>
 <td>
 
 ```js
@@ -550,7 +549,7 @@ ClawbackClaimableBalance, InflationOp</td>
 <td>
 <code>liquidityPoolRemoved</code>
 </td>
-<td>ChangeTrustOp</td>
+<td>ChangeTrustOp, AllowTrustOp, SetTrustLineFlagsOp</td>
 <td>
 
 ```js
@@ -683,7 +682,7 @@ ClawbackClaimableBalance, InflationOp</td>
 <td>
 <code>claimableBalanceCreated</code>
 </td>
-<td>CreateClaimableBalanceOp</td>
+<td>CreateClaimableBalanceOp, AllowTrustOp, SetTrustLineFlagsOp</td>
 <td>
 
 ```js
@@ -712,7 +711,7 @@ ClawbackClaimableBalance, InflationOp</td>
 <td>
 <code>claimableBalanceRemoved</code>
 </td>
-<td>ClaimClaimableBalanceOp</td>
+<td>ClaimClaimableBalanceOp, ClawbackClaimableBalanceOp</td>
 <td>
 
 ```js
