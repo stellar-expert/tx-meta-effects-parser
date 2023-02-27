@@ -1,6 +1,7 @@
 const Bignumber = require('bignumber.js')
 const {parseLedgerEntryChanges} = require('./ledger-entry-changes-parser')
 const {xdrParseAsset, xdrParseClaimantPredicate} = require('./tx-xdr-parser-utils')
+const {StrKey, extractBaseAddress} = require('stellar-sdk')
 
 /**
  * All possible effects types
@@ -561,10 +562,12 @@ function processLiquidityPoolWithdrawEffects({operation, changes}) {
 
 function processClawbackEffects({operation}) {
     if (operation.from === operation.source)
-        return []
+        throw new Error(`Self-clawback attempt for account ${operation.source}`)
     const asset = xdrParseAsset(operation.asset)
-    if (!asset.includes(operation.source))
-        throw new Error(`Asset ${asset} clawed back by account ${operation.source}`)
+    if (!asset.includes(operation.source)) {
+        if (!StrKey.isValidMed25519PublicKey(operation.source) || !asset.includes(extractBaseAddress(operation.source)))
+            throw new Error(`Attempt to clawback asset ${asset} by account ${operation.source}`)
+    }
     return [
         {
             type: effectTypes.accountDebited,
