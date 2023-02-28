@@ -24,7 +24,12 @@ function parseTxOperationsMeta({network, tx, result, meta}) {
     tx = ensureXdrInputType(tx, xdr.TransactionEnvelope)
     result = ensureXdrInputType(result, xdr.TransactionResult)
 
-    let parsedTx = tx = TransactionBuilder.fromXDR(tx, Networks[network.toUpperCase()] || network)
+    try {
+        tx = TransactionBuilder.fromXDR(tx, Networks[network.toUpperCase()] || network)
+    } catch (e) {
+    }
+
+    let parsedTx = tx
 
     const isFeeBump = !!parsedTx.innerTransaction
     let feeBumpSuccess
@@ -45,14 +50,16 @@ function parseTxOperationsMeta({network, tx, result, meta}) {
             feeBumpSuccess = result.result().switch().value >= 0
         }
     }
-    res.operations = parsedTx.operations
+    if (parsedTx.operations) {
+        res.operations = parsedTx.operations
 
-    //normalize operation source and effects container
-    for (const op of parsedTx.operations) {
-        if (!op.source) {
-            op.source = parsedTx.source
+        //normalize operation source and effects container
+        for (const op of parsedTx.operations) {
+            if (!op.source) {
+                op.source = parsedTx.source
+            }
+            op.effects = []
         }
-        op.effects = []
     }
 
     const {success, opResults} = parseTxResult(result)

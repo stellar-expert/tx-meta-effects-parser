@@ -1,7 +1,7 @@
+const {StrKey, extractBaseAddress} = require('stellar-sdk')
 const Bignumber = require('bignumber.js')
 const {parseLedgerEntryChanges} = require('./ledger-entry-changes-parser')
-const {xdrParseAsset, xdrParseClaimantPredicate} = require('./tx-xdr-parser-utils')
-const {StrKey, extractBaseAddress} = require('stellar-sdk')
+const {xdrParseAsset, xdrParseAccountAddress} = require('./tx-xdr-parser-utils')
 
 /**
  * All possible effects types
@@ -150,6 +150,13 @@ const effectProcessorMap = {
  * @returns {{}} - fee charged effect
  */
 function processFeeChargedEffect(tx, chargedAmount, feeBump = false) {
+    if (tx._switch) { //raw XDR
+        const txXdr = tx.value().tx()
+        tx = {
+            source: xdrParseAccountAddress((txXdr.feeSource ? txXdr.feeSource : txXdr.sourceAccount).call(txXdr)),
+            fee: txXdr.fee()
+        }
+    }
     const res = {
         type: effectTypes.feeCharged,
         source: tx.feeSource || tx.source,
