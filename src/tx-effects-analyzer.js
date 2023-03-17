@@ -281,8 +281,16 @@ function processSetOptionsEffects({operation, changes}) {
         }
     }
     if (operation.signer !== undefined && JSON.stringify(before.signers) !== JSON.stringify(after.signers)) {
-        const weight = operation.signer.weight || 0
-        const key = operation.signer.ed25519PublicKey || operation.signer.sha256Hash || operation.signer.preAuthTx || operation.signer.ed25519SignedPayload
+        const {signer} = operation
+        const weight = signer.weight || 0
+        let key
+        if (signer.sha256Hash) {
+            key = StrKey.encodeSha256Hash(signer.sha256Hash)
+        } else if (signer.preAuthTx) {
+            key = StrKey.encodePreAuthTx(signer.preAuthTx)
+        } else {
+            key = operation.signer.ed25519PublicKey || operation.signer.ed25519SignedPayload
+        }
         if (weight === 0) {
             effects.push({
                 type: effectTypes.accountSignerRemoved,
