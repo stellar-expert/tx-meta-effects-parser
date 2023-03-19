@@ -403,27 +403,31 @@ function processPathPaymentStrictReceiveEffects({operation, changes, result}) {
     if (!tradeEffects.length) { //direct payment
         if (srcAsset !== destAsset)
             throw new Error('Invalid path payment operation without trade effects')
-        const balanceUpdate = changes.find(ch => ch.type === 'account' && ch.action === 'updated')
-        if (!balanceUpdate)
-            return []
-        const before = balanceUpdate.before.balance
-        const after = balanceUpdate.after.balance
-        if (before === after)
-            return [] //no changes
-        //handle legacy bug in path payments
-        if (before > after)
+        if (operation.source === operation.destination) {
+            const balanceUpdate = changes.find(ch => ch.type === 'account' && ch.action === 'updated')
+            if (!balanceUpdate)
+                return []
+            const before = balanceUpdate.before.balance
+            const after = balanceUpdate.after.balance
+            if (before === after)
+                return [] //no changes
+            //handle legacy bug in path payments
+            if (before > after)
+                return [{
+                    type: effectTypes.accountDebited,
+                    source: operation.source,
+                    asset: srcAsset,
+                    amount: adjustPrecision(new Bignumber(before).minus(after))
+                }]
             return [{
-                type: effectTypes.accountDebited,
+                type: effectTypes.accountCredited,
                 source: operation.source,
                 asset: srcAsset,
-                amount: adjustPrecision(new Bignumber(before).minus(after))
+                amount: trimZeros(new Bignumber(after).minus(before).toFixed(7))
             }]
-        return [{
-            type: effectTypes.accountCredited,
-            source: operation.source,
-            asset: srcAsset,
-            amount: trimZeros(new Bignumber(after).minus(before).toFixed(7))
-        }]
+        } else { //path payment with empty path
+            srcAmount = operation.destAmount
+        }
     } else {
         const trades = tradeEffects.filter(e => e.type === effectTypes.trade)
         const srcAmounts = []
