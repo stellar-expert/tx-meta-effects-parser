@@ -203,14 +203,15 @@ function processMergeAccountEffects({operation, changes, result}) {
     const removedMeta = changes.find(c => c.type === 'account' && c.action === 'removed')
     const effects = []
     if (removedMeta) {
-        if (removedMeta.before.address !== operation.source)
+        const {before} = removedMeta
+        if (before.address !== operation.source)
             throw new UnexpectedMetaChangeError(removedMeta)
         if (result.actualMergedAmount > 0) {
             effects.push({
                 type: effectTypes.accountDebited,
                 source: operation.source,
                 asset: 'XLM',
-                amount: adjustPrecision(result.actualMergedAmount)
+                amount: adjustPrecision(before.balance)
             })
             effects.push({
                 type: effectTypes.accountCredited,
