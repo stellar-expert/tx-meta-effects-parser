@@ -394,28 +394,38 @@ function processPaymentEffects({operation}) {
 function processPathPaymentStrictReceiveEffects({operation, changes, result}) {
     if (!changes.length)
         return [] //self-transfer without effects
+    const srcAsset = xdrParseAsset(operation.sendAsset)
+    const destAsset = xdrParseAsset(operation.destAsset)
     const tradeEffects = processDexOperationEffects({operation, changes, result})
-    const trades = tradeEffects.filter(e => e.type === effectTypes.trade)
-    const srcAmounts = []
-    for (let i = 0; i < trades.length; i++) {
-        const {amount, asset} = trades[i]
-        if (i > 0 && trades[i - 1].asset.join() !== asset.join())
-            break
-        srcAmounts.push(amount[1])
+
+    let srcAmount
+    if (!tradeEffects.length) { //direct payment
+        if (srcAsset !== destAsset)
+            throw new Error('Invalid path payment operation without trade effects')
+        srcAmount = operation.destAmount
+    } else {
+        const trades = tradeEffects.filter(e => e.type === effectTypes.trade)
+        const srcAmounts = []
+        for (let i = 0; i < trades.length; i++) {
+            const {amount, asset} = trades[i]
+            if (i > 0 && trades[i - 1].asset.join() !== asset.join())
+                break
+            srcAmounts.push(amount[1])
+        }
+        srcAmount = srcAmounts.reduce((prev, v) => prev.add(v), new Bignumber(0)).toFixed(7)
     }
-    const srcAmount = trimZeros(srcAmounts.reduce((prev, v) => prev.add(v), new Bignumber(0)).toFixed(7))
     return [
         {
             type: effectTypes.accountDebited,
             source: operation.source,
-            asset: xdrParseAsset(operation.sendAsset),
-            amount: srcAmount
+            asset: srcAsset,
+            amount: trimZeros(srcAmount)
         },
         ...tradeEffects,
         {
             type: effectTypes.accountCredited,
             source: operation.destination,
-            asset: xdrParseAsset(operation.destAsset),
+            asset: destAsset,
             amount: trimZeros(operation.destAmount)
         }
     ]
