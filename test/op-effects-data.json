@@ -1632,16 +1632,16 @@
       "expected": [
         [
           {
-            "amount": "1",
-            "asset": "EUR-GBJNMLQVZTAS4WYXZBFHPK6ALNGBURAYQNLGUGVECW45GPO7O5QUKS6C-1",
+            "type": "accountDebited",
             "source": "GBJNMLQVZTAS4WYXZBFHPK6ALNGBURAYQNLGUGVECW45GPO7O5QUKS6C",
-            "type": "accountDebited"
+            "asset": "EUR-GBJNMLQVZTAS4WYXZBFHPK6ALNGBURAYQNLGUGVECW45GPO7O5QUKS6C-1",
+            "amount": "1"
           },
           {
-            "amount": "1",
-            "asset": "EUR-GBJNMLQVZTAS4WYXZBFHPK6ALNGBURAYQNLGUGVECW45GPO7O5QUKS6C-1",
+            "type": "accountCredited",
             "source": "GD2BBP7LR5RLSQQOPDQD6I6RQCEMD2J7DFX4ADMYX4MBQBOC3CACAPUZ",
-            "type": "accountCredited"
+            "asset": "EUR-GBJNMLQVZTAS4WYXZBFHPK6ALNGBURAYQNLGUGVECW45GPO7O5QUKS6C-1",
+            "amount": "1"
           }
         ]
       ]
@@ -1656,28 +1656,56 @@
       "expected": [
         [
           {
-            "amount": "20.009852",
-            "asset": "XLM",
+            "type": "accountDebited",
             "source": "GBSSDVJTXF6XJUN5EWCUXDMCGYGNCIDTPL6G6WM6FTG3G4GDGDKU7Z2T",
-            "type": "accountDebited"
+            "asset": "XLM",
+            "amount": "20.009852"
           },
           {
-            "amount": "20.009852",
-            "asset": "XLM",
+            "type": "accountCredited",
             "source": "GCEXWPMCBOE7PH76VSFWDFV3LXIJ6VD5HTGW2D7FRR52YSH4KNCDIEEW",
-            "type": "accountCredited"
+            "asset": "XLM",
+            "amount": "20.009852"
           },
           {
-            "source": "GBSSDVJTXF6XJUN5EWCUXDMCGYGNCIDTPL6G6WM6FTG3G4GDGDKU7Z2T",
-            "type": "accountRemoved"
+            "type": "accountRemoved",
+            "source": "GBSSDVJTXF6XJUN5EWCUXDMCGYGNCIDTPL6G6WM6FTG3G4GDGDKU7Z2T"
           }
         ],
         [
           {
-            "amount": "20.009852",
-            "asset": "XLM",
+            "type": "accountCredited",
             "source": "GCEXWPMCBOE7PH76VSFWDFV3LXIJ6VD5HTGW2D7FRR52YSH4KNCDIEEW",
-            "type": "accountCredited"
+            "asset": "XLM",
+            "amount": "20.009852"
+          }
+        ]
+      ]
+    }
+  ],
+  [
+    "inflation",
+    {
+      "tx": "AAAAAKio5rVbJYW078bEBa0pF71k4+n5qYCRuxAc2alowOwaAAAAZAAERPMAAABzAAAAAAAAAAAAAAABAAAAAAAAAAkAAAAAAAAAAWjA7BoAAABAtbkijePu9ksnckO4OY9QJZ2vGT/dd1JRmIZmVQYeZuMlG+UHvzitzMFFfU3DEmCx92jvRI+y1gxI6fycfamzDg==",
+      "result": "AAAAAAAAAGQAAAAAAAAAAQAAAAAAAAAJAAAAAAAAAAIAAAAACNQTqwpRdbEoAn+tdRR4PCv8hj0vG/SrFkpQQkbWaYkAAKhd+Kl1IAAAAADs3GnuWZXu1qpB+qhI/62WqM4dZ4A1pBgWqEOQJARFlAAACKrsJNw2AAAAAA==",
+      "meta": "AAAAAgAAAAAAAAABAAAABAAAAAMAVdNKAAAAAAAAAAAI1BOrClF1sSgCf611FHg8K/yGPS8b9KsWSlBCRtZpiQBIC81Lw5xcAAAh6gAAAAUAAAAFAAAAAQAAAAAI1BOrClF1sSgCf611FHg8K/yGPS8b9KsWSlBCRtZpiQAAAAAAAAAAAQMDAwAAAAUAAAAAWAWHCZ+B/csQs61aiNJ9HpeG/AFGn4PbMb3ICbEQC4sAAAABAAAAAH+ejwpAKJQZsQGPXj+A7/du5HLCkw8dHWKkSqGBy05XAAAAAQAAAAC69o1dnVJ6rMdVlL7PU3WLsy2q4KJFUBkNPUfSPIFLmAAAAAEAAAAAwgIm7IWEpRv+tw0jLXD+XhujxyaEn59eFx+MHnKTWOMAAAABAAAAAPNU9k7O9h9WkTsJ2tPm7gPmAi/eDh6X/ImZ4EIWZ7PJAAAAAQAAAAAAAAAAAAAAAQBV00wAAAAAAAAAAAjUE6sKUXWxKAJ/rXUUeDwr/IY9Lxv0qxZKUEJG1mmJAEi0K0RtEXwAACHqAAAABQAAAAUAAAABAAAAAAjUE6sKUXWxKAJ/rXUUeDwr/IY9Lxv0qxZKUEJG1mmJAAAAAAAAAAABAwMDAAAABQAAAABYBYcJn4H9yxCzrVqI0n0el4b8AUafg9sxvcgJsRALiwAAAAEAAAAAf56PCkAolBmxAY9eP4Dv927kcsKTDx0dYqRKoYHLTlcAAAABAAAAALr2jV2dUnqsx1WUvs9TdYuzLargokVQGQ09R9I8gUuYAAAAAQAAAADCAibshYSlG/63DSMtcP5eG6PHJoSfn14XH4wecpNY4wAAAAEAAAAA81T2Ts72H1aROwna0+buA+YCL94OHpf8iZngQhZns8kAAAABAAAAAAAAAAAAAAADAFXTSgAAAAAAAAAA7Nxp7lmV7taqQfqoSP+tlqjOHWeANaQYFqhDkCQERZQAAS1AfvwqjgAN/vIAAAACAAAABQAAAAEAAAAA7Nxp7lmV7taqQfqoSP+tlqjOHWeANaQYFqhDkCQERZQAAAAAAAAAAAEDAwMAAAAFAAAAAFgFhwmfgf3LELOtWojSfR6XhvwBRp+D2zG9yAmxEAuLAAAAAQAAAAB/no8KQCiUGbEBj14/gO/3buRywpMPHR1ipEqhgctOVwAAAAEAAAAAuvaNXZ1SeqzHVZS+z1N1i7MtquCiRVAZDT1H0jyBS5gAAAABAAAAAMICJuyFhKUb/rcNIy1w/l4bo8cmhJ+fXhcfjB5yk1jjAAAAAQAAAADzVPZOzvYfVpE7CdrT5u4D5gIv3g4el/yJmeBCFmezyQAAAAEAAAAAAAAAAAAAAAEAVdNMAAAAAAAAAADs3GnuWZXu1qpB+qhI/62WqM4dZ4A1pBgWqEOQJARFlAABNetrIQbEAA3+8gAAAAIAAAAFAAAAAQAAAADs3GnuWZXu1qpB+qhI/62WqM4dZ4A1pBgWqEOQJARFlAAAAAAAAAAAAQMDAwAAAAUAAAAAWAWHCZ+B/csQs61aiNJ9HpeG/AFGn4PbMb3ICbEQC4sAAAABAAAAAH+ejwpAKJQZsQGPXj+A7/du5HLCkw8dHWKkSqGBy05XAAAAAQAAAAC69o1dnVJ6rMdVlL7PU3WLsy2q4KJFUBkNPUfSPIFLmAAAAAEAAAAAwgIm7IWEpRv+tw0jLXD+XhujxyaEn59eFx+MHnKTWOMAAAABAAAAAPNU9k7O9h9WkTsJ2tPm7gPmAi/eDh6X/ImZ4EIWZ7PJAAAAAQAAAAAAAAAAAAAAAA==",
+      "expected": [
+        [
+          {
+            "type": "inflation",
+            "source": "GCUKRZVVLMSYLNHPY3CALLJJC66WJY7J7GUYBEN3CAONTKLIYDWBU2AN"
+          },
+          {
+            "type": "accountCredited",
+            "source": "GAENIE5LBJIXLMJIAJ7225IUPA6CX7EGHUXRX5FLCZFFAQSG2ZUYSWFK",
+            "asset": "XLM",
+            "amount": "18512155.7280032"
+          },
+          {
+            "type": "accountCredited",
+            "source": "GDWNY2POLGK65VVKIH5KQSH7VWLKRTQ5M6ADLJAYC2UEHEBEARCZJWWI",
+            "asset": "XLM",
+            "amount": "953019.9301174"
           }
         ]
       ]
