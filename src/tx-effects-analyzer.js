@@ -200,31 +200,44 @@ function processCreateAccountEffects({operation, changes}) {
 }
 
 function processMergeAccountEffects({operation, changes, result}) {
-    const accountRemoved = {
-        type: effectTypes.accountRemoved,
-        source: operation.source
+    const removedMeta = changes.find(c => c.type === 'account' && c.action === 'removed')
+    const effects = []
+    if (removedMeta) {
+        if (removedMeta.before.address !== operation.source)
+            throw new UnexpectedMetaChangeError(removedMeta)
+        if (result.actualMergedAmount > 0) {
+            effects.push({
+                type: effectTypes.accountDebited,
+                source: operation.source,
+                asset: 'XLM',
+                amount: adjustPrecision(result.actualMergedAmount)
+            })
+            effects.push({
+                type: effectTypes.accountCredited,
+                source: operation.destination,
+                asset: 'XLM',
+                amount: adjustPrecision(result.actualMergedAmount)
+            })
+        }
+        const accountRemoved = {
+            type: effectTypes.accountRemoved,
+            source: operation.source
+        }
+        if (removedMeta.before.sponsor) {
+            accountRemoved.sponsor = removedMeta.before.sponsor
+        }
+        effects.push(accountRemoved)
+    } else { //merge-merge tx bug
+        if (result.actualMergedAmount > 0) {
+            effects.push({
+                type: effectTypes.accountCredited,
+                source: operation.destination,
+                asset: 'XLM',
+                amount: adjustPrecision(result.actualMergedAmount)
+            })
+        }
     }
-    const {before} = changes.find(c => c.type === 'account' && c.action === 'removed')
-    if (before.sponsor) {
-        accountRemoved.sponsor = before.sponsor
-    }
-    if (parseFloat(result.actualMergedAmount) === 0)
-        return [accountRemoved]
-    return [
-        {
-            type: effectTypes.accountDebited,
-            source: operation.source,
-            asset: 'XLM',
-            amount: adjustPrecision(result.actualMergedAmount)
-        },
-        {
-            type: effectTypes.accountCredited,
-            source: operation.destination,
-            asset: 'XLM',
-            amount: adjustPrecision(result.actualMergedAmount)
-        },
-        accountRemoved
-    ]
+    return effects
 }
 
 function processSetOptionsEffects({operation, changes}) {
