@@ -1,4 +1,4 @@
-const {StrKey, extractBaseAddress} = require('stellar-sdk')
+const {StrKey} = require('stellar-sdk')
 const Bignumber = require('bignumber.js')
 const {parseLedgerEntryChanges} = require('./ledger-entry-changes-parser')
 const {xdrParseAsset, xdrParseAccountAddress} = require('./tx-xdr-parser-utils')
@@ -159,7 +159,7 @@ function processFeeChargedEffect(tx, chargedAmount, feeBump = false) {
     }
     const res = {
         type: effectTypes.feeCharged,
-        source: tx.feeSource || tx.source,
+        source: normalizeAddress(tx.feeSource || tx.source),
         asset: 'XLM',
         bid: adjustPrecision(tx.fee),
         charged: adjustPrecision(chargedAmount)
@@ -171,9 +171,10 @@ function processFeeChargedEffect(tx, chargedAmount, feeBump = false) {
 }
 
 function processCreateAccountEffects({operation, changes}) {
+    const source = normalizeAddress(operation.source)
     const accountCreated = {
         type: effectTypes.accountCreated,
-        source: operation.source,
+        source,
         account: operation.destination
     }
     const {after} = changes.find(c => c.type === 'account' && c.action === 'created')
@@ -186,7 +187,7 @@ function processCreateAccountEffects({operation, changes}) {
         accountCreated,
         {
             type: effectTypes.accountDebited,
-            source: operation.source,
+            source,
             asset: 'XLM',
             amount: trimZeros(operation.startingBalance)
         },
@@ -200,29 +201,30 @@ function processCreateAccountEffects({operation, changes}) {
 }
 
 function processMergeAccountEffects({operation, changes, result}) {
+    const source = normalizeAddress(operation.source)
     const removedMeta = changes.find(c => c.type === 'account' && c.action === 'removed')
     const effects = []
     if (removedMeta) {
         const {before} = removedMeta
-        if (before.address !== operation.source)
+        if (before.address !== source)
             throw new UnexpectedMetaChangeError(removedMeta)
         if (result.actualMergedAmount > 0) {
             effects.push({
                 type: effectTypes.accountDebited,
-                source: operation.source,
+                source,
                 asset: 'XLM',
                 amount: adjustPrecision(before.balance)
             })
             effects.push({
                 type: effectTypes.accountCredited,
-                source: operation.destination,
+                source: normalizeAddress(operation.destination),
                 asset: 'XLM',
                 amount: adjustPrecision(result.actualMergedAmount)
             })
         }
         const accountRemoved = {
             type: effectTypes.accountRemoved,
-            source: operation.source
+            source
         }
         if (removedMeta.before.sponsor) {
             accountRemoved.sponsor = removedMeta.before.sponsor
@@ -232,7 +234,7 @@ function processMergeAccountEffects({operation, changes, result}) {
         if (result.actualMergedAmount > 0) {
             effects.push({
                 type: effectTypes.accountCredited,
-                source: operation.destination,
+                source: normalizeAddress(operation.destination),
                 asset: 'XLM',
                 amount: adjustPrecision(result.actualMergedAmount)
             })
@@ -242,34 +244,34 @@ function processMergeAccountEffects({operation, changes, result}) {
 }
 
 function processSetOptionsEffects({operation, changes}) {
+    const source = normalizeAddress(operation.source)
     const effects = []
-    const srcAccount = operation.source[0] === 'M' ? extractBaseAddress(operation.source) : operation.source
-    const {before, after} = changes.find(ch => ch.type === 'account' && ch.before.address === srcAccount)
+    const {before, after} = changes.find(ch => ch.type === 'account' && ch.before.address === source)
     if (before.homeDomain !== after.homeDomain) {
         effects.push({
             type: effectTypes.accountHomeDomainUpdated,
-            source: operation.source,
+            source,
             domain: after.homeDomain
         })
     }
     if (JSON.stringify(before.thresholds) !== JSON.stringify(after.thresholds)) {
         effects.push({
             type: effectTypes.accountThresholdsUpdated,
-            source: operation.source,
+            source,
             thresholds: after.thresholds
         })
     }
     if (before.flags !== after.flags) {
         effects.push({
             type: effectTypes.accountFlagsUpdated,
-            source: operation.source,
+            source,
             flags: after.flags
         })
     }
     if (before.inflationDest !== after.inflationDest) {
         effects.push({
             type: effectTypes.accountInflationDestinationUpdated,
-            source: operation.source,
+            source,
             inflationDestination: after.inflationDest
         })
     }
@@ -277,7 +279,7 @@ function processSetOptionsEffects({operation, changes}) {
         if (operation.masterWeight > 0) {
             effects.push({
                 type: effectTypes.accountSignerUpdated,
-                source: operation.source,
+                source,
                 signer: after.address,
                 weight: after.masterWeight,
                 masterWeight: after.masterWeight,
@@ -286,7 +288,7 @@ function processSetOptionsEffects({operation, changes}) {
         } else {
             effects.push({
                 type: effectTypes.accountSignerRemoved,
-                source: operation.source,
+                source,
                 signer: after.address,
                 weight: after.masterWeight,
                 masterWeight: after.masterWeight,
@@ -308,7 +310,7 @@ function processSetOptionsEffects({operation, changes}) {
         if (weight === 0) {
             effects.push({
                 type: effectTypes.accountSignerRemoved,
-                source: operation.source,
+                source,
                 signer: key,
                 weight,
                 masterWeight: after.masterWeight,
@@ -317,7 +319,7 @@ function processSetOptionsEffects({operation, changes}) {
         } else if (before.signers.length < after.signers.length) {
             effects.push({
                 type: effectTypes.accountSignerCreated,
-                source: operation.source,
+                source,
                 signer: key,
                 weight,
                 masterWeight: after.masterWeight,
@@ -326,7 +328,7 @@ function processSetOptionsEffects({operation, changes}) {
         } else {
             effects.push({
                 type: effectTypes.accountSignerUpdated,
-                source: operation.source,
+                source,
                 signer: key,
                 weight,
                 masterWeight: after.masterWeight,
@@ -354,7 +356,7 @@ function processAllowTrustEffects({operation, changes}) {
         if (before.flags !== after.flags) {
             effects.push({
                 type: effectTypes.trustlineAuthorizationUpdated,
-                source: operation.source,
+                source: normalizeAddress(operation.source),
                 trustor: operation.trustor,
                 asset: after.asset,
                 flags: after.flags,
@@ -373,21 +375,24 @@ function processAllowTrustEffects({operation, changes}) {
 }
 
 function processPaymentEffects({operation}) {
-    if (operation.source === operation.destination)
+    const source = normalizeAddress(operation.source)
+    const destination = normalizeAddress(operation.destination)
+    const amount = trimZeros(operation.amount)
+    if (source === destination)
         return [] //self-transfer
     const asset = xdrParseAsset(operation.asset)
     return [
         {
             type: effectTypes.accountDebited,
-            source: operation.source,
+            source,
             asset,
-            amount: trimZeros(operation.amount)
+            amount
         },
         {
             type: effectTypes.accountCredited,
-            source: operation.destination,
+            source: destination,
             asset,
-            amount: trimZeros(operation.amount)
+            amount
         }
     ]
 }
@@ -395,12 +400,14 @@ function processPaymentEffects({operation}) {
 function processPathPaymentStrictReceiveEffects({operation, changes, result}) {
     if (!changes.length)
         return [] //self-transfer without effects
+    const source = normalizeAddress(operation.source)
+    const destination = normalizeAddress(operation.destination)
     const srcAsset = xdrParseAsset(operation.sendAsset)
     const destAsset = xdrParseAsset(operation.destAsset)
     const tradeEffects = processDexOperationEffects({operation, changes, result})
 
-    if (operation.source === operation.destination && srcAsset === destAsset)
-        return processArbitragePaymentEffects(operation.source, srcAsset, changes, tradeEffects)
+    if (source === destination && srcAsset === destAsset)
+        return processArbitragePaymentEffects(source, srcAsset, changes, tradeEffects)
 
     let srcAmount
     if (!tradeEffects.length) { //direct payment
@@ -409,21 +416,21 @@ function processPathPaymentStrictReceiveEffects({operation, changes, result}) {
         //path payment with empty path
         srcAmount = operation.destAmount
     } else {
-        srcAmount = getBalanceUpdateAmount(operation.source, srcAsset, changes)
+        srcAmount = getBalanceUpdateAmount(source, srcAsset, changes)
         if (srcAmount <= 0)
             throw new Error('Invalid path payment operation with profitable debit effect')
     }
     return [
         {
             type: effectTypes.accountDebited,
-            source: operation.source,
+            source,
             asset: srcAsset,
             amount: trimZeros(srcAmount)
         },
         ...tradeEffects,
         {
             type: effectTypes.accountCredited,
-            source: operation.destination,
+            source: destination,
             asset: destAsset,
             amount: trimZeros(operation.destAmount)
         }
@@ -433,25 +440,27 @@ function processPathPaymentStrictReceiveEffects({operation, changes, result}) {
 function processPathPaymentStrictSendEffects({operation, changes, result}) {
     const tradeEffects = processDexOperationEffects({operation, changes, result})
 
+    const source = normalizeAddress(operation.source)
+    const destination = normalizeAddress(operation.destination)
     const srcAsset = xdrParseAsset(operation.sendAsset)
     const destAsset = xdrParseAsset(operation.destAsset)
 
     if (!tradeEffects.length && srcAsset !== destAsset)  //direct payment
         throw new Error('Invalid path payment operation without trade effects')
-    if (operation.source === operation.destination && srcAsset === destAsset)
-        return processArbitragePaymentEffects(operation.source, srcAsset, changes, tradeEffects)
+    if (source === destination && srcAsset === destAsset)
+        return processArbitragePaymentEffects(source, srcAsset, changes, tradeEffects)
 
     return [
         {
             type: effectTypes.accountDebited,
-            source: operation.source,
+            source: source,
             asset: srcAsset,
             amount: trimZeros(operation.sendAmount)
         },
         ...tradeEffects,
         {
             type: effectTypes.accountCredited,
-            source: operation.destination,
+            source: destination,
             asset: destAsset,
             amount: adjustPrecision(result.payment.amount)
         }
@@ -502,7 +511,7 @@ function processDexOperationEffects({operation, changes, result}) {
     for (const claimedOffer of result.claimedOffers) {
         const trade = {
             type: effectTypes.trade,
-            source: operation.source,
+            source: normalizeAddress(operation.source),
             amount: claimedOffer.amount.map(adjustPrecision),
             asset: claimedOffer.asset
         }
@@ -532,7 +541,7 @@ function processInflationEffects({operation, result}) {
     return [
         {
             type: effectTypes.inflation,
-            source: operation.source
+            source: normalizeAddress(operation.source)
         },
         ...paymentEffects
     ]
@@ -544,7 +553,7 @@ function processManageDataEffects({operation, changes}) {
     const {action, before, after} = changes.find(ch => ch.type === 'data')
     const effect = {
         type: '',
-        source: operation.source,
+        source: normalizeAddress(operation.source),
         name: operation.name
     }
     const {sponsor} = after || before
@@ -576,7 +585,7 @@ function processBumpSequenceEffects({operation, changes}) {
     return [
         {
             type: effectTypes.sequenceBumped,
-            source: operation.source,
+            source: normalizeAddress(operation.source),
             sequence: after.sequence
         }
     ]
@@ -587,7 +596,7 @@ function processCreateClaimableBalanceEffects({operation, changes}) {
     return [
         {
             type: effectTypes.accountDebited,
-            source: operation.source,
+            source: normalizeAddress(operation.source),
             asset,
             amount: trimZeros(operation.amount)
         },
@@ -601,7 +610,7 @@ function processClaimClaimableBalanceEffects({operation, changes}) {
     return [
         {
             type: effectTypes.accountCredited,
-            source: operation.source,
+            source: normalizeAddress(operation.source),
             asset: before.asset,
             amount
         },
@@ -614,7 +623,7 @@ function processLiquidityPoolDepositEffects({operation, changes}) {
     return [
         {
             type: effectTypes.liquidityPoolDeposited,
-            source: operation.source,
+            source: normalizeAddress(operation.source),
             pool: operation.liquidityPoolId,
             assets: after.asset.map((asset, i) => ({
                 asset,
@@ -631,7 +640,7 @@ function processLiquidityPoolWithdrawEffects({operation, changes}) {
     return [
         {
             type: effectTypes.liquidityPoolWithdrew,
-            source: operation.source,
+            source: normalizeAddress(operation.source),
             pool: before.pool,
             assets: before.asset.map((asset, i) => ({
                 asset,
@@ -644,25 +653,27 @@ function processLiquidityPoolWithdrawEffects({operation, changes}) {
 }
 
 function processClawbackEffects({operation}) {
-    if (operation.from === operation.source)
-        throw new Error(`Self-clawback attempt for account ${operation.source}`)
+    const source = normalizeAddress(operation.source)
+    const from = normalizeAddress(operation.from)
+    const amount = trimZeros(operation.amount)
+    if (from === source)
+        throw new Error(`Self-clawback attempt`)
     const asset = xdrParseAsset(operation.asset)
-    if (!asset.includes(operation.source)) {
-        if (!StrKey.isValidMed25519PublicKey(operation.source) || !asset.includes(extractBaseAddress(operation.source)))
-            throw new Error(`Attempt to clawback asset ${asset} by account ${operation.source}`)
+    if (!asset.includes(source)) {
+        throw new Error(`Attempt to clawback asset ${asset} by account ${source}`)
     }
     return [
         {
             type: effectTypes.accountDebited,
-            source: operation.from,
+            source: from,
             asset,
-            amount: trimZeros(operation.amount)
+            amount
         },
         {
             type: effectTypes.accountCredited,
-            source: operation.source,
+            source,
             asset,
-            amount: trimZeros(operation.amount)
+            amount
         }
     ]
 }
@@ -673,7 +684,7 @@ function processClawbackClaimableBalanceEffects({operation, changes}) {
     return [
         {
             type: effectTypes.accountCredited,
-            source: operation.source,
+            source: normalizeAddress(operation.source),
             asset: before.asset,
             amount
         },
@@ -699,7 +710,7 @@ function processSponsorshipEffects({operation, changes}) {
         const {type, action, before, after} = change
         const effect = {
             type: getSponsorshipEffect(action, type),
-            source: operation.source
+            source: normalizeAddress(operation.source)
         }
         switch (action) {
             case 'created':
@@ -755,8 +766,9 @@ function processSponsorshipEffects({operation, changes}) {
 }
 
 function processSignerSponsorshipEffects({operation, changes}) {
-    if (!['revokeSignerSponsorship', 'setOptions'].includes(operation.type))
-        return
+    if (operation.type !== 'setOptions' && operation.type !== 'revokeSignerSponsorship')
+        return //other operations do not yield signer sponsorship effects
+
     for (const {type, action, before, after} of changes) {
         if (type !== 'account' || action !== 'updated' || !before.signerSponsoringIDs?.length && !after.signerSponsoringIDs?.length)
             continue
@@ -778,7 +790,7 @@ function processSignerSponsorshipEffects({operation, changes}) {
             if (!newSponsor) {
                 operation.effects.push({
                     type: effectTypes.signerSponsorshipRemoved,
-                    source: operation.source,
+                    source: normalizeAddress(operation.source),
                     account: before.address,
                     signer: signerKey,
                     prevSponsor: beforeMap[signerKey]
@@ -788,7 +800,7 @@ function processSignerSponsorshipEffects({operation, changes}) {
             if (newSponsor !== beforeMap[signerKey]) {
                 operation.effects.push({
                     type: effectTypes.signerSponsorshipUpdated,
-                    source: operation.source,
+                    source: normalizeAddress(operation.source),
                     account: before.address,
                     signer: signerKey,
                     sponsor: newSponsor,
@@ -803,7 +815,7 @@ function processSignerSponsorshipEffects({operation, changes}) {
             if (!prevSponsor) {
                 operation.effects.push({
                     type: effectTypes.signerSponsorshipCreated,
-                    source: operation.source,
+                    source: normalizeAddress(operation.source),
                     account: after.address,
                     signer: signerKey,
                     sponsor: afterMap[signerKey]
@@ -822,7 +834,7 @@ function processLiquidityPoolChanges({operation, changes}) {
             const snapshot = after || before
             const effect = {
                 type: effectTypes.liquidityPoolRemoved,
-                source: operation.source,
+                source: normalizeAddress(operation.source),
                 pool: snapshot.pool
             }
             if (snapshot.sponsor) {
@@ -861,10 +873,9 @@ function processTrustlineEffectsChanges({operation, changes}) {
             const {type, action, before, after} = change
             const snapshot = (after || before)
             const trustedAsset = type === 'liquidityPoolStake' ? snapshot.pool : snapshot.asset
-            const source = snapshot.account
             const trustEffect = {
                 type: effectTypes.trustlineRemoved,
-                source: source,
+                source: snapshot.account,
                 asset: trustedAsset
             }
             if (snapshot.sponsor) {
@@ -898,7 +909,7 @@ function processOfferChanges({operation, changes}) {
             const snapshot = after || before
             const effect = {
                 type: effectTypes.offerRemoved,
-                source: operation.source,
+                source: normalizeAddress(operation.source),
                 owner: snapshot.account,
                 offer: snapshot.id,
                 asset: snapshot.asset,
@@ -928,12 +939,13 @@ function processClaimableBalanceChanges({operation, changes}) {
     const effects = []
     for (const change of changes)
         if (change.type === 'claimableBalance') {
+            const source = normalizeAddress(operation.source)
             const {action, before, after} = change
             switch (action) {
                 case 'created':
                     effects.push({
                         type: effectTypes.claimableBalanceCreated,
-                        source: operation.source,
+                        source,
                         sponsor: after.sponsor,
                         balance: after.balanceId,
                         asset: after.asset,
@@ -944,7 +956,7 @@ function processClaimableBalanceChanges({operation, changes}) {
                 case 'removed':
                     effects.push({
                         type: effectTypes.claimableBalanceRemoved,
-                        source: operation.source,
+                        source,
                         sponsor: before.sponsor,
                         balance: before.balanceId,
                         asset: before.asset,
@@ -978,6 +990,20 @@ function trimZeros(value) {
     if (!fractional)
         return integer
     return integer + '.' + fractional
+}
+
+/**
+ * @param {String} address
+ * @return {String}
+ */
+function normalizeAddress(address) {
+    const prefix = address[0]
+    if (prefix === 'G')
+        return address //lazy check for ed25519 G address
+    if (prefix !== 'M')
+        throw new TypeError('Expected ED25519 or Muxed address')
+    const rawBytes = StrKey.decodeMed25519PublicKey(address)
+    return StrKey.encodeEd25519PublicKey(rawBytes.subarray(0, 32))
 }
 
 class UnexpectedMetaChangeError extends Error {
