@@ -470,7 +470,7 @@ function processPathPaymentStrictSendEffects({operation, changes, result}) {
 function getBalanceUpdateAmount(account, asset, changes) {
     const balanceUpdate = asset === 'XLM' ?
         changes.find(ch => ch.type === 'account' && ch.action === 'updated' && ch.before.address === account) :
-        changes.find(ch => ch.type === 'trustline' && ch.action === 'updated' && ch.before.account === account)
+        changes.find(ch => ch.type === 'trustline' && ch.action === 'updated' && ch.before.account === account && ch.before.asset === asset)
     if (!balanceUpdate)
         return '0'
     const beforeAmount = balanceUpdate.before.balance
