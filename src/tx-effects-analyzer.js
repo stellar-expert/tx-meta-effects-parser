@@ -62,10 +62,6 @@ const effectTypes = {
     trustlineSponsorshipUpdated: 'trustlineSponsorshipUpdated',
     trustlineSponsorshipRemoved: 'trustlineSponsorshipRemoved',
 
-    liquidityPoolStakeSponsorshipCreated: 'liquidityPoolStakeSponsorshipCreated',
-    liquidityPoolStakeSponsorshipUpdated: 'liquidityPoolStakeSponsorshipUpdated',
-    liquidityPoolStakeSponsorshipRemoved: 'liquidityPoolStakeSponsorshipRemoved',
-
     offerSponsorshipCreated: 'offerSponsorshipCreated',
     offerSponsorshipUpdated: 'offerSponsorshipUpdated',
     offerSponsorshipRemoved: 'offerSponsorshipRemoved',
@@ -349,20 +345,39 @@ function processChangeTrustEffects({operation, changes}) {
 function processAllowTrustEffects({operation, changes}) {
     if (!changes.length)
         return []
-    const trustlineChange = changes.find(ch => ch.type === 'trustline')
+    const source = normalizeAddress(operation.source)
+    const trustAsset = xdrParseAsset(operation.asset || {code: operation.assetCode, issuer: source})
+    const trustlineChange = changes.find(ch => ch.type === 'trustline' && ch.before.asset === trustAsset)
     const effects = []
     if (trustlineChange) {
+        if (trustlineChange.action !== 'updated')
+            throw new UnexpectedMetaChangeError(trustlineChange)
         const {before, after} = trustlineChange
         if (before.flags !== after.flags) {
             effects.push({
                 type: effectTypes.trustlineAuthorizationUpdated,
-                source: normalizeAddress(operation.source),
+                source,
                 trustor: operation.trustor,
                 asset: after.asset,
                 flags: after.flags,
                 prevFlags: before.flags
             })
         }
+        //process removed pool trustlines
+        for (let lpChange of changes)
+            if (lpChange.type === 'trustline') {
+                const poolAsset = lpChange.before.asset
+                if (poolAsset === trustAsset)
+                    continue
+                if (lpChange.action !== 'removed' || poolAsset.length !== 64 || poolAsset.includes('-'))
+                    throw new UnexpectedMetaChangeError(trustlineChange)
+                effects.push({
+                    type: effectTypes.accountDebited,
+                    source: lpChange.before.account,
+                    asset: poolAsset,
+                    amount: adjustPrecision(lpChange.before.balance)
+                })
+            }
     }
 
     return [
@@ -752,10 +767,6 @@ function processSponsorshipEffects({operation, changes}) {
                 effect.account = before?.account || after?.account
                 effect.asset = before?.asset || after?.asset
                 break
-            case 'liquidityPoolStake':
-                effect.account = before?.account || after?.account
-                effect.pool = before?.pool || after?.pool
-                break
             case 'offer':
                 effect.account = before?.account || after?.account
                 effect.offer = before?.id || after?.id
@@ -881,14 +892,13 @@ function processLiquidityPoolChanges({operation, changes}) {
 function processTrustlineEffectsChanges({operation, changes}) {
     const effects = []
     for (const change of changes)
-        if (change.type === 'liquidityPoolStake' || change.type === 'trustline') {
-            const {type, action, before, after} = change
+        if (change.type === 'trustline') {
+            const {action, before, after} = change
             const snapshot = (after || before)
-            const trustedAsset = type === 'liquidityPoolStake' ? snapshot.pool : snapshot.asset
             const trustEffect = {
                 type: effectTypes.trustlineRemoved,
                 source: snapshot.account,
-                asset: trustedAsset
+                asset: snapshot.asset
             }
             if (snapshot.sponsor) {
                 trustEffect.sponsor = snapshot.sponsor

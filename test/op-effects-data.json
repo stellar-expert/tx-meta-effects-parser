@@ -1092,6 +1092,12 @@
             "prevFlags": 5
           },
           {
+            "type": "accountDebited",
+            "source": "GBWCS2C42PQYMDQVBIVUOWDPSM2T3BRJWG2ENQJQU3N75J4CSKJ6DXHN",
+            "asset": "52a8ac14451ebfa8418271b75b64fe657426d38096e5ad98a72786b4f3f6d6f8",
+            "amount": "100"
+          },
+          {
             "type": "trustlineUpdated",
             "source": "GBWCS2C42PQYMDQVBIVUOWDPSM2T3BRJWG2ENQJQU3N75J4CSKJ6DXHN",
             "asset": "USD-GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI-1",
@@ -1320,11 +1326,11 @@
             "sponsor": "GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI"
           },
           {
-            "type": "liquidityPoolStakeSponsorshipCreated",
+            "type": "trustlineSponsorshipCreated",
             "source": "GDNPPDR6QACI25Q3D4LIRTDZFDGWWPUP55XMU3ERR5C7A3LRGIXPCMXH",
             "sponsor": "GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI",
             "account": "GDNPPDR6QACI25Q3D4LIRTDZFDGWWPUP55XMU3ERR5C7A3LRGIXPCMXH",
-            "pool": "e275415f9a73dd3d67207777469de4104875604a13d6b19d4cd4733f4f1695f2"
+            "asset": "e275415f9a73dd3d67207777469de4104875604a13d6b19d4cd4733f4f1695f2"
           }
         ],
         [
@@ -1425,12 +1431,12 @@
         ],
         [
           {
-            "type": "liquidityPoolStakeSponsorshipUpdated",
+            "type": "trustlineSponsorshipUpdated",
             "source": "GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI",
             "sponsor": "GBDO5AGQ4PCURSK623QQNGSLCRKQBPOV2KQBNGBD2TM65UEEFDGYXPCB",
             "prevSponsor": "GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI",
             "account": "GDNPPDR6QACI25Q3D4LIRTDZFDGWWPUP55XMU3ERR5C7A3LRGIXPCMXH",
-            "pool": "e275415f9a73dd3d67207777469de4104875604a13d6b19d4cd4733f4f1695f2"
+            "asset": "e275415f9a73dd3d67207777469de4104875604a13d6b19d4cd4733f4f1695f2"
           }
         ],
         [
@@ -1599,11 +1605,11 @@
             "sponsor": "GBDO5AGQ4PCURSK623QQNGSLCRKQBPOV2KQBNGBD2TM65UEEFDGYXPCB"
           },
           {
-            "type": "liquidityPoolStakeSponsorshipRemoved",
+            "type": "trustlineSponsorshipRemoved",
             "source": "GDNPPDR6QACI25Q3D4LIRTDZFDGWWPUP55XMU3ERR5C7A3LRGIXPCMXH",
             "prevSponsor": "GBDO5AGQ4PCURSK623QQNGSLCRKQBPOV2KQBNGBD2TM65UEEFDGYXPCB",
             "account": "GDNPPDR6QACI25Q3D4LIRTDZFDGWWPUP55XMU3ERR5C7A3LRGIXPCMXH",
-            "pool": "e275415f9a73dd3d67207777469de4104875604a13d6b19d4cd4733f4f1695f2"
+            "asset": "e275415f9a73dd3d67207777469de4104875604a13d6b19d4cd4733f4f1695f2"
           }
         ],
         [

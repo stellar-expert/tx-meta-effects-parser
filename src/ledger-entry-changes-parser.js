@@ -8,7 +8,7 @@ const {
 
 /**
  * @typedef {{}} ParsedLedgerEntryMeta
- * @property {'account'|'trustline'|'liquidityPoolStake'|'offer'|'data'|'liquidityPool'|'claimableBalance'} type - Ledger entry type
+ * @property {'account'|'trustline'|'offer'|'data'|'liquidityPool'|'claimableBalance'} type - Ledger entry type
  * @property {{}} before - Ledger entry state before changes applied
  * @property {{}} after - Ledger entry state after changes application
  */
@@ -145,28 +145,30 @@ function parseTrustlineEntry(value) {
     const trustlineEntryXdr = value.value()
     const trustlineAsset = trustlineEntryXdr.asset()
     const trustlineType = trustlineAsset.switch()
-    const data = {
-        account: xdrParseAccountAddress(trustlineEntryXdr.accountId()),
-        balance: trustlineEntryXdr.balance().toString(),
-        limit: trustlineEntryXdr.limit().toString(),
-        flags: trustlineEntryXdr.flags()
-    }
-
+    let asset
     switch (trustlineType.value) {
         case 0:
         case 1:
         case 2:
-            data.asset = xdrParseAsset(trustlineAsset)
-            data.entry = 'trustline'
+            asset = xdrParseAsset(trustlineAsset)
             break
         case 3:
-            data.pool = trustlineEntryXdr.asset().liquidityPoolId().toString('hex')
-            data.entry = 'liquidityPoolStake'
+            asset = trustlineEntryXdr.asset().liquidityPoolId().toString('hex')
             //data.liquidityPoolUseCount = trustlineEntryXdr.liquidityPoolUseCount()
             break
         default:
             throw new Error(`Unsupported trustline type ` + trustlineType)
     }
+    const data = {
+        entry: 'trustline',
+        account: xdrParseAccountAddress(trustlineEntryXdr.accountId()),
+        asset,
+        balance: trustlineEntryXdr.balance().toString(),
+        limit: trustlineEntryXdr.limit().toString(),
+        flags: trustlineEntryXdr.flags()
+    }
+
+
     const extV1 = trustlineEntryXdr.ext()?.v1()
     if (extV1) {
         const liabilities = extV1.liabilities()

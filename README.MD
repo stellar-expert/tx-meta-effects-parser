@@ -857,67 +857,6 @@ ClawbackClaimableBalance, InflationOp</td>
 
 <tr>
 <td>
-<code>liquidityPoolStakeSponsorshipCreated</code>
-</td>
-<td>ChangeThrustOp</td>
-<td>
-
-```js
-{
-  type: 'liquidityPoolStakeSponsorshipCreated',
-  source: 'GBWC…DXHN',
-  sponsor: 'GBWC…DXHN',
-  account: 'GBKP…YDLI',
-  pool: '7aba…6f9d'
-}
-```
-
-</td>
-</tr>
-
-<tr>
-<td>
-<code>liquidityPoolStakeSponsorshipUpdated</code>
-</td>
-<td>RevokeSponsorshipOp</td>
-<td>
-
-```js
-{
-  type: 'liquidityPoolStakeSponsorshipUpdated',
-  source: 'GBWC…DXHN',
-  sponsor: 'GDNP…CMXH',
-  prevSponsor: 'GBWC…DXHN',
-  account: 'GBKP…YDLI',
-  pool: '7aba…6f9d'
-}
-```
-
-</td>
-</tr>
-
-<tr>
-<td>
-<code>liquidityPoolStakeSponsorshipRemoved</code>
-</td>
-<td>RevokeSponsorshipOp</td>
-<td>
-
-```js
-{
-  type: 'liquidityPoolStakeSponsorshipRemoved',
-  source: 'GBWC…DXHN',
-  prevSponsor: 'GBWC…DXHN',
-  account: 'GBKP…YDLI',
-  pool: '7aba…6f9d'
-}
-```
-
-</td>
-</tr>
-
-<tr>
-<td>
 <code>offerSponsorshipCreated</code>
 </td>
 <td>CreatePassiveOfferOp, ManageBuyOfferOp, ManageSellOfferOp</td>
