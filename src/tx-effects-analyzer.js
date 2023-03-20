@@ -399,45 +399,19 @@ function processPathPaymentStrictReceiveEffects({operation, changes, result}) {
     const destAsset = xdrParseAsset(operation.destAsset)
     const tradeEffects = processDexOperationEffects({operation, changes, result})
 
+    if (operation.source === operation.destination && srcAsset === destAsset)
+        return processArbitragePaymentEffects(operation.source, srcAsset, changes, tradeEffects)
+
     let srcAmount
     if (!tradeEffects.length) { //direct payment
         if (srcAsset !== destAsset)
             throw new Error('Invalid path payment operation without trade effects')
-        if (operation.source === operation.destination) {
-            const balanceUpdate = changes.find(ch => ch.type === 'account' && ch.action === 'updated')
-            if (!balanceUpdate)
-                return []
-            const before = balanceUpdate.before.balance
-            const after = balanceUpdate.after.balance
-            if (before === after)
-                return [] //no changes
-            //handle legacy bug in path payments
-            if (before > after)
-                return [{
-                    type: effectTypes.accountDebited,
-                    source: operation.source,
-                    asset: srcAsset,
-                    amount: adjustPrecision(new Bignumber(before).minus(after))
-                }]
-            return [{
-                type: effectTypes.accountCredited,
-                source: operation.source,
-                asset: srcAsset,
-                amount: trimZeros(new Bignumber(after).minus(before).toFixed(7))
-            }]
-        } else { //path payment with empty path
-            srcAmount = operation.destAmount
-        }
+        //path payment with empty path
+        srcAmount = operation.destAmount
     } else {
-        const trades = tradeEffects.filter(e => e.type === effectTypes.trade)
-        const srcAmounts = []
-        for (let i = 0; i < trades.length; i++) {
-            const {amount, asset} = trades[i]
-            if (i > 0 && trades[i - 1].asset.join() !== asset.join())
-                break
-            srcAmounts.push(amount[1])
-        }
-        srcAmount = srcAmounts.reduce((prev, v) => prev.add(v), new Bignumber(0)).toFixed(7)
+        srcAmount = getBalanceUpdateAmount(operation.source, srcAsset, changes)
+        if (srcAmount <= 0)
+            throw new Error('Invalid path payment operation with profitable debit effect')
     }
     return [
         {
@@ -457,24 +431,69 @@ function processPathPaymentStrictReceiveEffects({operation, changes, result}) {
 }
 
 function processPathPaymentStrictSendEffects({operation, changes, result}) {
-    if (!changes.length)
-        return [] //self-transfer without effects
     const tradeEffects = processDexOperationEffects({operation, changes, result})
+
+    const srcAsset = xdrParseAsset(operation.sendAsset)
+    const destAsset = xdrParseAsset(operation.destAsset)
+
+    if (!tradeEffects.length && srcAsset !== destAsset)  //direct payment
+        throw new Error('Invalid path payment operation without trade effects')
+    if (operation.source === operation.destination && srcAsset === destAsset)
+        return processArbitragePaymentEffects(operation.source, srcAsset, changes, tradeEffects)
+
     return [
         {
             type: effectTypes.accountDebited,
             source: operation.source,
-            asset: xdrParseAsset(operation.sendAsset),
+            asset: srcAsset,
             amount: trimZeros(operation.sendAmount)
         },
         ...tradeEffects,
         {
             type: effectTypes.accountCredited,
             source: operation.destination,
-            asset: xdrParseAsset(operation.destAsset),
+            asset: destAsset,
             amount: adjustPrecision(result.payment.amount)
         }
     ]
+}
+
+function getBalanceUpdateAmount(account, asset, changes) {
+    const balanceUpdate = asset === 'XLM' ?
+        changes.find(ch => ch.type === 'account' && ch.action === 'updated' && ch.before.address === account) :
+        changes.find(ch => ch.type === 'trustline' && ch.action === 'updated' && ch.before.account === account)
+    if (!balanceUpdate)
+        return '0'
+    const beforeAmount = balanceUpdate.before.balance
+    const afterAmount = balanceUpdate.after.balance
+    if (beforeAmount === afterAmount)
+        return '0'
+    return adjustPrecision(new Bignumber(beforeAmount).minus(afterAmount))
+}
+
+function processArbitragePaymentEffects(source, asset, changes, tradeEffects = []) {
+    const balanceChange = getBalanceUpdateAmount(source, asset, changes)
+    if (balanceChange === '0')
+        return tradeEffects //no changes
+    //received less than sent
+    if (balanceChange > 0)
+        return [
+            ...tradeEffects,
+            {
+                type: effectTypes.accountDebited,
+                source,
+                asset,
+                amount: balanceChange
+            }]
+    //made some profit
+    return [
+        ...tradeEffects,
+        {
+            type: effectTypes.accountCredited,
+            source,
+            asset,
+            amount: balanceChange.replace('-', '') //strip leading "-"
+        }]
 }
 
 function processDexOperationEffects({operation, changes, result}) {
