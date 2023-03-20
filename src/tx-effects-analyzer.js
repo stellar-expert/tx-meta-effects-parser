@@ -363,21 +363,6 @@ function processAllowTrustEffects({operation, changes}) {
                 prevFlags: before.flags
             })
         }
-        //process removed pool trustlines
-        for (let lpChange of changes)
-            if (lpChange.type === 'trustline') {
-                const poolAsset = lpChange.before.asset
-                if (poolAsset === trustAsset)
-                    continue
-                if (lpChange.action !== 'removed' || poolAsset.length !== 64 || poolAsset.includes('-'))
-                    throw new UnexpectedMetaChangeError(trustlineChange)
-                effects.push({
-                    type: effectTypes.accountDebited,
-                    source: lpChange.before.account,
-                    asset: poolAsset,
-                    amount: adjustPrecision(lpChange.before.balance)
-                })
-            }
     }
 
     return [

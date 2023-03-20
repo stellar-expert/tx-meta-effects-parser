@@ -1092,12 +1092,6 @@
             "prevFlags": 5
           },
           {
-            "type": "accountDebited",
-            "source": "GBWCS2C42PQYMDQVBIVUOWDPSM2T3BRJWG2ENQJQU3N75J4CSKJ6DXHN",
-            "asset": "52a8ac14451ebfa8418271b75b64fe657426d38096e5ad98a72786b4f3f6d6f8",
-            "amount": "100"
-          },
-          {
             "type": "trustlineUpdated",
             "source": "GBWCS2C42PQYMDQVBIVUOWDPSM2T3BRJWG2ENQJQU3N75J4CSKJ6DXHN",
             "asset": "USD-GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI-1",
