@@ -977,14 +977,16 @@ function noEffects() {
 function adjustPrecision(value) {
     if (value === '0')
         return value
-    let integer = value.length <= 7 ? '0' : value.substring(0, value.length - 7)
-    if (integer === '-') {
-        integer = '-0'
+    let negative = false
+    if (value[0] === '-') {
+        negative = true
+        value = value.substring(1)
     }
+    let integer = value.length <= 7 ? '0' : value.substring(0, value.length - 7)
     const fractional = value.substring(value.length - 7).padStart(7, '0').replace(/0+$/, '')
     if (!fractional.length)
-        return integer
-    return integer + '.' + fractional
+        return negative ? '-' + integer : integer
+    return (negative ? '-' + integer : integer) + '.' + fractional
 }
 
 function trimZeros(value) {
