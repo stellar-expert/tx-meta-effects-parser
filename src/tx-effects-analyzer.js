@@ -481,7 +481,7 @@ function getBalanceUpdateAmount(account, asset, changes, tradeEffects, defaultAm
         const afterAmount = balanceUpdate.after.balance
         if (beforeAmount === afterAmount)
             return '0'
-        return adjustPrecision(new Bignumber(beforeAmount).minus(afterAmount))
+        return adjustPrecision(new Bignumber(beforeAmount).minus(afterAmount).toString())
     }
 }
 
@@ -630,9 +630,9 @@ function processLiquidityPoolDepositEffects({operation, changes}) {
             pool: operation.liquidityPoolId,
             assets: after.asset.map((asset, i) => ({
                 asset,
-                amount: adjustPrecision(new Bignumber(after.amount[i]).minus(before.amount[i]))
+                amount: adjustPrecision(new Bignumber(after.amount[i]).minus(before.amount[i]).toString())
             })),
-            shares: trimZeros(new Bignumber(after.shares).minus(before.shares).toFixed(7))
+            shares: trimZeros(new Bignumber(after.shares).minus(before.shares).toString())
         },
         ...processLiquidityPoolChanges({operation, changes})
     ]
@@ -647,9 +647,9 @@ function processLiquidityPoolWithdrawEffects({operation, changes}) {
             pool: before.pool,
             assets: before.asset.map((asset, i) => ({
                 asset,
-                amount: adjustPrecision(new Bignumber(before.amount[i]).minus(after.amount[i]))
+                amount: adjustPrecision(new Bignumber(before.amount[i]).minus(after.amount[i]).toString())
             })),
-            shares: trimZeros(new Bignumber(before.shares).minus(after.shares).toFixed(7))
+            shares: trimZeros(new Bignumber(before.shares).minus(after.shares).toString())
         },
         ...processLiquidityPoolChanges({operation, changes})
     ]
@@ -977,17 +977,24 @@ function noEffects() {
 function adjustPrecision(value) {
     if (value === '0')
         return value
-    return trimZeros(new Bignumber(value).div(10000000).toFixed(7))
+    let integer = value.length <= 7 ? '0' : value.substring(0, value.length - 7)
+    if (integer === '-') {
+        integer = '-0'
+    }
+    const fractional = value.substring(value.length - 7).padStart(7, '0').replace(/0+$/, '')
+    if (!fractional.length)
+        return integer
+    return integer + '.' + fractional
 }
 
 function trimZeros(value) {
     let [integer, fractional] = value.split('.')
     if (!fractional)
-        return value
-    fractional = fractional.replace(/0+$/, '')
-    if (!fractional)
         return integer
-    return integer + '.' + fractional
+    const trimmed = fractional.replace(/0+$/, '')
+    if (!trimmed.length)
+        return integer
+    return integer + '.' + trimmed
 }
 
 /**
