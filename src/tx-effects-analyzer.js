@@ -374,7 +374,7 @@ function processAllowTrustEffects({operation, changes}) {
     ]
 }
 
-function processPaymentEffects({operation}) {
+function processPaymentEffects({operation, changes}) {
     const source = normalizeAddress(operation.source)
     const destination = normalizeAddress(operation.destination)
     const amount = trimZeros(operation.amount)
@@ -382,18 +382,8 @@ function processPaymentEffects({operation}) {
         return [] //self-transfer
     const asset = xdrParseAsset(operation.asset)
     return [
-        {
-            type: effectTypes.accountDebited,
-            source,
-            asset,
-            amount
-        },
-        {
-            type: effectTypes.accountCredited,
-            source: destination,
-            asset,
-            amount
-        }
+        ...processPaymentBalanceChangesEffects(source, asset, changes, null, amount),
+        ...processPaymentBalanceChangesEffects(destination, asset, changes, null, '-' + amount)
     ]
 }
 
@@ -407,7 +397,7 @@ function processPathPaymentStrictReceiveEffects({operation, changes, result}) {
     const tradeEffects = processDexOperationEffects({operation, changes, result})
 
     if (source === destination && srcAsset === destAsset)
-        return processArbitragePaymentEffects(source, srcAsset, changes, tradeEffects)
+        return processPaymentBalanceChangesEffects(source, srcAsset, changes, tradeEffects)
 
     let srcAmount
     if (!tradeEffects.length) { //direct payment
@@ -448,7 +438,7 @@ function processPathPaymentStrictSendEffects({operation, changes, result}) {
     if (!tradeEffects.length && srcAsset !== destAsset)  //direct payment
         throw new Error('Invalid path payment operation without trade effects')
     if (source === destination && srcAsset === destAsset)
-        return processArbitragePaymentEffects(source, srcAsset, changes, tradeEffects)
+        return processPaymentBalanceChangesEffects(source, srcAsset, changes, tradeEffects)
 
     return [
         {
@@ -467,8 +457,11 @@ function processPathPaymentStrictSendEffects({operation, changes, result}) {
     ]
 }
 
-function getBalanceUpdateAmount(account, asset, changes, tradeEffects) {
-    if (asset.includes(account)) { //issuer is a source account - summing up trades is the only way to calculate the amount
+function getBalanceUpdateAmount(account, asset, changes, tradeEffects, defaultAmount = null) {
+    if (asset.includes(account)) { //issuer is a source account
+        if (!tradeEffects) //trades unavailable - return default amount
+            return defaultAmount
+        // summing up trades is the only way to calculate the amount
         const trades = tradeEffects.filter(e => e.type === effectTypes.trade)
         let res = new Bignumber(0)
         for (let i = 0; i < trades.length; i++) {
@@ -478,7 +471,7 @@ function getBalanceUpdateAmount(account, asset, changes, tradeEffects) {
             res = res.add(amount[1])
         }
         return trimZeros(res.toFixed(7))
-    } else { //more straightforward path
+    } else { //calculate from meta changes straightforward path
         const balanceUpdate = asset === 'XLM' ?
             changes.find(ch => ch.type === 'account' && ch.action === 'updated' && ch.before.address === account) :
             changes.find(ch => ch.type === 'trustline' && ch.action === 'updated' && ch.before.account === account && ch.before.asset === asset)
@@ -492,29 +485,27 @@ function getBalanceUpdateAmount(account, asset, changes, tradeEffects) {
     }
 }
 
-function processArbitragePaymentEffects(source, asset, changes, tradeEffects = []) {
-    const balanceChange = getBalanceUpdateAmount(source, asset, changes, tradeEffects)
-    if (balanceChange === '0')
-        return tradeEffects //no changes
-    //received less than sent
-    if (balanceChange > 0)
-        return [
-            ...tradeEffects,
-            {
+function processPaymentBalanceChangesEffects(source, asset, changes, tradeEffects, defaultAmount = null) {
+    const balanceChange = getBalanceUpdateAmount(source, asset, changes, tradeEffects, defaultAmount)
+    const effects = tradeEffects || []
+    if (balanceChange !== '0') {
+        if (balanceChange > 0) {
+            effects.push({
                 type: effectTypes.accountDebited,
                 source,
                 asset,
                 amount: balanceChange
-            }]
-    //made some profit
-    return [
-        ...tradeEffects,
-        {
-            type: effectTypes.accountCredited,
-            source,
-            asset,
-            amount: balanceChange.replace('-', '') //strip leading "-"
-        }]
+            })
+        } else {
+            effects.push({
+                type: effectTypes.accountCredited,
+                source,
+                asset,
+                amount: balanceChange.replace('-', '') //strip leading "-"
+            })
+        }
+    }
+    return effects
 }
 
 function processDexOperationEffects({operation, changes, result}) {
