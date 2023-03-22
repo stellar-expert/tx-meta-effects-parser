@@ -3,6 +3,7 @@ const {processFeeChargedEffect, analyzeOperationEffects} = require('./tx-effects
 const {parseTxResult} = require('./tx-result-parser')
 const {parseLedgerEntryChanges} = require('./ledger-entry-changes-parser')
 const {parseTxMetaChanges} = require('./tx-meta-changes-parser')
+const effectTypes = require('./effect-types')
 
 /**
  * Retrieve effects from transaction execution result metadata
@@ -90,14 +91,20 @@ function parseTxOperationsMeta({network, tx, result, meta}) {
     return res
 }
 
+/**
+ * Convert base64/raw XDR representation to XDR type
+ * @param {String|Buffer|Uint8Array|xdrType} value
+ * @param xdrType
+ * @return {xdrType|*}
+ * @internal
+ */
 function ensureXdrInputType(value, xdrType) {
-    if (value) {
-        if (!(value instanceof xdrType))
-            return xdrType.fromXDR(value, typeof value === 'string' ? 'base64' : 'raw')
-        if (!(value instanceof xdrType))
-            throw new TypeError(`Invalid input format. Expected xdr.${xdrType.name} (raw, buffer, or bas64-encoded).`)
-    }
-    return value
+    if (value instanceof xdrType)
+        return value
+
+    if (!value || (typeof value !== 'string' && !(value instanceof Uint8Array)))
+        throw new TypeError(`Invalid input format. Expected xdr.${xdrType.name} (raw, buffer, or bas64-encoded).`)
+    return xdrType.fromXDR(value, typeof value === 'string' ? 'base64' : 'raw')
 }
 
 /**
@@ -109,4 +116,4 @@ function ensureXdrInputType(value, xdrType) {
  * @property {Boolean} failed?
  */
 
-module.exports = {parseTxOperationsMeta, parseTxResult, analyzeOperationEffects, parseLedgerEntryChanges, parseTxMetaChanges}
+module.exports = {parseTxOperationsMeta, parseTxResult, analyzeOperationEffects, parseLedgerEntryChanges, parseTxMetaChanges, effectTypes}

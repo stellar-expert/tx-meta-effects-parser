@@ -1,7 +1,7 @@
 {
   "name": "@stellar-expert/tx-meta-effects-parser",
   "private": true,
-  "version": "3.2.2",
+  "version": "3.3.0",
   "description": "Low-level effects parser for Stellar transaction results and meta XDR",
   "main": "src/index.js",
   "scripts": {

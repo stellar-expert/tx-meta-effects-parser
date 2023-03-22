@@ -160,10 +160,6 @@ function xdrParseClaimant(claimant) {
     }
 }
 
-function xdrParseClaimableBalanceId(rawBalanceId) {
-    return Buffer.from(rawBalanceId).toString('hex')
-}
-
 function xdrParseAsset(src, prefix = '') {
     if (!src) return undefined
 
@@ -207,9 +203,7 @@ function xdrParseAsset(src, prefix = '') {
 module.exports = {
     xdrParseAsset,
     xdrParseAccountAddress,
-    xdrParseClaimableBalanceId,
     xdrParseClaimant,
-    xdrParseClaimantPredicate,
     xdrParseClaimedOffer,
     xdrParseTradeAtom,
     xdrParseSignerKey,
