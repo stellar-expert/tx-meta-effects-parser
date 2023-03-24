@@ -2,17 +2,9 @@ const {StrKey} = require('stellar-sdk')
 const effectTypes = require('./effect-types')
 const {parseLedgerEntryChanges} = require('./ledger-entry-changes-parser')
 const {xdrParseAsset, xdrParseAccountAddress} = require('./tx-xdr-parser-utils')
-const {
-    normalizeAddress,
-    adjustPrecision,
-    trimZeros,
-    encodeSponsorshipEffectName,
-    isIssuer,
-    diff,
-    isAsset
-} = require('./analyzer-primitives')
-const {UnexpectedTxMetaChangeError, TxMetaEffectParserError} = require('./errors')
+const {normalizeAddress, adjustPrecision, trimZeros, encodeSponsorshipEffectName, diff} = require('./analyzer-primitives')
 const AssetSupplyProcessor = require('./asset-supply-processor')
+const {UnexpectedTxMetaChangeError, TxMetaEffectParserError} = require('./errors')
 
 class EffectsAnalyzer {
     /**
@@ -664,7 +656,6 @@ class EffectsAnalyzer {
 }
 
 const analyzer = new EffectsAnalyzer()
-
 
 /**
  * Processes operation effects

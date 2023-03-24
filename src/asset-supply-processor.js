@@ -59,13 +59,13 @@ class AssetSupplyProcessor {
     resolve() {
         const res = []
         for (const [asset, sum] of Object.entries(this.assetTransfers))
-            if (sum > 0n) {
+            if (sum > 0) {
                 res.push({
                     type: effectTypes.assetMinted,
                     asset,
                     amount: sum.toString()
                 })
-            } else if (sum < 0n) {
+            } else if (sum < 0) {
                 res.push({
                     type: effectTypes.assetBurned,
                     asset,
