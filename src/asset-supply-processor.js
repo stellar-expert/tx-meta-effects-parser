@@ -1,6 +1,6 @@
-const effectTypes = require('./effect-types')
-const {isAsset} = require('./analyzer-primitives')
 const BigNumber = require('bignumber.js')
+const effectTypes = require('./effect-types')
+const {isAsset, trimZeros} = require('./analyzer-primitives')
 
 class AssetSupplyProcessor {
     constructor(effects) {
@@ -63,13 +63,13 @@ class AssetSupplyProcessor {
                 res.push({
                     type: effectTypes.assetMinted,
                     asset,
-                    amount: sum.toString()
+                    amount: trimZeros(sum.toFixed(7))
                 })
             } else if (sum < 0) {
                 res.push({
                     type: effectTypes.assetBurned,
                     asset,
-                    amount: sum.negated().toString()
+                    amount: trimZeros(sum.negated().toFixed(7))
                 })
             }
         return res

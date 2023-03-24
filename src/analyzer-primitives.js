@@ -10,7 +10,7 @@ const {UnexpectedTxMetaChangeError} = require('./errors')
  * @return {String}
  */
 function diff(before, after) {
-    return new BigNumber(before).minus(after).toString()
+    return trimZeros(new BigNumber(before).minus(after).toFixed(7))
 }
 
 /**
