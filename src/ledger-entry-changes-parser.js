@@ -1,14 +1,10 @@
-const {
-    xdrParseAsset,
-    xdrParseAccountAddress,
-    xdrParseClaimant,
-    xdrParsePrice,
-    xdrParseSignerKey
-} = require('./tx-xdr-parser-utils')
+const {xdrParseAsset, xdrParseAccountAddress, xdrParseClaimant, xdrParsePrice, xdrParseSignerKey} = require('./tx-xdr-parser-utils')
+const {TxMetaEffectParserError} = require('./errors')
 
 /**
  * @typedef {{}} ParsedLedgerEntryMeta
  * @property {'account'|'trustline'|'offer'|'data'|'liquidityPool'|'claimableBalance'} type - Ledger entry type
+ * @property {'created'|'updated'|'removed'} action - Ledger modification action
  * @property {{}} before - Ledger entry state before changes applied
  * @property {{}} after - Ledger entry state after changes application
  */
@@ -46,14 +42,13 @@ function parseLedgerEntryChanges(ledgerEntryChanges) {
                 change.type = state.entry
                 break
             default:
-                throw new Error(`Unknown change entry type: ${actionType}`)
+                throw new TxMetaEffectParserError(`Unknown change entry type: ${actionType}`)
         }
         changes.push(change)
         state = null
     }
     return changes
 }
-
 
 function parseEntry(entry, actionType) {
     if (actionType === 'removed')
@@ -81,7 +76,7 @@ function parseEntryData(data) {
         case 'liquidityPool':
             return parseLiquidityPoolEntry(data)
         default:
-            throw new Error(`Unknown meta entry type: ${updatedEntryType}`)
+            throw new TxMetaEffectParserError(`Unknown meta entry type: ${updatedEntryType}`)
     }
 }
 
@@ -157,7 +152,7 @@ function parseTrustlineEntry(value) {
             //data.liquidityPoolUseCount = trustlineEntryXdr.liquidityPoolUseCount()
             break
         default:
-            throw new Error(`Unsupported trustline type ` + trustlineType)
+            throw new TxMetaEffectParserError(`Unsupported trustline type ` + trustlineType)
     }
     const data = {
         entry: 'trustline',

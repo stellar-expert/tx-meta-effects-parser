@@ -14,14 +14,14 @@
             "amount": "10000"
           },
           {
+            "type": "accountRemoved",
+            "source": "GBWCS2C42PQYMDQVBIVUOWDPSM2T3BRJWG2ENQJQU3N75J4CSKJ6DXHN"
+          },
+          {
             "type": "accountCredited",
             "source": "GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI",
             "asset": "XLM",
             "amount": "10000"
-          },
-          {
-            "type": "accountRemoved",
-            "source": "GBWCS2C42PQYMDQVBIVUOWDPSM2T3BRJWG2ENQJQU3N75J4CSKJ6DXHN"
           }
         ]
       ]
@@ -36,15 +36,15 @@
       "expected": [
         [
           {
-            "type": "accountCreated",
-            "source": "GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI",
-            "account": "GBWCS2C42PQYMDQVBIVUOWDPSM2T3BRJWG2ENQJQU3N75J4CSKJ6DXHN"
-          },
-          {
             "type": "accountDebited",
             "source": "GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI",
             "asset": "XLM",
             "amount": "100"
+          },
+          {
+            "type": "accountCreated",
+            "source": "GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI",
+            "account": "GBWCS2C42PQYMDQVBIVUOWDPSM2T3BRJWG2ENQJQU3N75J4CSKJ6DXHN"
           },
           {
             "type": "accountCredited",
@@ -252,13 +252,14 @@
             "type": "trustlineCreated",
             "source": "GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI",
             "asset": "USD-GBWCS2C42PQYMDQVBIVUOWDPSM2T3BRJWG2ENQJQU3N75J4CSKJ6DXHN-1",
+            "kind": "asset",
             "limit": "922337203685.4775807",
             "flags": 1
           }
         ],
         [
           {
-            "type": "accountDebited",
+            "type": "assetMinted",
             "source": "GBWCS2C42PQYMDQVBIVUOWDPSM2T3BRJWG2ENQJQU3N75J4CSKJ6DXHN",
             "asset": "USD-GBWCS2C42PQYMDQVBIVUOWDPSM2T3BRJWG2ENQJQU3N75J4CSKJ6DXHN-1",
             "amount": "100"
@@ -278,8 +279,8 @@
             "amount": "100"
           },
           {
-            "type": "accountCredited",
-            "source": "GBWCS2C42PQYMDQVBIVUOWDPSM2T3BRJWG2ENQJQU3N75J4CSKJ6DXHN",
+            "type": "assetBurned",
+            "source": "GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI",
             "asset": "USD-GBWCS2C42PQYMDQVBIVUOWDPSM2T3BRJWG2ENQJQU3N75J4CSKJ6DXHN-1",
             "amount": "100"
           }
@@ -288,7 +289,8 @@
           {
             "type": "trustlineRemoved",
             "source": "GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI",
-            "asset": "USD-GBWCS2C42PQYMDQVBIVUOWDPSM2T3BRJWG2ENQJQU3N75J4CSKJ6DXHN-1"
+            "asset": "USD-GBWCS2C42PQYMDQVBIVUOWDPSM2T3BRJWG2ENQJQU3N75J4CSKJ6DXHN-1",
+            "kind": "asset"
           }
         ]
       ]
@@ -306,6 +308,7 @@
             "type": "trustlineCreated",
             "source": "GBWCS2C42PQYMDQVBIVUOWDPSM2T3BRJWG2ENQJQU3N75J4CSKJ6DXHN",
             "asset": "USD-GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI-1",
+            "kind": "asset",
             "limit": "100",
             "flags": 5
           }
@@ -315,6 +318,7 @@
             "type": "trustlineUpdated",
             "source": "GBWCS2C42PQYMDQVBIVUOWDPSM2T3BRJWG2ENQJQU3N75J4CSKJ6DXHN",
             "asset": "USD-GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI-1",
+            "kind": "asset",
             "limit": "200",
             "flags": 5
           }
@@ -322,7 +326,7 @@
         [],
         [
           {
-            "type": "accountDebited",
+            "type": "assetMinted",
             "source": "GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI",
             "asset": "USD-GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI-1",
             "amount": "100"
@@ -347,6 +351,7 @@
             "type": "trustlineUpdated",
             "source": "GBWCS2C42PQYMDQVBIVUOWDPSM2T3BRJWG2ENQJQU3N75J4CSKJ6DXHN",
             "asset": "USD-GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI-1",
+            "kind": "asset",
             "limit": "200",
             "flags": 6
           }
@@ -364,6 +369,7 @@
             "type": "trustlineUpdated",
             "source": "GBWCS2C42PQYMDQVBIVUOWDPSM2T3BRJWG2ENQJQU3N75J4CSKJ6DXHN",
             "asset": "USD-GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI-1",
+            "kind": "asset",
             "limit": "200",
             "flags": 4
           }
@@ -376,7 +382,7 @@
             "amount": "100"
           },
           {
-            "type": "accountCredited",
+            "type": "assetBurned",
             "source": "GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI",
             "asset": "USD-GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI-1",
             "amount": "100"
@@ -386,7 +392,8 @@
           {
             "type": "trustlineRemoved",
             "source": "GBWCS2C42PQYMDQVBIVUOWDPSM2T3BRJWG2ENQJQU3N75J4CSKJ6DXHN",
-            "asset": "USD-GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI-1"
+            "asset": "USD-GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI-1",
+            "kind": "asset"
           }
         ]
       ]
@@ -421,11 +428,18 @@
             "type": "trustlineCreated",
             "source": "GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI",
             "asset": "52a8ac14451ebfa8418271b75b64fe657426d38096e5ad98a72786b4f3f6d6f8",
+            "kind": "poolShares",
             "limit": "100000",
             "flags": 0
           }
         ],
         [
+          {
+            "type": "assetMinted",
+            "source": "GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI",
+            "asset": "USD-GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI-1",
+            "amount": "1000"
+          },
           {
             "type": "liquidityPoolDeposited",
             "source": "GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI",
@@ -458,6 +472,18 @@
             ],
             "shares": "10000000000",
             "accounts": 1
+          },
+          {
+            "type": "accountDebited",
+            "source": "GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI",
+            "asset": "XLM",
+            "amount": "1000"
+          },
+          {
+            "type": "accountCredited",
+            "source": "GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI",
+            "asset": "52a8ac14451ebfa8418271b75b64fe657426d38096e5ad98a72786b4f3f6d6f8",
+            "amount": "1000"
           }
         ],
         [
@@ -493,6 +519,24 @@
             ],
             "shares": "5000000000",
             "accounts": 1
+          },
+          {
+            "type": "accountCredited",
+            "source": "GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI",
+            "asset": "XLM",
+            "amount": "500"
+          },
+          {
+            "type": "accountDebited",
+            "source": "GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI",
+            "asset": "52a8ac14451ebfa8418271b75b64fe657426d38096e5ad98a72786b4f3f6d6f8",
+            "amount": "500"
+          },
+          {
+            "type": "assetBurned",
+            "source": "GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI",
+            "asset": "USD-GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI-1",
+            "amount": "500"
           }
         ],
         [
@@ -528,6 +572,24 @@
             ],
             "shares": "0",
             "accounts": 1
+          },
+          {
+            "type": "accountCredited",
+            "source": "GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI",
+            "asset": "XLM",
+            "amount": "500"
+          },
+          {
+            "type": "accountDebited",
+            "source": "GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI",
+            "asset": "52a8ac14451ebfa8418271b75b64fe657426d38096e5ad98a72786b4f3f6d6f8",
+            "amount": "500"
+          },
+          {
+            "type": "assetBurned",
+            "source": "GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI",
+            "asset": "USD-GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI-1",
+            "amount": "500"
           }
         ],
         [
@@ -539,7 +601,8 @@
           {
             "type": "trustlineRemoved",
             "source": "GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI",
-            "asset": "52a8ac14451ebfa8418271b75b64fe657426d38096e5ad98a72786b4f3f6d6f8"
+            "asset": "52a8ac14451ebfa8418271b75b64fe657426d38096e5ad98a72786b4f3f6d6f8",
+            "kind": "poolShares"
           }
         ]
       ]
@@ -587,12 +650,6 @@
       "expected": [
         [
           {
-            "type": "accountDebited",
-            "source": "GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI",
-            "asset": "XLM",
-            "amount": "100"
-          },
-          {
             "type": "claimableBalanceCreated",
             "source": "GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI",
             "sponsor": "GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI",
@@ -609,6 +666,12 @@
             ]
           },
           {
+            "type": "accountDebited",
+            "source": "GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI",
+            "asset": "XLM",
+            "amount": "100"
+          },
+          {
             "type": "claimableBalanceSponsorshipCreated",
             "source": "GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI",
             "sponsor": "GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI",
@@ -617,7 +680,7 @@
         ],
         [
           {
-            "type": "accountDebited",
+            "type": "assetMinted",
             "source": "GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI",
             "asset": "USD-GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI-1",
             "amount": "100"
@@ -687,12 +750,6 @@
         ],
         [
           {
-            "type": "accountCredited",
-            "source": "GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI",
-            "asset": "USD-GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI-1",
-            "amount": "100"
-          },
-          {
             "type": "claimableBalanceRemoved",
             "source": "GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI",
             "sponsor": "GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI",
@@ -713,6 +770,12 @@
             "source": "GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI",
             "prevSponsor": "GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI",
             "balance": "582fc80a93b7b2e5021780cccf01b1610532ccd4fd5403b582d28d4559a34236"
+          },
+          {
+            "type": "assetBurned",
+            "source": "GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI",
+            "asset": "USD-GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI-1",
+            "amount": "100"
           }
         ]
       ]
@@ -760,6 +823,7 @@
             "type": "trustlineCreated",
             "source": "GBWCS2C42PQYMDQVBIVUOWDPSM2T3BRJWG2ENQJQU3N75J4CSKJ6DXHN",
             "asset": "USD-GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI-1",
+            "kind": "asset",
             "limit": "922337203685.4775807",
             "flags": 5
           }
@@ -781,6 +845,12 @@
             "seller": "GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI"
           },
           {
+            "type": "accountDebited",
+            "source": "GBWCS2C42PQYMDQVBIVUOWDPSM2T3BRJWG2ENQJQU3N75J4CSKJ6DXHN",
+            "asset": "XLM",
+            "amount": "10"
+          },
+          {
             "type": "offerUpdated",
             "source": "GBWCS2C42PQYMDQVBIVUOWDPSM2T3BRJWG2ENQJQU3N75J4CSKJ6DXHN",
             "owner": "GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI",
@@ -792,6 +862,24 @@
             ],
             "price": 1,
             "flags": 0
+          },
+          {
+            "type": "accountCredited",
+            "source": "GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI",
+            "asset": "XLM",
+            "amount": "10"
+          },
+          {
+            "type": "assetMinted",
+            "source": "GBWCS2C42PQYMDQVBIVUOWDPSM2T3BRJWG2ENQJQU3N75J4CSKJ6DXHN",
+            "asset": "USD-GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI-1",
+            "amount": "10"
+          },
+          {
+            "type": "accountCredited",
+            "source": "GBWCS2C42PQYMDQVBIVUOWDPSM2T3BRJWG2ENQJQU3N75J4CSKJ6DXHN",
+            "asset": "USD-GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI-1",
+            "amount": "10"
           }
         ],
         [
@@ -816,11 +904,24 @@
             "type": "trustlineCreated",
             "source": "GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI",
             "asset": "3e5988f56d66c7d5946b32f844ae3cee0ff72a5d822809b9d5027cc1b897a473",
+            "kind": "poolShares",
             "limit": "10000000",
             "flags": 0
           }
         ],
         [
+          {
+            "type": "assetMinted",
+            "source": "GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI",
+            "asset": "EUR-GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI-1",
+            "amount": "100"
+          },
+          {
+            "type": "assetMinted",
+            "source": "GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI",
+            "asset": "USD-GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI-1",
+            "amount": "100"
+          },
           {
             "type": "liquidityPoolDeposited",
             "source": "GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI",
@@ -853,15 +954,15 @@
             ],
             "shares": "1000000000",
             "accounts": 1
+          },
+          {
+            "type": "accountCredited",
+            "source": "GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI",
+            "asset": "3e5988f56d66c7d5946b32f844ae3cee0ff72a5d822809b9d5027cc1b897a473",
+            "amount": "100"
           }
         ],
         [
-          {
-            "type": "accountDebited",
-            "source": "GBWCS2C42PQYMDQVBIVUOWDPSM2T3BRJWG2ENQJQU3N75J4CSKJ6DXHN",
-            "asset": "XLM",
-            "amount": "89.1"
-          },
           {
             "type": "trade",
             "source": "GBWCS2C42PQYMDQVBIVUOWDPSM2T3BRJWG2ENQJQU3N75J4CSKJ6DXHN",
@@ -891,6 +992,12 @@
             "seller": "GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI"
           },
           {
+            "type": "accountDebited",
+            "source": "GBWCS2C42PQYMDQVBIVUOWDPSM2T3BRJWG2ENQJQU3N75J4CSKJ6DXHN",
+            "asset": "XLM",
+            "amount": "89.1"
+          },
+          {
             "type": "offerUpdated",
             "source": "GBWCS2C42PQYMDQVBIVUOWDPSM2T3BRJWG2ENQJQU3N75J4CSKJ6DXHN",
             "owner": "GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI",
@@ -904,6 +1011,12 @@
             "flags": 0
           },
           {
+            "type": "accountCredited",
+            "source": "GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI",
+            "asset": "XLM",
+            "amount": "89.1"
+          },
+          {
             "type": "offerRemoved",
             "source": "GBWCS2C42PQYMDQVBIVUOWDPSM2T3BRJWG2ENQJQU3N75J4CSKJ6DXHN",
             "owner": "GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI",
@@ -913,21 +1026,9 @@
               "USD-GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI-1"
             ],
             "flags": 1
-          },
-          {
-            "type": "accountCredited",
-            "source": "GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI",
-            "asset": "EUR-GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI-1",
-            "amount": "90"
           }
         ],
         [
-          {
-            "type": "accountDebited",
-            "source": "GBWCS2C42PQYMDQVBIVUOWDPSM2T3BRJWG2ENQJQU3N75J4CSKJ6DXHN",
-            "asset": "USD-GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI-1",
-            "amount": "10"
-          },
           {
             "type": "trade",
             "source": "GBWCS2C42PQYMDQVBIVUOWDPSM2T3BRJWG2ENQJQU3N75J4CSKJ6DXHN",
@@ -959,17 +1060,24 @@
             "accounts": 1
           },
           {
-            "type": "accountCredited",
-            "source": "GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI",
-            "asset": "EUR-GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI-1",
-            "amount": "9.0661089"
+            "type": "accountDebited",
+            "source": "GBWCS2C42PQYMDQVBIVUOWDPSM2T3BRJWG2ENQJQU3N75J4CSKJ6DXHN",
+            "asset": "USD-GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI-1",
+            "amount": "10"
+          },
+          {
+            "type": "assetBurned",
+            "source": "GBWCS2C42PQYMDQVBIVUOWDPSM2T3BRJWG2ENQJQU3N75J4CSKJ6DXHN",
+            "asset": "USD-GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI-1",
+            "amount": "10"
           }
         ],
         [
           {
             "type": "trustlineRemoved",
             "source": "GBWCS2C42PQYMDQVBIVUOWDPSM2T3BRJWG2ENQJQU3N75J4CSKJ6DXHN",
-            "asset": "USD-GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI-1"
+            "asset": "USD-GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI-1",
+            "kind": "asset"
           }
         ]
       ]
@@ -987,6 +1095,7 @@
             "type": "trustlineCreated",
             "source": "GBWCS2C42PQYMDQVBIVUOWDPSM2T3BRJWG2ENQJQU3N75J4CSKJ6DXHN",
             "asset": "USD-GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI-1",
+            "kind": "asset",
             "flags": 5,
             "limit": "922337203685.4775807"
           }
@@ -994,7 +1103,7 @@
         [],
         [
           {
-            "type": "accountDebited",
+            "type": "assetMinted",
             "source": "GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI",
             "asset": "USD-GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI-1",
             "amount": "10000"
@@ -1043,6 +1152,7 @@
             "type": "trustlineCreated",
             "source": "GBWCS2C42PQYMDQVBIVUOWDPSM2T3BRJWG2ENQJQU3N75J4CSKJ6DXHN",
             "asset": "52a8ac14451ebfa8418271b75b64fe657426d38096e5ad98a72786b4f3f6d6f8",
+            "kind": "poolShares",
             "flags": 0,
             "limit": "100000"
           }
@@ -1065,6 +1175,18 @@
             "shares": "1000000000"
           },
           {
+            "type": "accountDebited",
+            "source": "GBWCS2C42PQYMDQVBIVUOWDPSM2T3BRJWG2ENQJQU3N75J4CSKJ6DXHN",
+            "asset": "XLM",
+            "amount": "100"
+          },
+          {
+            "type": "accountDebited",
+            "source": "GBWCS2C42PQYMDQVBIVUOWDPSM2T3BRJWG2ENQJQU3N75J4CSKJ6DXHN",
+            "asset": "USD-GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI-1",
+            "amount": "100"
+          },
+          {
             "type": "liquidityPoolUpdated",
             "source": "GBWCS2C42PQYMDQVBIVUOWDPSM2T3BRJWG2ENQJQU3N75J4CSKJ6DXHN",
             "pool": "52a8ac14451ebfa8418271b75b64fe657426d38096e5ad98a72786b4f3f6d6f8",
@@ -1080,6 +1202,12 @@
             ],
             "shares": "1000000000",
             "accounts": 1
+          },
+          {
+            "type": "accountCredited",
+            "source": "GBWCS2C42PQYMDQVBIVUOWDPSM2T3BRJWG2ENQJQU3N75J4CSKJ6DXHN",
+            "asset": "52a8ac14451ebfa8418271b75b64fe657426d38096e5ad98a72786b4f3f6d6f8",
+            "amount": "100"
           }
         ],
         [
@@ -1092,27 +1220,25 @@
             "prevFlags": 5
           },
           {
-            "type": "trustlineUpdated",
+            "type": "liquidityPoolWithdrew",
             "source": "GBWCS2C42PQYMDQVBIVUOWDPSM2T3BRJWG2ENQJQU3N75J4CSKJ6DXHN",
-            "asset": "USD-GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI-1",
-            "limit": "922337203685.4775807",
-            "flags": 4
+            "pool": "52a8ac14451ebfa8418271b75b64fe657426d38096e5ad98a72786b4f3f6d6f8",
+            "assets": [
+              {
+                "amount": "100",
+                "asset": "XLM"
+              },
+              {
+                "amount": "100",
+                "asset": "USD-GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI-1"
+              }
+            ],
+            "shares": "1000000000"
           },
           {
             "type": "liquidityPoolRemoved",
             "source": "GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI",
             "pool": "52a8ac14451ebfa8418271b75b64fe657426d38096e5ad98a72786b4f3f6d6f8"
-          },
-          {
-            "type": "offerRemoved",
-            "source": "GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI",
-            "offer": "284928",
-            "owner": "GBWCS2C42PQYMDQVBIVUOWDPSM2T3BRJWG2ENQJQU3N75J4CSKJ6DXHN",
-            "asset": [
-              "USD-GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI-1",
-              "XLM"
-            ],
-            "flags": 0
           },
           {
             "type": "claimableBalanceCreated",
@@ -1129,6 +1255,26 @@
             ]
           },
           {
+            "type": "trustlineUpdated",
+            "source": "GBWCS2C42PQYMDQVBIVUOWDPSM2T3BRJWG2ENQJQU3N75J4CSKJ6DXHN",
+            "asset": "USD-GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI-1",
+            "kind": "asset",
+            "limit": "922337203685.4775807",
+            "flags": 4
+          },
+          {
+            "type": "accountDebited",
+            "source": "GBWCS2C42PQYMDQVBIVUOWDPSM2T3BRJWG2ENQJQU3N75J4CSKJ6DXHN",
+            "asset": "52a8ac14451ebfa8418271b75b64fe657426d38096e5ad98a72786b4f3f6d6f8",
+            "amount": "100"
+          },
+          {
+            "type": "trustlineRemoved",
+            "source": "GBWCS2C42PQYMDQVBIVUOWDPSM2T3BRJWG2ENQJQU3N75J4CSKJ6DXHN",
+            "asset": "52a8ac14451ebfa8418271b75b64fe657426d38096e5ad98a72786b4f3f6d6f8",
+            "kind": "poolShares"
+          },
+          {
             "type": "claimableBalanceCreated",
             "source": "GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI",
             "sponsor": "GBWCS2C42PQYMDQVBIVUOWDPSM2T3BRJWG2ENQJQU3N75J4CSKJ6DXHN",
@@ -1141,6 +1287,17 @@
                 "predicate": {}
               }
             ]
+          },
+          {
+            "type": "offerRemoved",
+            "source": "GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI",
+            "offer": "284928",
+            "owner": "GBWCS2C42PQYMDQVBIVUOWDPSM2T3BRJWG2ENQJQU3N75J4CSKJ6DXHN",
+            "asset": [
+              "USD-GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI-1",
+              "XLM"
+            ],
+            "flags": 0
           },
           {
             "type": "claimableBalanceSponsorshipCreated",
@@ -1212,6 +1369,7 @@
             "type": "trustlineCreated",
             "source": "GDNPPDR6QACI25Q3D4LIRTDZFDGWWPUP55XMU3ERR5C7A3LRGIXPCMXH",
             "asset": "USD-GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI-1",
+            "kind": "asset",
             "limit": "10000000",
             "flags": 5,
             "sponsor": "GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI"
@@ -1242,7 +1400,7 @@
         ],
         [
           {
-            "type": "accountDebited",
+            "type": "assetMinted",
             "source": "GDNPPDR6QACI25Q3D4LIRTDZFDGWWPUP55XMU3ERR5C7A3LRGIXPCMXH",
             "asset": "USD-GDNPPDR6QACI25Q3D4LIRTDZFDGWWPUP55XMU3ERR5C7A3LRGIXPCMXH-1",
             "amount": "10"
@@ -1315,6 +1473,7 @@
             "type": "trustlineCreated",
             "source": "GDNPPDR6QACI25Q3D4LIRTDZFDGWWPUP55XMU3ERR5C7A3LRGIXPCMXH",
             "asset": "e275415f9a73dd3d67207777469de4104875604a13d6b19d4cd4733f4f1695f2",
+            "kind": "poolShares",
             "limit": "100000",
             "flags": 0,
             "sponsor": "GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI"
@@ -1328,6 +1487,18 @@
           }
         ],
         [
+          {
+            "type": "assetMinted",
+            "source": "GDNPPDR6QACI25Q3D4LIRTDZFDGWWPUP55XMU3ERR5C7A3LRGIXPCMXH",
+            "asset": "EUR-GDNPPDR6QACI25Q3D4LIRTDZFDGWWPUP55XMU3ERR5C7A3LRGIXPCMXH-1",
+            "amount": "1000"
+          },
+          {
+            "type": "assetMinted",
+            "source": "GDNPPDR6QACI25Q3D4LIRTDZFDGWWPUP55XMU3ERR5C7A3LRGIXPCMXH",
+            "asset": "USD-GDNPPDR6QACI25Q3D4LIRTDZFDGWWPUP55XMU3ERR5C7A3LRGIXPCMXH-1",
+            "amount": "1000"
+          },
           {
             "type": "liquidityPoolDeposited",
             "source": "GDNPPDR6QACI25Q3D4LIRTDZFDGWWPUP55XMU3ERR5C7A3LRGIXPCMXH",
@@ -1360,6 +1531,12 @@
             ],
             "shares": "10000000000",
             "accounts": 1
+          },
+          {
+            "type": "accountCredited",
+            "source": "GDNPPDR6QACI25Q3D4LIRTDZFDGWWPUP55XMU3ERR5C7A3LRGIXPCMXH",
+            "asset": "e275415f9a73dd3d67207777469de4104875604a13d6b19d4cd4733f4f1695f2",
+            "amount": "1000"
           }
         ],
         []
@@ -1475,6 +1652,7 @@
             "type": "trustlineRemoved",
             "source": "GDNPPDR6QACI25Q3D4LIRTDZFDGWWPUP55XMU3ERR5C7A3LRGIXPCMXH",
             "asset": "USD-GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI-1",
+            "kind": "asset",
             "sponsor": "GBDO5AGQ4PCURSK623QQNGSLCRKQBPOV2KQBNGBD2TM65UEEFDGYXPCB"
           },
           {
@@ -1502,12 +1680,6 @@
         ],
         [
           {
-            "type": "accountCredited",
-            "source": "GDNPPDR6QACI25Q3D4LIRTDZFDGWWPUP55XMU3ERR5C7A3LRGIXPCMXH",
-            "asset": "USD-GDNPPDR6QACI25Q3D4LIRTDZFDGWWPUP55XMU3ERR5C7A3LRGIXPCMXH-1",
-            "amount": "10"
-          },
-          {
             "type": "claimableBalanceRemoved",
             "source": "GDNPPDR6QACI25Q3D4LIRTDZFDGWWPUP55XMU3ERR5C7A3LRGIXPCMXH",
             "sponsor": "GBDO5AGQ4PCURSK623QQNGSLCRKQBPOV2KQBNGBD2TM65UEEFDGYXPCB",
@@ -1528,6 +1700,12 @@
             "source": "GDNPPDR6QACI25Q3D4LIRTDZFDGWWPUP55XMU3ERR5C7A3LRGIXPCMXH",
             "prevSponsor": "GBDO5AGQ4PCURSK623QQNGSLCRKQBPOV2KQBNGBD2TM65UEEFDGYXPCB",
             "balance": "573fa2e04c989788c696ef2987e7c9a1cc123483a1eca8c5720945f67094724b"
+          },
+          {
+            "type": "assetBurned",
+            "source": "GDNPPDR6QACI25Q3D4LIRTDZFDGWWPUP55XMU3ERR5C7A3LRGIXPCMXH",
+            "asset": "USD-GDNPPDR6QACI25Q3D4LIRTDZFDGWWPUP55XMU3ERR5C7A3LRGIXPCMXH-1",
+            "amount": "10"
           }
         ],
         [
@@ -1584,6 +1762,24 @@
             ],
             "shares": "0",
             "accounts": 1
+          },
+          {
+            "type": "accountDebited",
+            "source": "GDNPPDR6QACI25Q3D4LIRTDZFDGWWPUP55XMU3ERR5C7A3LRGIXPCMXH",
+            "asset": "e275415f9a73dd3d67207777469de4104875604a13d6b19d4cd4733f4f1695f2",
+            "amount": "1000"
+          },
+          {
+            "type": "assetBurned",
+            "source": "GDNPPDR6QACI25Q3D4LIRTDZFDGWWPUP55XMU3ERR5C7A3LRGIXPCMXH",
+            "asset": "EUR-GDNPPDR6QACI25Q3D4LIRTDZFDGWWPUP55XMU3ERR5C7A3LRGIXPCMXH-1",
+            "amount": "1000"
+          },
+          {
+            "type": "assetBurned",
+            "source": "GDNPPDR6QACI25Q3D4LIRTDZFDGWWPUP55XMU3ERR5C7A3LRGIXPCMXH",
+            "asset": "USD-GDNPPDR6QACI25Q3D4LIRTDZFDGWWPUP55XMU3ERR5C7A3LRGIXPCMXH-1",
+            "amount": "1000"
           }
         ],
         [
@@ -1596,6 +1792,7 @@
             "type": "trustlineRemoved",
             "source": "GDNPPDR6QACI25Q3D4LIRTDZFDGWWPUP55XMU3ERR5C7A3LRGIXPCMXH",
             "asset": "e275415f9a73dd3d67207777469de4104875604a13d6b19d4cd4733f4f1695f2",
+            "kind": "poolShares",
             "sponsor": "GBDO5AGQ4PCURSK623QQNGSLCRKQBPOV2KQBNGBD2TM65UEEFDGYXPCB"
           },
           {
@@ -1632,7 +1829,7 @@
       "expected": [
         [
           {
-            "type": "accountDebited",
+            "type": "assetMinted",
             "source": "GBJNMLQVZTAS4WYXZBFHPK6ALNGBURAYQNLGUGVECW45GPO7O5QUKS6C",
             "asset": "EUR-GBJNMLQVZTAS4WYXZBFHPK6ALNGBURAYQNLGUGVECW45GPO7O5QUKS6C-1",
             "amount": "1"
@@ -1655,12 +1852,6 @@
       "meta": "AAAAAgAAAAAAAAABAAAACAAAAAMAWZq2AAAAAgAAAAD0EL/rj2K5Qg544D8j0YCIwek/GW/ADZi/GBgFwtiAIAAAAAAAAACiAAAAAAAAAAFFVVIAAAAAAFLWLhXMwS5bF8hKd6vAW0waRBiDVmoapBW50z3fd2FFAAAAASoF8gAAAAAUAAAAAQAAAAAAAAAAAAAAAAAAAAEAWZzxAAAAAgAAAAD0EL/rj2K5Qg544D8j0YCIwek/GW/ADZi/GBgFwtiAIAAAAAAAAACiAAAAAAAAAAFFVVIAAAAAAFLWLhXMwS5bF8hKd6vAW0waRBiDVmoapBW50z3fd2FFAAAAAO5rKAAAAAAUAAAAAQAAAAAAAAAAAAAAAAAAAAMAWZGdAAAAAQAAAAD0EL/rj2K5Qg544D8j0YCIwek/GW/ADZi/GBgFwtiAIAAAAAFFVVIAAAAAAFLWLhXMwS5bF8hKd6vAW0waRBiDVmoapBW50z3fd2FFAAAAAAAAAAAAAAAXSHboAAAAAAEAAAAAAAAAAAAAAAEAWZzxAAAAAQAAAAD0EL/rj2K5Qg544D8j0YCIwek/GW/ADZi/GBgFwtiAIAAAAAFFVVIAAAAAAFLWLhXMwS5bF8hKd6vAW0waRBiDVmoapBW50z3fd2FFAAAABKgXyAAAAAAXSHboAAAAAAEAAAAAAAAAAAAAAAMAWZzFAAAAAAAAAADfsgTL8ps4G9A7a9C2t5tSFf7zTAReq3JDJ+3IGh3SxAAAAAAO5rKAAFmcxQAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAEAWZzxAAAAAAAAAADfsgTL8ps4G9A7a9C2t5tSFf7zTAReq3JDJ+3IGh3SxAAAAABKgXyAAFmcxQAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAMAWZzFAAAAAAAAAAD0EL/rj2K5Qg544D8j0YCIwek/GW/ADZi/GBgFwtiAIAAAAQ9ZhTKOAAi15gAAAAUAAAACAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAEAWZzxAAAAAAAAAAD0EL/rj2K5Qg544D8j0YCIwek/GW/ADZi/GBgFwtiAIAAAAQ8d6miOAAi15gAAAAUAAAACAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAA=",
       "expected": [
         [
-          {
-            "type": "accountDebited",
-            "source": "GBJNMLQVZTAS4WYXZBFHPK6ALNGBURAYQNLGUGVECW45GPO7O5QUKS6C",
-            "asset": "EUR-GBJNMLQVZTAS4WYXZBFHPK6ALNGBURAYQNLGUGVECW45GPO7O5QUKS6C-1",
-            "amount": "2000"
-          },
           {
             "type": "trade",
             "source": "GBJNMLQVZTAS4WYXZBFHPK6ALNGBURAYQNLGUGVECW45GPO7O5QUKS6C",
@@ -1689,8 +1880,26 @@
             "price": 20
           },
           {
+            "type": "assetMinted",
+            "source": "GBJNMLQVZTAS4WYXZBFHPK6ALNGBURAYQNLGUGVECW45GPO7O5QUKS6C",
+            "asset": "EUR-GBJNMLQVZTAS4WYXZBFHPK6ALNGBURAYQNLGUGVECW45GPO7O5QUKS6C-1",
+            "amount": "2000"
+          },
+          {
+            "type": "accountCredited",
+            "source": "GD2BBP7LR5RLSQQOPDQD6I6RQCEMD2J7DFX4ADMYX4MBQBOC3CACAPUZ",
+            "asset": "EUR-GBJNMLQVZTAS4WYXZBFHPK6ALNGBURAYQNLGUGVECW45GPO7O5QUKS6C-1",
+            "amount": "2000"
+          },
+          {
             "type": "accountCredited",
             "source": "GDP3EBGL6KNTQG6QHNV5BNVXTNJBL7XTJQCF5K3SIMT63SA2DXJMI7CB",
+            "asset": "XLM",
+            "amount": "100"
+          },
+          {
+            "type": "accountDebited",
+            "source": "GD2BBP7LR5RLSQQOPDQD6I6RQCEMD2J7DFX4ADMYX4MBQBOC3CACAPUZ",
             "asset": "XLM",
             "amount": "100"
           }
@@ -1767,6 +1976,18 @@
             ]
           },
           {
+            "type": "accountCredited",
+            "source": "GAWQMXTNVW75NNPHSM7B3BHWTAPJUJMGLPBIMGL5RULAKQZAIKSB7A4O",
+            "asset": "XLM",
+            "amount": "0.1259612"
+          },
+          {
+            "type": "accountDebited",
+            "source": "GAWFOSAKYI2DKG7ZZVT3RVGFXPHAP7ZY3KNKXFUD6DVWVZZ7LC2MF3B6",
+            "asset": "ETH-GBETHKBL5TCUTQ3JPDIYOZ5RDARTMHMEKIO2QZQ7IOZ4YC5XV3C2IKYU-1",
+            "amount": "0.0372851"
+          },
+          {
             "type": "offerUpdated",
             "source": "GAWQMXTNVW75NNPHSM7B3BHWTAPJUJMGLPBIMGL5RULAKQZAIKSB7A4O",
             "offer": "21654802",
@@ -1778,6 +1999,24 @@
             "amount": "59.8126397",
             "price": 0.000687,
             "flags": 0
+          },
+          {
+            "type": "accountCredited",
+            "source": "GBPLRPJNANQ2YYVNKWJWVILIVBOV7JGWLI63QQ6PIBXMBP7CTJXK4KXV",
+            "asset": "ETH-GBETHKBL5TCUTQ3JPDIYOZ5RDARTMHMEKIO2QZQ7IOZ4YC5XV3C2IKYU-1",
+            "amount": "0.0372851"
+          },
+          {
+            "type": "accountDebited",
+            "source": "GBPLRPJNANQ2YYVNKWJWVILIVBOV7JGWLI63QQ6PIBXMBP7CTJXK4KXV",
+            "asset": "XLM",
+            "amount": "54.2722"
+          },
+          {
+            "type": "accountCredited",
+            "source": "GAWFOSAKYI2DKG7ZZVT3RVGFXPHAP7ZY3KNKXFUD6DVWVZZ7LC2MF3B6",
+            "asset": "XCN-GCNY5OXYSY4FKHOPT2SPOQZAOEIGXB5LBYW3HVU3OWSTQITS65M5RCNY-1",
+            "amount": "119.1217253"
           },
           {
             "type": "offerUpdated",
@@ -1806,10 +2045,16 @@
             "flags": 0
           },
           {
+            "type": "accountDebited",
+            "source": "GAC2WH4XGSJHZWR5AZGVATWCDRXU6MO2DNLR7UVOXHEPEPP4QCJV6PKZ",
+            "asset": "XCN-GCNY5OXYSY4FKHOPT2SPOQZAOEIGXB5LBYW3HVU3OWSTQITS65M5RCNY-1",
+            "amount": "119.1217253"
+          },
+          {
             "type": "accountCredited",
-            "source": "GAWQMXTNVW75NNPHSM7B3BHWTAPJUJMGLPBIMGL5RULAKQZAIKSB7A4O",
+            "source": "GAC2WH4XGSJHZWR5AZGVATWCDRXU6MO2DNLR7UVOXHEPEPP4QCJV6PKZ",
             "asset": "XLM",
-            "amount": "0.1259612"
+            "amount": "54.1462388"
           }
         ]
       ]
@@ -1824,14 +2069,14 @@
       "expected": [
         [
           {
-            "type": "accountDebited",
-            "source": "GBSSDVJTXF6XJUN5EWCUXDMCGYGNCIDTPL6G6WM6FTG3G4GDGDKU7Z2T",
+            "type": "accountCredited",
+            "source": "GCEXWPMCBOE7PH76VSFWDFV3LXIJ6VD5HTGW2D7FRR52YSH4KNCDIEEW",
             "asset": "XLM",
             "amount": "20.009852"
           },
           {
-            "type": "accountCredited",
-            "source": "GCEXWPMCBOE7PH76VSFWDFV3LXIJ6VD5HTGW2D7FRR52YSH4KNCDIEEW",
+            "type": "accountDebited",
+            "source": "GBSSDVJTXF6XJUN5EWCUXDMCGYGNCIDTPL6G6WM6FTG3G4GDGDKU7Z2T",
             "asset": "XLM",
             "amount": "20.009852"
           },
@@ -1860,14 +2105,14 @@
       "expected": [
         [
           {
-            "type": "accountDebited",
-            "source": "GDLLL4D7LFILLJVJ4DKBDV2Y652S35WMZ6RFUASUXI6D4MKJ2YYS6IP4",
+            "type": "accountCredited",
+            "source": "GCJMGG2MZ24AWKGTT5QEFA4YUVODMS4VHV4FMMK2ALAOA2OV2Q2ZQKFH",
             "asset": "XLM",
             "amount": "203639.34417"
           },
           {
-            "type": "accountCredited",
-            "source": "GCJMGG2MZ24AWKGTT5QEFA4YUVODMS4VHV4FMMK2ALAOA2OV2Q2ZQKFH",
+            "type": "accountDebited",
+            "source": "GDLLL4D7LFILLJVJ4DKBDV2Y652S35WMZ6RFUASUXI6D4MKJ2YYS6IP4",
             "asset": "XLM",
             "amount": "203639.34417"
           },
@@ -1878,15 +2123,15 @@
         ],
         [
           {
-            "type": "accountCreated",
-            "source": "GCJMGG2MZ24AWKGTT5QEFA4YUVODMS4VHV4FMMK2ALAOA2OV2Q2ZQKFH",
-            "account": "GDLLL4D7LFILLJVJ4DKBDV2Y652S35WMZ6RFUASUXI6D4MKJ2YYS6IP4"
-          },
-          {
             "type": "accountDebited",
             "source": "GCJMGG2MZ24AWKGTT5QEFA4YUVODMS4VHV4FMMK2ALAOA2OV2Q2ZQKFH",
             "asset": "XLM",
             "amount": "50"
+          },
+          {
+            "type": "accountCreated",
+            "source": "GCJMGG2MZ24AWKGTT5QEFA4YUVODMS4VHV4FMMK2ALAOA2OV2Q2ZQKFH",
+            "account": "GDLLL4D7LFILLJVJ4DKBDV2Y652S35WMZ6RFUASUXI6D4MKJ2YYS6IP4"
           },
           {
             "type": "accountCredited",
@@ -1897,16 +2142,16 @@
         ],
         [
           {
-            "type": "accountDebited",
-            "source": "GDLLL4D7LFILLJVJ4DKBDV2Y652S35WMZ6RFUASUXI6D4MKJ2YYS6IP4",
-            "asset": "XLM",
-            "amount": "50"
-          },
-          {
             "type": "accountCredited",
             "source": "GCJMGG2MZ24AWKGTT5QEFA4YUVODMS4VHV4FMMK2ALAOA2OV2Q2ZQKFH",
             "asset": "XLM",
             "amount": "203639.34417"
+          },
+          {
+            "type": "accountDebited",
+            "source": "GDLLL4D7LFILLJVJ4DKBDV2Y652S35WMZ6RFUASUXI6D4MKJ2YYS6IP4",
+            "asset": "XLM",
+            "amount": "50"
           },
           {
             "type": "accountRemoved",
@@ -1925,28 +2170,28 @@
       "expected": [
         [
           {
-            "type": "accountDebited",
-            "source": "GBAFRKLK27JOQE6GMBO2WCPWFKKVTXOQUKJWUZL3T6Y3HX75VXIZS5PF",
+            "type": "accountCredited",
+            "source": "GCN4XKVWPA7DERDP36CC7FW3P3EFGHQBKDMSHX23AKNLS6TSFT2QFFLX",
             "asset": "XLM",
             "amount": "1"
           },
           {
-            "type": "accountCredited",
-            "source": "GCN4XKVWPA7DERDP36CC7FW3P3EFGHQBKDMSHX23AKNLS6TSFT2QFFLX",
+            "type": "accountDebited",
+            "source": "GBAFRKLK27JOQE6GMBO2WCPWFKKVTXOQUKJWUZL3T6Y3HX75VXIZS5PF",
             "asset": "XLM",
             "amount": "1"
           }
         ],
         [
           {
-            "type": "accountDebited",
-            "source": "GBAFRKLK27JOQE6GMBO2WCPWFKKVTXOQUKJWUZL3T6Y3HX75VXIZS5PF",
+            "type": "accountCredited",
+            "source": "GCN4XKVWPA7DERDP36CC7FW3P3EFGHQBKDMSHX23AKNLS6TSFT2QFFLX",
             "asset": "XLM",
             "amount": "138500.91044"
           },
           {
-            "type": "accountCredited",
-            "source": "GCN4XKVWPA7DERDP36CC7FW3P3EFGHQBKDMSHX23AKNLS6TSFT2QFFLX",
+            "type": "accountDebited",
+            "source": "GBAFRKLK27JOQE6GMBO2WCPWFKKVTXOQUKJWUZL3T6Y3HX75VXIZS5PF",
             "asset": "XLM",
             "amount": "138500.91044"
           },
@@ -1957,15 +2202,15 @@
         ],
         [
           {
-            "type": "accountCreated",
-            "source": "GCN4XKVWPA7DERDP36CC7FW3P3EFGHQBKDMSHX23AKNLS6TSFT2QFFLX",
-            "account": "GBAFRKLK27JOQE6GMBO2WCPWFKKVTXOQUKJWUZL3T6Y3HX75VXIZS5PF"
-          },
-          {
             "type": "accountDebited",
             "source": "GCN4XKVWPA7DERDP36CC7FW3P3EFGHQBKDMSHX23AKNLS6TSFT2QFFLX",
             "asset": "XLM",
             "amount": "50"
+          },
+          {
+            "type": "accountCreated",
+            "source": "GCN4XKVWPA7DERDP36CC7FW3P3EFGHQBKDMSHX23AKNLS6TSFT2QFFLX",
+            "account": "GBAFRKLK27JOQE6GMBO2WCPWFKKVTXOQUKJWUZL3T6Y3HX75VXIZS5PF"
           },
           {
             "type": "accountCredited",
@@ -1977,15 +2222,15 @@
         [
           {
             "type": "accountCredited",
-            "source": "GBAFRKLK27JOQE6GMBO2WCPWFKKVTXOQUKJWUZL3T6Y3HX75VXIZS5PF",
-            "asset": "XLM",
-            "amount": "138449.91044"
-          },
-          {
-            "type": "accountCredited",
             "source": "GCN4XKVWPA7DERDP36CC7FW3P3EFGHQBKDMSHX23AKNLS6TSFT2QFFLX",
             "asset": "XLM",
             "amount": "1"
+          },
+          {
+            "type": "accountCredited",
+            "source": "GBAFRKLK27JOQE6GMBO2WCPWFKKVTXOQUKJWUZL3T6Y3HX75VXIZS5PF",
+            "asset": "XLM",
+            "amount": "138449.91044"
           }
         ]
       ]
@@ -2016,6 +2261,62 @@
           {
             "type": "trade",
             "source": "GBQLAJRFE4256KPIP6MK43JYLC7YIHSGAFCL557TLKLC5A7EX5UIJ5OK",
+            "offer": "22728584",
+            "seller": "GBU6GMZZ2KTQ33CHNVPAWWEJ22ZHLYGBGO3LIBKNANXUMNEOFROZKO62",
+            "asset": [
+              "EURT-GAP5LETOV6YIE62YAM56STDANPRDO7ZFDBGSNHJQIYGGKSMOZAHOOS2S-1",
+              "XLM"
+            ],
+            "amount": [
+              "10.2",
+              "45.3340562"
+            ]
+          },
+          {
+            "type": "trade",
+            "source": "GBQLAJRFE4256KPIP6MK43JYLC7YIHSGAFCL557TLKLC5A7EX5UIJ5OK",
+            "offer": "22728583",
+            "seller": "GBU6GMZZ2KTQ33CHNVPAWWEJ22ZHLYGBGO3LIBKNANXUMNEOFROZKO62",
+            "asset": [
+              "EURT-GAP5LETOV6YIE62YAM56STDANPRDO7ZFDBGSNHJQIYGGKSMOZAHOOS2S-1",
+              "XLM"
+            ],
+            "amount": [
+              "10.2",
+              "45.3905121"
+            ]
+          },
+          {
+            "type": "trade",
+            "source": "GBQLAJRFE4256KPIP6MK43JYLC7YIHSGAFCL557TLKLC5A7EX5UIJ5OK",
+            "offer": "22728582",
+            "seller": "GBU6GMZZ2KTQ33CHNVPAWWEJ22ZHLYGBGO3LIBKNANXUMNEOFROZKO62",
+            "asset": [
+              "EURT-GAP5LETOV6YIE62YAM56STDANPRDO7ZFDBGSNHJQIYGGKSMOZAHOOS2S-1",
+              "XLM"
+            ],
+            "amount": [
+              "10.2",
+              "45.446968"
+            ]
+          },
+          {
+            "type": "trade",
+            "source": "GBQLAJRFE4256KPIP6MK43JYLC7YIHSGAFCL557TLKLC5A7EX5UIJ5OK",
+            "offer": "22728581",
+            "seller": "GBU6GMZZ2KTQ33CHNVPAWWEJ22ZHLYGBGO3LIBKNANXUMNEOFROZKO62",
+            "asset": [
+              "EURT-GAP5LETOV6YIE62YAM56STDANPRDO7ZFDBGSNHJQIYGGKSMOZAHOOS2S-1",
+              "XLM"
+            ],
+            "amount": [
+              "10.1996294",
+              "45.5017706"
+            ]
+          },
+          {
+            "type": "trade",
+            "source": "GBQLAJRFE4256KPIP6MK43JYLC7YIHSGAFCL557TLKLC5A7EX5UIJ5OK",
             "offer": "21299208",
             "seller": "GBU6GMZZ2KTQ33CHNVPAWWEJ22ZHLYGBGO3LIBKNANXUMNEOFROZKO62",
             "asset": [
@@ -2040,6 +2341,12 @@
               "227.6407",
               "3137.7320158"
             ]
+          },
+          {
+            "type": "accountCredited",
+            "source": "GBQLAJRFE4256KPIP6MK43JYLC7YIHSGAFCL557TLKLC5A7EX5UIJ5OK",
+            "asset": "XLM",
+            "amount": "0.6897927"
           },
           {
             "type": "offerUpdated",
@@ -2077,6 +2384,12 @@
             "amount": "43308.4401472",
             "price": 0.01625366,
             "flags": 0
+          },
+          {
+            "type": "accountDebited",
+            "source": "GBU6GMZZ2KTQ33CHNVPAWWEJ22ZHLYGBGO3LIBKNANXUMNEOFROZKO62",
+            "asset": "XLM",
+            "amount": "0.6897927"
           },
           {
             "type": "offerRemoved",
@@ -2123,12 +2436,6 @@
             ],
             "price": 4.46111998,
             "flags": 0
-          },
-          {
-            "type": "accountCredited",
-            "source": "GBQLAJRFE4256KPIP6MK43JYLC7YIHSGAFCL557TLKLC5A7EX5UIJ5OK",
-            "asset": "XLM",
-            "amount": "0.6897927"
           }
         ]
       ]
@@ -2177,14 +2484,14 @@
             "amount": "9999.99999"
           },
           {
+            "type": "accountRemoved",
+            "source": "GAVDIEK6LJDYSBPAEG3PPS26QYHLVAVOH3SQHK4OWTHA7RHPFNDVOXKA"
+          },
+          {
             "type": "accountCredited",
             "source": "GAG5OVG57VHOSRJAZDVQ45FQEW2TEG5KPJYK55QERGZMW3XTIYJRWTIO",
             "asset": "XLM",
             "amount": "9999.99999"
-          },
-          {
-            "type": "accountRemoved",
-            "source": "GAVDIEK6LJDYSBPAEG3PPS26QYHLVAVOH3SQHK4OWTHA7RHPFNDVOXKA"
           }
         ]
       ]

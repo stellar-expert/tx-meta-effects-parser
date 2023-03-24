@@ -81,7 +81,7 @@ function parseTxOperationsMeta({network, tx, result, meta}) {
     for (let i = 0; i < parsedTx.operations.length; i++) {
         const operation = parsedTx.operations[i]
         if (success) {
-            analyzeOperationEffects({
+            operation.effects = analyzeOperationEffects({
                 operation,
                 meta: opMeta[i]?.changes(),
                 result: opResults[i]

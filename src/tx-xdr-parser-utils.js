@@ -14,13 +14,13 @@ function xdrParseAccountAddress(accountId, muxedAccountsSupported = false) {
                 return StrKey.encodeEd25519PublicKey(accountId.ed25519())
             case 'med25519':
                 if (!muxedAccountsSupported)
-                    throw new Error(`Muxed accounts not supported here`)
+                    throw new TxMetaEffectParserError(`Muxed accounts not supported here`)
                 return {
                     primary: StrKey.encodeEd25519PublicKey(accountId.value().ed25519()),
                     muxedId: accountId.value().id().toString()
                 }
             default:
-                throw new Error(`Unsupported muxed account type: ${accountId.arm()}`)
+                throw new TxMetaEffectParserError(`Unsupported muxed account type: ${accountId.arm()}`)
         }
     }
     if (accountId instanceof Buffer) {
@@ -55,7 +55,7 @@ function xdrParseSignerKey(signer) {
         case 'ed25519SignedPayload':
             return StrKey.encodeSignedPayload(signer.ed25519SignedPayload()) //TODO: check
     }
-    throw new Error(`Unsupported signer type: "${type}"`)
+    throw new TxMetaEffectParserError(`Unsupported signer type: "${type}"`)
 }
 
 
@@ -115,7 +115,7 @@ function xdrParseClaimedOffer(claimedAtom) {
             }
             break
         default:
-            throw new Error(`Unsupported claimed atom type: ` + atomType)
+            throw new TxMetaEffectParserError(`Unsupported claimed atom type: ` + atomType)
     }
     return {
         asset: [
@@ -148,7 +148,7 @@ function xdrParseClaimantPredicate(predicate) {
         case 'claimPredicateBeforeRelativeTime':
             return {relBefore: value.toString()}
         default:
-            throw new Error(`Unknown claim condition predicate: ${type}`)
+            throw new TxMetaEffectParserError(`Unknown claim condition predicate: ${type}`)
     }
 }
 
@@ -174,7 +174,7 @@ function xdrParseAsset(src, prefix = '') {
                     return poolId.toString('hex')
                 if (poolId.constantProduct)
                     return LiquidityPoolId.fromOperation(poolId).getLiquidityPoolId()
-                throw new Error('Unsupported liquidity pool asset id format')
+                throw new TxMetaEffectParserError('Unsupported liquidity pool asset id format')
             }
             default:
             {

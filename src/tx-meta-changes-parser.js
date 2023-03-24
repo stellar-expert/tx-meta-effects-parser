@@ -1,4 +1,5 @@
 const {parseLedgerEntryChanges} = require('./ledger-entry-changes-parser')
+const {TxMetaEffectParserError} = require('./errors')
 
 /**
  * Parse top-level transaction metadata changes
@@ -24,7 +25,7 @@ function parseTxMetaChanges(meta) {
             }
             break
         default:
-            throw new Error(`Transaction meta version ${meta.arm()} is not supported.`)
+            throw new TxMetaEffectParserError(`Transaction meta version ${meta.arm()} is not supported.`)
     }
 
     return txMetaChanges

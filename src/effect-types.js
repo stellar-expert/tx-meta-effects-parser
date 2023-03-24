@@ -25,6 +25,9 @@ const effectTypes = {
     trustlineRemoved: 'trustlineRemoved',
     trustlineAuthorizationUpdated: 'trustlineAuthorizationUpdated',
 
+    assetMinted: 'assetMinted',
+    assetBurned: 'assetBurned',
+
     liquidityPoolCreated: 'liquidityPoolCreated',
     liquidityPoolUpdated: 'liquidityPoolUpdated',
     liquidityPoolRemoved: 'liquidityPoolRemoved',

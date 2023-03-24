@@ -1,6 +1,25 @@
 const {StrKey} = require('stellar-sdk')
+const BigNumber = require('bignumber.js')
 const effectTypes = require('./effect-types')
-const {UnexpectedMetaChangeError} = require('./errors')
+const {UnexpectedTxMetaChangeError} = require('./errors')
+
+/**
+ * Calculate difference between two amount
+ * @param {String} before
+ * @param {String} after
+ * @return {String}
+ */
+function diff(before, after) {
+    return new BigNumber(before).minus(after).toString()
+}
+
+/**
+ * Returns true for AlphaNum4/12 assets adn false otherwise
+ * @param {String} asset
+ */
+function isAsset(asset){
+    return asset.includes('-') //lazy check for {code}-{issuer}-{type} format
+}
 
 /**
  * Convert stroops to human-friendly numbers format
@@ -73,7 +92,7 @@ function encodeSponsorshipEffectName(action, type) {
             actionKey = 'Removed'
             break
         default:
-            throw new UnexpectedMetaChangeError({action, type})
+            throw new UnexpectedTxMetaChangeError({action, type})
     }
     return effectTypes[`${type}Sponsorship${actionKey}`]
 }
@@ -93,5 +112,7 @@ module.exports = {
     trimZeros,
     normalizeAddress,
     encodeSponsorshipEffectName,
-    isIssuer
+    isIssuer,
+    isAsset,
+    diff
 }

@@ -1,5 +1,6 @@
 const {xdr} = require('stellar-sdk')
 const {xdrParseAccountAddress, xdrParseTradeAtom, xdrParseClaimedOffer, xdrParseAsset} = require('./tx-xdr-parser-utils')
+const {TxMetaEffectParserError} = require('./errors')
 
 /**
  * Parse extra data from operation result
@@ -71,7 +72,7 @@ function parseRawOpResult(rawOpResult) {
         case 'liquidityPoolWithdrawSuccess':
             break //no extra info available
         default:
-            throw new Error(`Unknown op result: ${successOpResultType.name}`)
+            throw new TxMetaEffectParserError(`Unknown op result: ${successOpResultType.name}`)
     }
     return res
 }
@@ -108,7 +109,7 @@ function parseTxResult(result) {
                 opResults = (innerResult.results() || []).map(parseRawOpResult)
                 break
             default:
-                throw new Error(`Invalid tx result state switch: ${txResultState.name}`)
+                throw new TxMetaEffectParserError(`Invalid tx result state switch: ${txResultState.name}`)
         }
     }
     return {
