@@ -290,7 +290,8 @@
             "type": "trustlineRemoved",
             "source": "GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI",
             "asset": "USD-GBWCS2C42PQYMDQVBIVUOWDPSM2T3BRJWG2ENQJQU3N75J4CSKJ6DXHN-1",
-            "kind": "asset"
+            "kind": "asset",
+            "flags": 1
           }
         ]
       ]
@@ -393,7 +394,8 @@
             "type": "trustlineRemoved",
             "source": "GBWCS2C42PQYMDQVBIVUOWDPSM2T3BRJWG2ENQJQU3N75J4CSKJ6DXHN",
             "asset": "USD-GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI-1",
-            "kind": "asset"
+            "kind": "asset",
+            "flags": 4
           }
         ]
       ]
@@ -602,7 +604,8 @@
             "type": "trustlineRemoved",
             "source": "GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI",
             "asset": "52a8ac14451ebfa8418271b75b64fe657426d38096e5ad98a72786b4f3f6d6f8",
-            "kind": "poolShares"
+            "kind": "poolShares",
+            "flags": 0
           }
         ]
       ]
@@ -1077,7 +1080,8 @@
             "type": "trustlineRemoved",
             "source": "GBWCS2C42PQYMDQVBIVUOWDPSM2T3BRJWG2ENQJQU3N75J4CSKJ6DXHN",
             "asset": "USD-GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI-1",
-            "kind": "asset"
+            "kind": "asset",
+            "flags": 5
           }
         ]
       ]
@@ -1272,7 +1276,8 @@
             "type": "trustlineRemoved",
             "source": "GBWCS2C42PQYMDQVBIVUOWDPSM2T3BRJWG2ENQJQU3N75J4CSKJ6DXHN",
             "asset": "52a8ac14451ebfa8418271b75b64fe657426d38096e5ad98a72786b4f3f6d6f8",
-            "kind": "poolShares"
+            "kind": "poolShares",
+            "flags": 0
           },
           {
             "type": "claimableBalanceCreated",
@@ -1653,6 +1658,7 @@
             "source": "GDNPPDR6QACI25Q3D4LIRTDZFDGWWPUP55XMU3ERR5C7A3LRGIXPCMXH",
             "asset": "USD-GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI-1",
             "kind": "asset",
+            "flags": 5,
             "sponsor": "GBDO5AGQ4PCURSK623QQNGSLCRKQBPOV2KQBNGBD2TM65UEEFDGYXPCB"
           },
           {
@@ -1793,6 +1799,7 @@
             "source": "GDNPPDR6QACI25Q3D4LIRTDZFDGWWPUP55XMU3ERR5C7A3LRGIXPCMXH",
             "asset": "e275415f9a73dd3d67207777469de4104875604a13d6b19d4cd4733f4f1695f2",
             "kind": "poolShares",
+            "flags": 0,
             "sponsor": "GBDO5AGQ4PCURSK623QQNGSLCRKQBPOV2KQBNGBD2TM65UEEFDGYXPCB"
           },
           {

@@ -410,7 +410,8 @@ class EffectsAnalyzer {
             type: '',
             source: snapshot.account,
             asset: snapshot.asset,
-            kind: snapshot.asset.includes('-') ? 'asset' : 'poolShares'
+            kind: snapshot.asset.includes('-') ? 'asset' : 'poolShares',
+            flags: snapshot.flags
         }
         if (snapshot.sponsor) {
             trustEffect.sponsor = snapshot.sponsor
@@ -419,7 +420,6 @@ class EffectsAnalyzer {
             case 'created':
                 trustEffect.type = effectTypes.trustlineCreated
                 trustEffect.limit = adjustPrecision(snapshot.limit)
-                trustEffect.flags = snapshot.flags
                 break
             case 'updated':
                 if (before.balance !== after.balance) {
@@ -429,7 +429,6 @@ class EffectsAnalyzer {
                     return
                 trustEffect.type = effectTypes.trustlineUpdated
                 trustEffect.limit = adjustPrecision(snapshot.limit)
-                trustEffect.flags = snapshot.flags
                 break
             case 'removed':
                 trustEffect.type = effectTypes.trustlineRemoved
