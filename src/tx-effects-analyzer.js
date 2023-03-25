@@ -235,6 +235,8 @@ class EffectsAnalyzer {
     }
 
     bumpSequence() {
+        if (!this.changes.length)
+            return
         const {before, after} = this.changes.find(ch => ch.type === 'account')
         if (before.sequence !== after.sequence) {
             this.addEffect({

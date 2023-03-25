@@ -4,6 +4,7 @@ const {parseTxResult} = require('./tx-result-parser')
 const {parseLedgerEntryChanges} = require('./ledger-entry-changes-parser')
 const {parseTxMetaChanges} = require('./tx-meta-changes-parser')
 const effectTypes = require('./effect-types')
+const {TxMetaEffectParserError} = require('./errors')
 
 /**
  * Retrieve effects from transaction execution result metadata
@@ -22,8 +23,21 @@ function parseTxOperationsMeta({network, tx, result, meta}) {
         throw new TypeError(`Transaction envelope argument is required.`)
     const isEphemeral = !meta
     //parse tx, result, and meta xdr
-    tx = ensureXdrInputType(tx, xdr.TransactionEnvelope)
-    result = ensureXdrInputType(result, xdr.TransactionResult)
+    try {
+        tx = ensureXdrInputType(tx, xdr.TransactionEnvelope)
+    } catch (e) {
+        throw  new TxMetaEffectParserError('Invalid transaction envelope XDR. ' + e.message)
+    }
+    try {
+        result = ensureXdrInputType(result, xdr.TransactionResult)
+    } catch (e) {
+        try {
+            const pair = ensureXdrInputType(result, xdr.TransactionResultPair)
+            result = pair.result()
+        } catch {
+            throw new TxMetaEffectParserError('Invalid transaction result XDR. ' + e.message)
+        }
+    }
 
     try {
         tx = TransactionBuilder.fromXDR(tx, Networks[network.toUpperCase()] || network)
@@ -74,7 +88,11 @@ function parseTxOperationsMeta({network, tx, result, meta}) {
         return res
 
     //retrieve operations result metadata
-    meta = ensureXdrInputType(meta, xdr.TransactionMeta)
+    try {
+        meta = ensureXdrInputType(meta, xdr.TransactionMeta)
+    } catch {
+        throw new TxMetaEffectParserError('Invalid transaction metadata XDR. ' + e.message)
+    }
     const opMeta = meta.value().operations()
 
     //analyze operation effects for each operation
