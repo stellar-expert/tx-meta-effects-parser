@@ -1,4 +1,4 @@
-const {TransactionBuilder, Networks, xdr} = require('stellar-sdk')
+const {TransactionBuilder, Networks, xdr} = require('stellar-base')
 const {processFeeChargedEffect, analyzeOperationEffects} = require('./tx-effects-analyzer')
 const {parseTxResult} = require('./tx-result-parser')
 const {parseLedgerEntryChanges} = require('./ledger-entry-changes-parser')
@@ -28,14 +28,30 @@ function parseTxOperationsMeta({network, tx, result, meta}) {
     } catch (e) {
         throw  new TxMetaEffectParserError('Invalid transaction envelope XDR. ' + e.message)
     }
-    try {
-        result = ensureXdrInputType(result, xdr.TransactionResult)
-    } catch (e) {
+    let txResult
+    if (!isEphemeral) {
+        //retrieve operations result metadata
         try {
-            const pair = ensureXdrInputType(result, xdr.TransactionResultPair)
-            result = pair.result()
+            meta = ensureXdrInputType(meta, xdr.TransactionMeta)
+            if (meta.switch() === 3) {
+                txResult = meta.v3().txResult()
+            }
         } catch {
-            throw new TxMetaEffectParserError('Invalid transaction result XDR. ' + e.message)
+            throw new TxMetaEffectParserError('Invalid transaction metadata XDR. ' + e.message)
+        }
+    }
+    //and tx result itself (for pre-Soroban environment it is stored separately)
+    if (!txResult) {
+        try {
+            txResult = ensureXdrInputType(result, xdr.TransactionResult)
+        } catch (e) {
+            try {
+                //try TransactionResultPair instead of TransactionResult
+                const pair = ensureXdrInputType(result, xdr.TransactionResultPair)
+                txResult = pair.result()
+            } catch {
+                throw new TxMetaEffectParserError('Invalid transaction result XDR. ' + e.message)
+            }
         }
     }
 
@@ -54,15 +70,15 @@ function parseTxOperationsMeta({network, tx, result, meta}) {
     }
 
     if (!isEphemeral) {
-        res.fee = processFeeChargedEffect(parsedTx, result.feeCharged().toString(), isFeeBump)
+        res.fee = processFeeChargedEffect(parsedTx, txResult.feeCharged().toString(), isFeeBump)
     }
 
     //take inner transaction if parsed tx is a fee bump tx
     if (isFeeBump) {
         parsedTx = parsedTx.innerTransaction
         if (!isEphemeral) {
-            result = result.result().innerResultPair().result()
-            feeBumpSuccess = result.result().switch().value >= 0
+            txResult = txResult.result().innerResultPair().result()
+            feeBumpSuccess = txResult.result().switch().value >= 0
         }
     }
     if (parsedTx.operations) {
@@ -77,23 +93,19 @@ function parseTxOperationsMeta({network, tx, result, meta}) {
         }
     }
 
-    const {success, opResults} = parseTxResult(result)
+    const {success, opResults} = parseTxResult(txResult)
     if (!success || isFeeBump && !feeBumpSuccess) {
         res.failed = true
         return res
     }
 
-    //do not parse meta for unsubmitted/rejected transactions
+    //do not process meta for unsubmitted/rejected transactions
     if (isEphemeral)
         return res
 
-    //retrieve operations result metadata
-    try {
-        meta = ensureXdrInputType(meta, xdr.TransactionMeta)
-    } catch {
-        throw new TxMetaEffectParserError('Invalid transaction metadata XDR. ' + e.message)
-    }
-    const opMeta = meta.value().operations()
+    const metaValue = meta.value()
+    const opMeta = metaValue.operations()
+    const events = metaValue.events ? metaValue.events().map(opEvents => opEvents.events()) : []
 
     //analyze operation effects for each operation
     for (let i = 0; i < parsedTx.operations.length; i++) {
@@ -102,7 +114,8 @@ function parseTxOperationsMeta({network, tx, result, meta}) {
             operation.effects = analyzeOperationEffects({
                 operation,
                 meta: opMeta[i]?.changes(),
-                result: opResults[i]
+                result: opResults[i],
+                events: events[i]
             })
         }
     }

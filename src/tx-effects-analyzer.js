@@ -1,4 +1,4 @@
-const {StrKey} = require('stellar-sdk')
+const {StrKey} = require('stellar-base')
 const effectTypes = require('./effect-types')
 const {parseLedgerEntryChanges} = require('./ledger-entry-changes-parser')
 const {xdrParseAsset, xdrParseAccountAddress} = require('./tx-xdr-parser-utils')
@@ -38,7 +38,7 @@ class EffectsAnalyzer {
      */
     source = ''
 
-    analyze(operation, meta, result) {
+    analyze(operation, meta, result, events) {
         //set execution context
         if (!operation.source)
             throw new TxMetaEffectParserError('Operation source is not defined')
@@ -56,6 +56,10 @@ class EffectsAnalyzer {
         this.processSponsorshipEffects()
         //calculate minted/burned assets
         this.processAssetSupplyEffects()
+        //process Soroban events
+        if (events?.length) {
+            this.processEvents(events)
+        }
         const res = this.effects
         //reset context
         this.effects = []
@@ -225,12 +229,6 @@ class EffectsAnalyzer {
     }
 
     inflation() {
-        /*const paymentEffects = (result.inflationPayouts || []).map(ip => ({
-            type: effectTypes.accountCredited,
-            source: ip.account,
-            asset: 'XLM',
-            amount: adjustPrecision(ip.amount)
-        }))*/
         this.addEffect({type: effectTypes.inflation})
     }
 
@@ -295,6 +293,11 @@ class EffectsAnalyzer {
             })),
             shares: trimZeros(diff(before.shares, after.shares))
         })
+    }
+
+    invokeHostFunction() {
+        //const {function, parameters, footprint, auth} = this.operation
+        //hostFunctionTypeCreateContract
     }
 
     processDexOperationEffects() {
@@ -620,6 +623,66 @@ class EffectsAnalyzer {
         this.addEffect(effect)
     }
 
+    processContractCodeChanges({action, before, after}) {
+        const {hash, code} = after || before
+        const effect = {
+            type: '',
+            hash,
+            code
+        }
+        effect.code = code
+        switch (action) {
+            case 'created':
+                effect.type = effectTypes.contractCodeInstalled
+                break
+            case 'updated':
+                if (before.hash === after.hash)
+                    return //value has not changed
+                throw new UnexpectedTxMetaChangeError({type: 'contractCode', action})
+                break
+            default:
+                throw new UnexpectedTxMetaChangeError({type: 'contractCode', action})
+        }
+        this.addEffect(effect)
+    }
+
+    processContractDataChanges({action, before, after}) {
+        const {contract, key, val, system} = after || before
+        if (system) {
+            switch (key) {
+                case 'contractCode':
+                    return this.addEffect({
+                        type: effectTypes.contractCodeUpdated,
+                        contract,
+                        code: val
+                    })
+                default:
+                    throw new Error('Not implemented')
+            }
+        }
+        const effect = {
+            type: '',
+            contract,
+            key: key.toXDR('base64'),
+            value: val.toXDR('base64')
+        }
+        switch (action) {
+            case 'created':
+                effect.type = effectTypes.contractDataCreated
+                break
+            case 'updated':
+                if (before.val.toXDR('base64') === after.val.toXDR('base64'))
+                    return //value has not changed
+                effect.type = effectTypes.contractDataUpdated
+                break
+            case 'removed':
+                effect.type = effectTypes.contractDataRemoved
+                delete effect.value
+                break
+        }
+        this.addEffect(effect)
+    }
+
     processChanges() {
         for (const change of this.changes)
             switch (change.type) {
@@ -641,6 +704,12 @@ class EffectsAnalyzer {
                 case 'data':
                     this.processDataEntryChanges(change)
                     break
+                case 'contractData':
+                    this.processContractDataChanges(change)
+                    break
+                case 'contractCode':
+                    this.processContractCodeChanges(change)
+                    break
                 default:
                     throw new UnexpectedTxMetaChangeError(change)
             }
@@ -654,6 +723,35 @@ class EffectsAnalyzer {
                 undefined)
         }
     }
+
+    processEvents(events) {
+        for (const evt of events) {
+            const body = evt.body().value()
+            const effect = {
+                type: effectTypes.event,
+                contract: StrKey.encodeContract(evt.contractId()),
+                topics: body.topics().map(t => {
+                    switch (t.arm()) {
+                        case 'sym':
+                            return t.value().toString()
+                        case 'obj':
+                            const objValue = t.value()
+                            switch (objValue.arm()) {
+                                case 'address':
+                                    return xdrParseAccountAddress(objValue.value().value(), true)
+                                default:
+                                    throw new Error('Not supported topic type: ' + t.arm())
+                            }
+                        default:
+                            throw new Error('Not supported topic type: ' + t.arm())
+                    }
+
+                }),
+                data: evt.body().value().data().value().toXDR('base64')
+            }
+            this.addEffect(effect)
+        }
+    }
 }
 
 const analyzer = new EffectsAnalyzer()
@@ -663,8 +761,8 @@ const analyzer = new EffectsAnalyzer()
  * @param {{operation: {}, meta: LedgerEntryChange[], result: {}}} operationData - operation data
  * @returns {{}[]} - operation effects
  */
-function analyzeOperationEffects({operation, meta, result}) {
-    return analyzer.analyze(operation, meta, result)
+function analyzeOperationEffects({operation, meta, result, events}) {
+    return analyzer.analyze(operation, meta, result, events)
 }
 
 /**

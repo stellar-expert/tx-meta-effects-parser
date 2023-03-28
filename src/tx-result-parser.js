@@ -1,4 +1,4 @@
-const {xdr} = require('stellar-sdk')
+const {xdr} = require('stellar-base')
 const {xdrParseAccountAddress, xdrParseTradeAtom, xdrParseClaimedOffer, xdrParseAsset} = require('./tx-xdr-parser-utils')
 const {TxMetaEffectParserError} = require('./errors')
 
@@ -53,6 +53,9 @@ function parseRawOpResult(rawOpResult) {
             break
         case 'createClaimableBalanceSuccess':
             res.balanceId = Buffer.from(opResult.balanceId().value()).toString('hex')
+            break
+        case 'invokeHostFunctionSuccess':
+            res.result = opResult.value()
             break
         case 'setOptionsSuccess':
         case 'manageDataSuccess':

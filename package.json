@@ -1,7 +1,7 @@
 {
   "name": "@stellar-expert/tx-meta-effects-parser",
   "private": true,
-  "version": "4.2.0",
+  "version": "5.0.0",
   "description": "Low-level effects parser for Stellar transaction results and meta XDR",
   "main": "src/index.js",
   "scripts": {
@@ -12,7 +12,7 @@
   "license": "MIT",
   "peerDependencies": {
     "bignumber.js": "^4.0.0",
-    "stellar-sdk": ">=9"
+    "stellar-base": "8.2.2-soroban.11"
   },
   "devDependencies": {
     "@babel/core": "^7.20.5",

@@ -1,9 +1,10 @@
+const {StrKey} = require('stellar-base')
 const {xdrParseAsset, xdrParseAccountAddress, xdrParseClaimant, xdrParsePrice, xdrParseSignerKey} = require('./tx-xdr-parser-utils')
 const {TxMetaEffectParserError} = require('./errors')
 
 /**
  * @typedef {{}} ParsedLedgerEntryMeta
- * @property {'account'|'trustline'|'offer'|'data'|'liquidityPool'|'claimableBalance'} type - Ledger entry type
+ * @property {'account'|'trustline'|'offer'|'data'|'liquidityPool'|'claimableBalance'|'contractData'|'contractCode'} type - Ledger entry type
  * @property {'created'|'updated'|'removed'} action - Ledger modification action
  * @property {{}} before - Ledger entry state before changes applied
  * @property {{}} after - Ledger entry state after changes application
@@ -75,6 +76,10 @@ function parseEntryData(data) {
             return parseClaimableBalanceEntry(data)
         case 'liquidityPool':
             return parseLiquidityPoolEntry(data)
+        case 'contractData':
+            return parseContractData(data)
+        case 'contractCode':
+            return parseContractCode(data)
         default:
             throw new TxMetaEffectParserError(`Unknown meta entry type: ${updatedEntryType}`)
     }
@@ -228,6 +233,42 @@ function parseClaimableBalanceEntry(value) {
         data.flags = extV1.flags()
     }
     return data
+}
+
+function parseContractData(value) {
+    const data = value.value()
+    switch (data.key().arm()){
+        case 'ic':
+            switch (data.key().value()?.name){
+                case 'scsLedgerKeyContractCode':
+                    return {
+                        entry: 'contractData',
+                        contract: StrKey.encodeContract(data.contractId()),
+                        key: 'contractCode',
+                        val: data.val().value().value().value().toString('hex'),
+                        system: true
+                    }
+                default:
+                    throw new Error('Not implemented')
+            }
+            break
+    }
+
+    return {
+        entry: 'contractData',
+        contract: StrKey.encodeContract(data.contractId()),
+        key: data.key(),
+        val: data.val()
+    }
+}
+
+function parseContractCode(value) {
+    const contract = value.value()
+    return {
+        entry: 'contractCode',
+        hash: contract.hash().toString('hex'),
+        code: contract.code().toString('base64')
+    }
 }
 
 module.exports = {parseLedgerEntryChanges}
