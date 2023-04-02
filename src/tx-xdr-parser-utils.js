@@ -1,4 +1,4 @@
-const {StrKey, LiquidityPoolId} = require('stellar-sdk')
+const {StrKey, LiquidityPoolId} = require('stellar-base')
 
 /**
  * Parse account address from XDR representation

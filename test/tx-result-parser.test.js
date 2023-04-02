@@ -1,5 +1,5 @@
 /*eslint-disable no-undef */
-const {Networks} = require('stellar-sdk')
+const {Networks} = require('stellar-base')
 const {parseTxOperationsMeta} = require('../src/index')
 
 

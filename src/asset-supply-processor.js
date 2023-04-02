@@ -29,6 +29,16 @@ class AssetSupplyProcessor {
                     this.add(effect.asset, effect.amount, true)
                 }
                 break
+            case effectTypes.claimableBalanceCreated:
+                if (isAsset(effect.asset)) {
+                    this.add(effect.asset, effect.amount, false)
+                }
+                break
+            case effectTypes.claimableBalanceRemoved:
+                if (isAsset(effect.asset)) {
+                    this.add(effect.asset, effect.amount, true)
+                }
+                break
             case effectTypes.liquidityPoolDeposited:
                 for (const {asset, amount} of effect.assets) {
                     if (isAsset(asset)) {
@@ -43,14 +53,14 @@ class AssetSupplyProcessor {
                     }
                 }
                 break
-            case effectTypes.claimableBalanceCreated:
-                if (isAsset(effect.asset)) {
-                    this.add(effect.asset, effect.amount, false)
-                }
-                break
-            case effectTypes.claimableBalanceRemoved:
-                if (isAsset(effect.asset)) {
-                    this.add(effect.asset, effect.amount, true)
+            case effectTypes.trade:
+                if (effect.pool) {
+                    for (let i = 0; i < effect.asset.length; i++) {
+                        const asset = effect.asset[i]
+                        if (isAsset(asset)) {
+                            this.add(asset, effect.amount[i], i === 0)
+                        }
+                    }
                 }
                 break
         }

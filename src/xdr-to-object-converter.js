@@ -1,4 +1,4 @@
-const {xdr, StrKey} = require('stellar-sdk')
+const {xdr, StrKey} = require('stellar-base')
 const Bignumber = require('bignumber.js')
 
 const XDR_TYPE = Symbol('XDR_TYPE')

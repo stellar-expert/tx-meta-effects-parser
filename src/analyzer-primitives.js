@@ -1,4 +1,4 @@
-const {StrKey} = require('stellar-sdk')
+const {StrKey} = require('stellar-base')
 const BigNumber = require('bignumber.js')
 const effectTypes = require('./effect-types')
 const {UnexpectedTxMetaChangeError} = require('./errors')

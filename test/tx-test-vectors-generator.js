@@ -13,7 +13,7 @@ const {
     AuthRevocableFlag,
     LiquidityPoolId,
     getLiquidityPoolId
-} = require('stellar-sdk')
+} = require('stellar-base')
 
 //TODO: generate liquidityPoolSponsorshipCreated/Updated/Removed effects
 
