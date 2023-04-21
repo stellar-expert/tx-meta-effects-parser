@@ -55,10 +55,7 @@ function parseTxOperationsMeta({network, tx, result, meta}) {
         }
     }
 
-    try {
-        tx = TransactionBuilder.fromXDR(tx, Networks[network.toUpperCase()] || network)
-    } catch (e) {
-    }
+    tx = TransactionBuilder.fromXDR(tx, Networks[network.toUpperCase()] || network)
 
     let parsedTx = tx
 

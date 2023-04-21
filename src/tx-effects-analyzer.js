@@ -777,7 +777,7 @@ function processFeeChargedEffect(tx, chargedAmount, feeBump = false) {
         const txXdr = tx.value().tx()
         tx = {
             source: xdrParseAccountAddress((txXdr.feeSource ? txXdr.feeSource : txXdr.sourceAccount).call(txXdr)),
-            fee: txXdr.fee()
+            fee: txXdr.fee().toString()
         }
     }
     const res = {
