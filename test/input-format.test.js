@@ -27,6 +27,6 @@ describe('Input format variations', () => {
             meta
         })
 
-        expect(res.fee).toStrictEqual(expected)
+        expect(res.effects.find(e => e.type === 'feeCharged')).toStrictEqual(expected)
     })
 })

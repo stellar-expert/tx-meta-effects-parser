@@ -51,7 +51,8 @@ function parseTxOperationsMeta({network, tx, result, meta}) {
     }
 
     if (!isEphemeral) {
-        res.fee = processFeeChargedEffect(parsedTx, result.feeCharged().toString(), isFeeBump)
+        res.effects = [processFeeChargedEffect(parsedTx, result.feeCharged().toString(), isFeeBump)]
+        //TODO: process TxMetaChangesBefore and TxMetaChangesAfter to emit tx-level effects (e.g. SignerRemoved after pre-auth tx execution)
     }
 
     //take inner transaction if parsed tx is a fee bump tx
@@ -126,9 +127,9 @@ function ensureXdrInputType(value, xdrType) {
  * @typedef {{}} ParsedTxOperationsMetadata
  * @property {Transaction|FeeBumpTransaction} tx
  * @property {BaseOperation[]} operations
- * @property {{}} fee
  * @property {Boolean} isEphemeral
- * @property {Boolean} failed?
+ * @property {Boolean} [failed]
+ * @property {{}[]} [effects]
  */
 
 module.exports = {parseTxOperationsMeta, parseTxResult, analyzeOperationEffects, parseLedgerEntryChanges, parseTxMetaChanges, effectTypes}
