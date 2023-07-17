@@ -31,7 +31,7 @@ const res = parseTxOperationsMeta({
   meta: '_base64-encoded_transaction_result_meta_XDR_'
 })
 
-console.log(res.fee)
+console.log(res.effects)
 console.log(res.operations[0].effects)
 ```
 

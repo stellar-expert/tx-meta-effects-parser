@@ -46,6 +46,6 @@ describe('Effects', () => {
             meta
         })
 
-        expect(res.fee).toStrictEqual(expected)
+        expect(res.effects.find(e => e.type === 'feeCharged')).toStrictEqual(expected)
     })
 })

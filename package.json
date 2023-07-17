@@ -11,8 +11,8 @@
   "author": "hawthorne@stellar.expert",
   "license": "MIT",
   "peerDependencies": {
-    "bignumber.js": "^4.0.0",
-    "stellar-base": "8.2.2-soroban.11"
+    "bignumber.js": "^9.1.1",
+    "stellar-base": "10.0.0-soroban.3"
   },
   "devDependencies": {
     "@babel/core": "^7.20.5",

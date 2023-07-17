@@ -4,7 +4,7 @@ const effectTypes = require('./effect-types')
 const {UnexpectedTxMetaChangeError} = require('./errors')
 
 /**
- * Calculate difference between two amount
+ * Calculate difference between two amounts
  * @param {String} before
  * @param {String} after
  * @return {String}
