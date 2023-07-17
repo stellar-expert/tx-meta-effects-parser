@@ -1,17 +1,16 @@
 {
   "name": "@stellar-expert/tx-meta-effects-parser",
   "private": true,
-  "version": "4.5.0",
+  "version": "4.6.0",
   "description": "Low-level effects parser for Stellar transaction results and meta XDR",
   "main": "src/index.js",
   "scripts": {
     "test": "jest",
     "generateTestVectors": "node ./test/tx-test-vectors-generator.js testvector"
   },
-  "author": "hawthorne@stellar.expert",
+  "author": "team@stellar.expert",
   "license": "MIT",
   "peerDependencies": {
-    "bignumber.js": "^4.0.0",
     "stellar-base": "^8.2.0"
   },
   "devDependencies": {

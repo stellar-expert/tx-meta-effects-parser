@@ -1,6 +1,5 @@
-const BigNumber = require('bignumber.js')
 const effectTypes = require('./effect-types')
-const {isAsset, trimZeros} = require('./analyzer-primitives')
+const {isAsset, toStroops, fromStroops} = require('./analyzer-primitives')
 
 class AssetSupplyProcessor {
     constructor(effects) {
@@ -13,8 +12,11 @@ class AssetSupplyProcessor {
     assetTransfers
 
     add(asset, amount, negative = false) {
-        const change = new BigNumber(negative ? '-' + amount : amount)
-        this.assetTransfers[asset] = (this.assetTransfers[asset] || new BigNumber('0')).add(change)
+        let change = toStroops(amount)
+        if (negative) {
+            change *= -1n
+        }
+        this.assetTransfers[asset] = (this.assetTransfers[asset] || 0n) + change
     }
 
     processEffect(effect) {
@@ -69,17 +71,17 @@ class AssetSupplyProcessor {
     resolve() {
         const res = []
         for (const [asset, sum] of Object.entries(this.assetTransfers))
-            if (sum > 0) {
+            if (sum > 0n) {
                 res.push({
                     type: effectTypes.assetMinted,
                     asset,
-                    amount: trimZeros(sum.toFixed(7))
+                    amount: fromStroops(sum)
                 })
-            } else if (sum < 0) {
+            } else if (sum < 0n) {
                 res.push({
                     type: effectTypes.assetBurned,
                     asset,
-                    amount: trimZeros(sum.negated().toFixed(7))
+                    amount: fromStroops(-sum)
                 })
             }
         return res
