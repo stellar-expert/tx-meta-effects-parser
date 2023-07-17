@@ -8,10 +8,9 @@
     "test": "jest",
     "generateTestVectors": "node ./test/tx-test-vectors-generator.js testvector"
   },
-  "author": "hawthorne@stellar.expert",
+  "author": "team@stellar.expert",
   "license": "MIT",
   "peerDependencies": {
-    "bignumber.js": "^9.1.1",
     "stellar-base": "10.0.0-soroban.3"
   },
   "devDependencies": {

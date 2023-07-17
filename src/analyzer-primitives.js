@@ -1,5 +1,4 @@
 const {StrKey} = require('stellar-base')
-const BigNumber = require('bignumber.js')
 const effectTypes = require('./effect-types')
 const {UnexpectedTxMetaChangeError} = require('./errors')
 
@@ -10,36 +9,80 @@ const {UnexpectedTxMetaChangeError} = require('./errors')
  * @return {String}
  */
 function diff(before, after) {
-    return trimZeros(new BigNumber(before).minus(after).toFixed(7))
+    return (BigInt(before) - BigInt(after)).toString()
 }
 
 /**
  * Returns true for AlphaNum4/12 assets adn false otherwise
  * @param {String} asset
  */
-function isAsset(asset){
+function isAsset(asset) {
     return asset.includes('-') //lazy check for {code}-{issuer}-{type} format
 }
 
+
 /**
- * Convert stroops to human-friendly numbers format
- * @param {String} value
+ * Convert value in stroops (Int64 amount) to the normal string representation
+ * @param {String|Number|BigInt} valueInStroops
  * @return {String}
- * @internal
  */
-function adjustPrecision(value) {
-    if (value === '0')
-        return value
-    let negative = false
-    if (value[0] === '-') {
-        negative = true
-        value = value.substring(1)
+function fromStroops(valueInStroops) {
+    try {
+        let parsed = typeof valueInStroops === 'bigint' ?
+            valueInStroops :
+            BigInt(valueInStroops.toString())
+        let negative = false
+        if (parsed < 0n) {
+            negative = true
+            parsed *= -1n
+        }
+        const int = parsed / 10000000n
+        const fract = parsed % 10000000n
+        let res = int.toString()
+        if (fract) {
+            res += '.' + fract.toString().padStart(7, '0')
+        }
+        if (negative) {
+            res = '-' + res
+        }
+        return trimZeros(res)
+    } catch (e) {
+        return '0'
     }
-    let integer = value.length <= 7 ? '0' : value.substring(0, value.length - 7)
-    const fractional = value.substring(value.length - 7).padStart(7, '0').replace(/0+$/, '')
-    if (!fractional.length)
-        return negative ? '-' + integer : integer
-    return (negative ? '-' + integer : integer) + '.' + fractional
+}
+
+
+/**
+ * Convert arbitrary stringified amount to int64 representation
+ * @param {String|Number} value
+ * @return {BigInt}
+ */
+function toStroops(value) {
+    if (!value)
+        return 0n
+    if (typeof value === 'number') {
+        value = value.toFixed(7)
+    }
+    if (typeof value !== 'string' || !/^-?[\d.,]+$/.test(value))
+        return 0n //invalid format
+    try {
+        let [int, decimal = '0'] = value.split('.', 2)
+        let negative = false
+        if (int.startsWith('-')) {
+            negative = true
+            int = int.slice(1)
+        }
+        let res = BigInt(int) * 10000000n + BigInt(decimal.slice(0, 7).padEnd(7, '0'))
+        if (negative) {
+            res *= -1n
+            if (res < -0x8000000000000000n) //overflow
+                return 0n
+        } else if (res > 0xFFFFFFFFFFFFFFFFn) //overflow
+            return 0n
+        return res
+    } catch (e) {
+        return 0n
+    }
 }
 
 /**
@@ -49,13 +92,13 @@ function adjustPrecision(value) {
  * @internal
  */
 function trimZeros(value) {
-    let [integer, fractional] = value.split('.')
-    if (!fractional)
-        return integer
-    const trimmed = fractional.replace(/0+$/, '')
+    const [int, fract] = value.split('.')
+    if (!fract)
+        return int
+    const trimmed = fract.replace(/0+$/, '')
     if (!trimmed.length)
-        return integer
-    return integer + '.' + trimmed
+        return int
+    return int + '.' + trimmed
 }
 
 /**
@@ -108,7 +151,8 @@ function isIssuer(account, asset) {
 }
 
 module.exports = {
-    adjustPrecision,
+    fromStroops,
+    toStroops,
     trimZeros,
     normalizeAddress,
     encodeSponsorshipEffectName,
