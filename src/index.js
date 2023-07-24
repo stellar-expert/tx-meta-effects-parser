@@ -33,25 +33,20 @@ function parseTxOperationsMeta({network, tx, result, meta}) {
         //retrieve operations result metadata
         try {
             meta = ensureXdrInputType(meta, xdr.TransactionMeta)
-            if (meta.switch() === 3) {
-                txResult = meta.v3().txResult()
-            }
-        } catch {
+        } catch (e) {
             throw new TxMetaEffectParserError('Invalid transaction metadata XDR. ' + e.message)
         }
     }
     //and tx result itself (for pre-Soroban environment it is stored separately)
-    if (!txResult) {
+    try {
+        txResult = ensureXdrInputType(result, xdr.TransactionResult)
+    } catch (e) {
         try {
-            txResult = ensureXdrInputType(result, xdr.TransactionResult)
+            //try TransactionResultPair instead of TransactionResult
+            const pair = ensureXdrInputType(result, xdr.TransactionResultPair)
+            txResult = pair.result()
         } catch (e) {
-            try {
-                //try TransactionResultPair instead of TransactionResult
-                const pair = ensureXdrInputType(result, xdr.TransactionResultPair)
-                txResult = pair.result()
-            } catch {
-                throw new TxMetaEffectParserError('Invalid transaction result XDR. ' + e.message)
-            }
+            throw new TxMetaEffectParserError('Invalid transaction result XDR. ' + e.message)
         }
     }
 
@@ -67,7 +62,7 @@ function parseTxOperationsMeta({network, tx, result, meta}) {
     }
 
     if (!isEphemeral) {
-        res.effects = [processFeeChargedEffect(parsedTx, result.feeCharged().toString(), isFeeBump)]
+        res.effects = [processFeeChargedEffect(parsedTx, txResult.feeCharged().toString(), isFeeBump)]
         //TODO: process TxMetaChangesBefore and TxMetaChangesAfter to emit tx-level effects (e.g. SignerRemoved after pre-auth tx execution)
     }
 
@@ -103,7 +98,7 @@ function parseTxOperationsMeta({network, tx, result, meta}) {
 
     const metaValue = meta.value()
     const opMeta = metaValue.operations()
-    const events = metaValue.events ? metaValue.events().map(opEvents => opEvents.events()) : []
+    const events = metaValue.sorobanMeta ? metaValue.sorobanMeta().events() : []
 
     //analyze operation effects for each operation
     for (let i = 0; i < parsedTx.operations.length; i++) {

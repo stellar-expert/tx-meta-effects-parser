@@ -237,28 +237,25 @@ function parseClaimableBalanceEntry(value) {
 
 function parseContractData(value) {
     const data = value.value()
-    switch (data.key().arm()){
-        case 'ic':
-            switch (data.key().value()?.name){
-                case 'scsLedgerKeyContractCode':
-                    return {
-                        entry: 'contractData',
-                        contract: StrKey.encodeContract(data.contractId()),
-                        key: 'contractCode',
-                        val: data.val().value().value().value().toString('hex'),
-                        system: true
-                    }
-                default:
-                    throw new Error('Not implemented')
+    const contract = StrKey.encodeContract(data.contract().contractId())
+    const valueAttr = data.body().value().val()
+    switch (data.key().switch()?.name) {
+        case 'scvLedgerKeyContractInstance':
+            return {
+                entry: 'contractCode',
+                contract,
+                hash: valueAttr.instance().executable().wasmHash().toString('hex'),
+                durability: data.durability().name,
+                aux: true
             }
-            break
     }
 
     return {
         entry: 'contractData',
-        contract: StrKey.encodeContract(data.contractId()),
-        key: data.key(),
-        val: data.val()
+        contract,
+        key: data.key().value()[0].value().toString(),
+        value: valueAttr.toXDR().toString('base64'),
+        durability: data.durability().name
     }
 }
 

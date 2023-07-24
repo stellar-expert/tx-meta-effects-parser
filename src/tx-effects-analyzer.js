@@ -1,4 +1,4 @@
-const {StrKey} = require('stellar-base')
+const {StrKey, bumpFootprintExpiration, restoreFootprint} = require('stellar-base')
 const effectTypes = require('./effect-types')
 const {parseLedgerEntryChanges} = require('./ledger-entry-changes-parser')
 const {xdrParseAsset, xdrParseAccountAddress} = require('./tx-xdr-parser-utils')
@@ -302,8 +302,38 @@ class EffectsAnalyzer {
     }
 
     invokeHostFunction() {
-        //const {function, parameters, footprint, auth} = this.operation
-        //hostFunctionTypeCreateContract
+        const {func, auth} = this.operation
+        const value = func.value()
+        switch (func.arm()) {
+            case 'invokeContract':
+                this.addEffect({
+                    type: effectTypes.contractInvoked,
+                    contract: StrKey.encodeContract(value[0].address().contractId()),
+                    function: value[1].sym().toString(),
+                    args: value.slice(2).map(v => v.toXDR('base64'))
+                })
+                //TODO: check if it's possible to extract a comprehensive sub-contract calls info from
+                break
+            case 'createContract':
+                this.addEffect({
+                    type: effectTypes.contractCodeInstalled,
+                    wasmHash: value.executable().wasmHash().toString('hex')
+                })
+                break
+            case 'wasm':
+                this.addEffect({
+                    type: effectTypes.contractCodeUploaded,
+                    wasm: value.toString('base64')
+                })
+                break
+        }
+    }
+
+    bumpFootprintExpiration() {
+        //const {ledgersToExpire} = this.operation
+    }
+
+    restoreFootprint() {
     }
 
     processDexOperationEffects() {
@@ -630,13 +660,11 @@ class EffectsAnalyzer {
     }
 
     processContractCodeChanges({action, before, after}) {
-        const {hash, code} = after || before
+        const {hash} = after || before
         const effect = {
             type: '',
-            hash,
-            code
+            hash
         }
-        effect.code = code
         switch (action) {
             case 'created':
                 effect.type = effectTypes.contractCodeInstalled
@@ -653,31 +681,19 @@ class EffectsAnalyzer {
     }
 
     processContractDataChanges({action, before, after}) {
-        const {contract, key, val, system} = after || before
-        if (system) {
-            switch (key) {
-                case 'contractCode':
-                    return this.addEffect({
-                        type: effectTypes.contractCodeUpdated,
-                        contract,
-                        code: val
-                    })
-                default:
-                    throw new Error('Not implemented')
-            }
-        }
+        const {contract, key, value} = after || before
         const effect = {
             type: '',
             contract,
-            key: key.toXDR('base64'),
-            value: val.toXDR('base64')
+            key,
+            value
         }
         switch (action) {
             case 'created':
                 effect.type = effectTypes.contractDataCreated
                 break
             case 'updated':
-                if (before.val.toXDR('base64') === after.val.toXDR('base64'))
+                if (before.value === after.value)
                     return //value has not changed
                 effect.type = effectTypes.contractDataUpdated
                 break

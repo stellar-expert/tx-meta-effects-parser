@@ -14,10 +14,10 @@
     "stellar-base": "10.0.0-soroban.3"
   },
   "devDependencies": {
-    "@babel/core": "^7.20.5",
-    "@babel/preset-env": "^7.20.2",
+    "@babel/core": "^7.22.9",
+    "@babel/preset-env": "^7.22.9",
     "@stellar-expert/eslint-config-js": "github:stellar-expert/eslint-config-js",
-    "babel-jest": "^29.3.1",
-    "jest": "^29.3.1"
+    "babel-jest": "^29.6.1",
+    "jest": "^29.6.1"
   }
 }

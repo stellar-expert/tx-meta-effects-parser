@@ -80,8 +80,11 @@ const effectTypes = {
     signerSponsorshipUpdated: 'signerSponsorshipUpdated',
     signerSponsorshipCreated: 'signerSponsorshipCreated',
 
+    contractCodeUploaded: 'contractCodeUploaded',
     contractCodeInstalled: 'contractCodeInstalled',
     contractCodeUpdated: 'contractCodeUpdated',
+
+    contractInvoked: 'contractInvoked',
 
     contractDataCreated: 'contractDataCreated',
     contractDataUpdated: 'contractDataUpdated',
