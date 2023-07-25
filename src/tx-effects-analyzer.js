@@ -45,7 +45,7 @@ class EffectsAnalyzer {
         this.operation = operation
         this.result = result
         this.changes = parseLedgerEntryChanges(meta)
-        this.source = normalizeAddress(this.operation.source)
+        this.source = normalizeAddress(operation.source)
         //find appropriate parsing method
         const parse = this[operation.type]
         if (parse) {
@@ -301,18 +301,42 @@ class EffectsAnalyzer {
         })
     }
 
+    parseAuthInvocations(invocations, invoker) {
+        for (let invocation of invocations) {
+            const fn = invocation.function()
+            switch (fn.arm()) {
+                case 'contractFn':
+                    const value = fn.contractFn()
+                    const effect = {
+                        type: effectTypes.contractInvoked,
+                        contract: StrKey.encodeContract(value.contractAddress().contractId()),
+                        function: value.functionName().toString(),
+                        args: value.args().map(v => v.toXDR('base64'))
+                    }
+                    if (invoker) {
+                        effect.invoker = invoker
+                    }
+                    this.addEffect(effect)
+                    const sub = invocation.subInvocations()
+                    if (sub.length) {
+                        this.parseAuthInvocations(sub, effect.contract)
+                    }
+                    break
+                case 'createContractHostFn':
+                case 'sorobanAuthorizedFunctionTypeContractFn':
+                case 'sorobanAuthorizedFunctionTypeCreateContractHostFn':
+                default:
+                    throw new Error('Auth type not supported: ' + fn.arm())
+            }
+        }
+    }
+
     invokeHostFunction() {
         const {func, auth} = this.operation
         const value = func.value()
         switch (func.arm()) {
             case 'invokeContract':
-                this.addEffect({
-                    type: effectTypes.contractInvoked,
-                    contract: StrKey.encodeContract(value[0].address().contractId()),
-                    function: value[1].sym().toString(),
-                    args: value.slice(2).map(v => v.toXDR('base64'))
-                })
-                //TODO: check if it's possible to extract a comprehensive sub-contract calls info from
+                this.parseAuthInvocations(auth.map(a => a.rootInvocation()), this.operation.source)
                 break
             case 'createContract':
                 this.addEffect({

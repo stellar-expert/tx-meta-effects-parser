@@ -4,7 +4,7 @@ const {parseTxOperationsMeta} = require('../src/index')
 
 
 describe('Effects', () => {
-    test.each(require('./op-effects-data.json'))('Analyze classic operation effects - %s', (description, {tx, result, meta, expected}) => {
+    test.each(require('./op-effects-data.json'))('Analyze operation effects - %s', (description, {tx, result, meta, expected}) => {
         const res = parseTxOperationsMeta({
             network: Networks.TESTNET,
             tx,
