@@ -1357,7 +1357,8 @@
             "signers": [
               {
                 "key": "GALF7U4GH4PTVNXVLECT76XQP6PXW4K3QTS46TSEWUPSWLOJH6MXCR2V",
-                "weight": 1
+                "weight": 1,
+                "sponsor": "GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI"
               }
             ]
           },

@@ -1,4 +1,5 @@
 const {StrKey, LiquidityPoolId} = require('stellar-base')
+const {TxMetaEffectParserError} = require('./errors')
 
 /**
  * Parse account address from XDR representation

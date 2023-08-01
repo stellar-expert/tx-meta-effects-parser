@@ -1,8 +1,8 @@
-const {StrKey} = require('stellar-base')
 const effectTypes = require('./effect-types')
 const {parseLedgerEntryChanges} = require('./ledger-entry-changes-parser')
 const {xdrParseAsset, xdrParseAccountAddress} = require('./tx-xdr-parser-utils')
 const {normalizeAddress, fromStroops, trimZeros, encodeSponsorshipEffectName, diff} = require('./analyzer-primitives')
+const {analyzeSignerChanges} = require('./signer-changes-analyzer')
 const AssetSupplyProcessor = require('./asset-supply-processor')
 const {UnexpectedTxMetaChangeError, TxMetaEffectParserError} = require('./errors')
 
@@ -108,10 +108,10 @@ class EffectsAnalyzer {
                 domain: after.homeDomain
             })
         }
-        if (JSON.stringify(before.thresholds) !== JSON.stringify(after.thresholds)) {
+        if (before.thresholds !== after.thresholds) {
             this.addEffect({
                 type: effectTypes.accountThresholdsUpdated,
-                thresholds: after.thresholds
+                thresholds: after.thresholds.split(',').map(v => parseInt(v, 10))
             })
         }
         if (before.flags !== after.flags) {
@@ -140,43 +140,6 @@ class EffectsAnalyzer {
                     type: effectTypes.accountSignerRemoved,
                     signer: after.address,
                     weight: after.masterWeight,
-                    masterWeight: after.masterWeight,
-                    signers: after.signers
-                })
-            }
-        }
-        if (operation.signer !== undefined && JSON.stringify(before.signers) !== JSON.stringify(after.signers)) {
-            const {signer} = operation
-            const weight = signer.weight || 0
-            let key
-            if (signer.sha256Hash) {
-                key = StrKey.encodeSha256Hash(signer.sha256Hash)
-            } else if (signer.preAuthTx) {
-                key = StrKey.encodePreAuthTx(signer.preAuthTx)
-            } else {
-                key = operation.signer.ed25519PublicKey || operation.signer.ed25519SignedPayload
-            }
-            if (weight === 0) {
-                this.addEffect({
-                    type: effectTypes.accountSignerRemoved,
-                    signer: key,
-                    weight,
-                    masterWeight: after.masterWeight,
-                    signers: after.signers
-                })
-            } else if (before.signers.length < after.signers.length) {
-                this.addEffect({
-                    type: effectTypes.accountSignerCreated,
-                    signer: key,
-                    weight,
-                    masterWeight: after.masterWeight,
-                    signers: after.signers
-                })
-            } else {
-                this.addEffect({
-                    type: effectTypes.accountSignerUpdated,
-                    signer: key,
-                    weight,
                     masterWeight: after.masterWeight,
                     signers: after.signers
                 })
@@ -390,6 +353,8 @@ class EffectsAnalyzer {
                 if (this.operation.type === 'setOptions' || this.operation.type === 'revokeSignerSponsorship') {
                     this.processSignerSponsorshipEffects({before, after})
                 }
+                //process signers changes
+
                 break
             case 'removed':
                 if (before.balance > 0) {
@@ -403,6 +368,10 @@ class EffectsAnalyzer {
                 }
                 this.addEffect(accountRemoved)
                 break
+        }
+
+        for (const effect of analyzeSignerChanges(before, after)) {
+            this.addEffect(effect)
         }
     }
 
@@ -670,11 +639,12 @@ function analyzeOperationEffects({operation, meta, result}) {
 /**
  * Generates fee charged effect
  * @param {{}} tx - Transaction
+ * @param {String} source - Source account
  * @param {String} chargedAmount - Charged amount
  * @param {Boolean} feeBump? - Is fee bump transaction
  * @returns {{}} - Fee charged effect
  */
-function processFeeChargedEffect(tx, chargedAmount, feeBump = false) {
+function processFeeChargedEffect(tx, source, chargedAmount, feeBump = false) {
     if (tx._switch) { //raw XDR
         const txXdr = tx.value().tx()
         tx = {
@@ -684,7 +654,7 @@ function processFeeChargedEffect(tx, chargedAmount, feeBump = false) {
     }
     const res = {
         type: effectTypes.feeCharged,
-        source: normalizeAddress(tx.feeSource || tx.source),
+        source,
         asset: 'XLM',
         bid: fromStroops(tx.fee),
         charged: fromStroops(chargedAmount)

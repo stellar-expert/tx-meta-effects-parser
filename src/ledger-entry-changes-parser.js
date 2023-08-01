@@ -98,7 +98,6 @@ function parseAccountEntry(value) {
         address: xdrParseAccountAddress(accountEntryXdr.accountId()),
         sequence: accountEntryXdr.seqNum().toString(),
         balance: accountEntryXdr.balance().toString(),
-        numSubEntries: accountEntryXdr.numSubEntries(),
         homeDomain: accountEntryXdr.homeDomain().toString('UTF8'),
         inflationDest: xdrParseAccountAddress(accountEntryXdr.inflationDest()),
         flags: accountEntryXdr.flags(),
@@ -107,32 +106,25 @@ function parseAccountEntry(value) {
             weight: signer.weight()
         }))
     }
-    const thresholds = accountEntryXdr.thresholds()  //TODO: check if thresholds is a buffer
-    data.thresholds = [
-        thresholds[1],
-        thresholds[2],
-        thresholds[3]
-    ]
+    const thresholds = accountEntryXdr.thresholds()
+    data.thresholds = thresholds.slice(1).join()
     data.masterWeight = thresholds[0]
     const extV1 = accountEntryXdr.ext()?.v1()
     if (extV1) {
-        const liabilities = extV1.liabilities()
-        data.liabilities = [
-            liabilities.buying().toString(),
-            liabilities.selling().toString()
-        ]
         const extV2 = extV1.ext()?.v2()
         if (extV2) {
-            data.numSponsored = extV2.numSponsored()
-            data.numSponsoring = extV2.numSponsoring()
-            data.signerSponsoringIDs = extV2.signerSponsoringIDs().map(spid => xdrParseAccountAddress(spid))
-            const extV3 = extV2.ext()?.v3()
-            if (extV3) {
-                data.seqLedger = extV3.seqLedger()
-                data.seqTime = extV3.seqTime().toString()
+            const sponsoringIDs = extV2.signerSponsoringIDs()
+            if (sponsoringIDs.length > 0) {
+                for (let i = 0; i < data.signers.length; i++) {
+                    const sponsor = sponsoringIDs[i]
+                    if (sponsor) { //attach sponsors directly to the signers
+                        data.signers[i].sponsor = xdrParseAccountAddress(sponsor)
+                    }
+                }
             }
         }
     }
+    //ignored fields: numSubEntries, extV1.liabilities, extV2.numSponsored, extV2.numSponsoring, extV3.seqLedger, extv3.seqTime
     return data
 }
 
@@ -163,13 +155,14 @@ function parseTrustlineEntry(value) {
         flags: trustlineEntryXdr.flags()
     }
 
-
+    /*
+    //ignored
     const extV1 = trustlineEntryXdr.ext()?.v1()
     if (extV1) {
         const liabilities = extV1.liabilities()
         data.buying_liabilities = liabilities.buying().toString()
         data.selling_liabilities = liabilities.selling().toString()
-    }
+    }*/
 
     return data
 }
@@ -193,7 +186,6 @@ function parseLiquidityPoolEntry(value) {
         pool: liquidityPoolEntryXdr.liquidityPoolId().toString('hex'),
         asset: [xdrParseAsset(params.assetA()), xdrParseAsset(params.assetB())],
         fee: params.fee(),
-        pool_type: 0,
         amount: [body.reserveA().toString(), body.reserveB().toString()],
         shares: body.totalPoolShares().toString(),
         accounts: body.poolSharesTrustLineCount().low

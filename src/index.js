@@ -4,7 +4,9 @@ const {parseTxResult} = require('./tx-result-parser')
 const {parseLedgerEntryChanges} = require('./ledger-entry-changes-parser')
 const {parseTxMetaChanges} = require('./tx-meta-changes-parser')
 const effectTypes = require('./effect-types')
-const {TxMetaEffectParserError} = require('./errors')
+const {TxMetaEffectParserError, UnexpectedTxMetaChangeError} = require('./errors')
+const {analyzeSignerChanges} = require('./signer-changes-analyzer')
+const {normalizeAddress} = require('./analyzer-primitives')
 
 /**
  * Retrieve effects from transaction execution result metadata
@@ -42,31 +44,29 @@ function parseTxOperationsMeta({network, tx, result, meta}) {
     tx = TransactionBuilder.fromXDR(tx, Networks[network.toUpperCase()] || network)
 
     let parsedTx = tx
+    let parsedResult = result
 
     const isFeeBump = !!parsedTx.innerTransaction
     let feeBumpSuccess
+
     const res = {
         tx,
         isEphemeral
-    }
-
-    if (!isEphemeral) {
-        res.effects = [processFeeChargedEffect(parsedTx, result.feeCharged().toString(), isFeeBump)]
-        //TODO: process TxMetaChangesBefore and TxMetaChangesAfter to emit tx-level effects (e.g. SignerRemoved after pre-auth tx execution)
     }
 
     //take inner transaction if parsed tx is a fee bump tx
     if (isFeeBump) {
         parsedTx = parsedTx.innerTransaction
         if (!isEphemeral) {
-            result = result.result().innerResultPair().result()
-            feeBumpSuccess = result.result().switch().value >= 0
+            parsedResult = result.result().innerResultPair().result()
+            feeBumpSuccess = parsedResult.result().switch().value >= 0
         }
     }
+
+    //normalize operation source and effects container
     if (parsedTx.operations) {
         res.operations = parsedTx.operations
 
-        //normalize operation source and effects container
         for (const op of parsedTx.operations) {
             if (!op.source) {
                 op.source = parsedTx.source
@@ -75,7 +75,8 @@ function parseTxOperationsMeta({network, tx, result, meta}) {
         }
     }
 
-    const {success, opResults} = parseTxResult(result)
+    //check execution result
+    const {success, opResults} = parseTxResult(parsedResult)
     if (!success || isFeeBump && !feeBumpSuccess) {
         res.failed = true
         return res
@@ -91,8 +92,20 @@ function parseTxOperationsMeta({network, tx, result, meta}) {
     } catch {
         throw new TxMetaEffectParserError('Invalid transaction metadata XDR. ' + e.message)
     }
-    const opMeta = meta.value().operations()
 
+    const sourceAccount = normalizeAddress(parsedTx.feeSource || parsedTx.source)
+    res.effects = [processFeeChargedEffect(tx, sourceAccount, result.feeCharged().toString(), isFeeBump)]
+    //add tx-level effects
+    for (const {before, after} of parseTxMetaChanges(meta)) {
+        if (before.entry !== 'account')
+            throw new UnexpectedTxMetaChangeError({type: before.entry, action: 'update'})
+        for (const effect of analyzeSignerChanges(before, after)) {
+            effect.source = sourceAccount
+            res.effects.push(effect)
+        }
+    }
+
+    const opMeta = meta.value().operations()
     //analyze operation effects for each operation
     for (let i = 0; i < parsedTx.operations.length; i++) {
         const operation = parsedTx.operations[i]
