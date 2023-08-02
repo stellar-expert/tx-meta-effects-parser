@@ -35,7 +35,7 @@
     }
   ],
   [
-    "signer removal",
+    "pre-auth tx signer removal",
     {
       "tx": "AAAAAAdyqJiuWogPkJkRZzxyHRQ/Aj7iBSW08XhpTLjy0uylAAAAZADXa0cAAAACAAAAAAAAAAAAAAABAAAAAAAAAAEAAAAA1TFzh3iXYFLIdyLiKApSuolx5TKiqzYu57v5DTOSJNoAAAAAAAAAAACYloAAAAAAAAAAAA==",
       "result": "AAAAAAAAAGQAAAAAAAAAAQAAAAAAAAABAAAAAAAAAAA=",
