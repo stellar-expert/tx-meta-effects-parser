@@ -81,21 +81,23 @@ class EffectsAnalyzer {
         }
     }
 
-    debit(amount, asset, source = null) {
+    debit(amount, asset, source, balance) {
         this.addEffect({
             type: effectTypes.accountDebited,
             source,
             asset,
-            amount
+            amount,
+            balance: fromStroops(balance)
         })
     }
 
-    credit(amount, asset, source = null) {
+    credit(amount, asset, source, balance) {
         this.addEffect({
             type: effectTypes.accountCredited,
             source,
             asset,
-            amount
+            amount,
+            balance: fromStroops(balance)
         })
     }
 
@@ -342,7 +344,7 @@ class EffectsAnalyzer {
                 }
                 this.addEffect(accountCreated)
                 if (after.balance > 0) {
-                    this.credit(fromStroops(after.balance), 'XLM', after.address)
+                    this.credit(fromStroops(after.balance), 'XLM', after.address, after.balance)
                 }
                 break
             case 'updated':
@@ -353,12 +355,10 @@ class EffectsAnalyzer {
                 if (this.operation.type === 'setOptions' || this.operation.type === 'revokeSignerSponsorship') {
                     this.processSignerSponsorshipEffects({before, after})
                 }
-                //process signers changes
-
                 break
             case 'removed':
                 if (before.balance > 0) {
-                    this.debit(fromStroops(before.balance), 'XLM', before.address)
+                    this.debit(fromStroops(before.balance), 'XLM', before.address, '0')
                 }
                 const accountRemoved = {
                     type: effectTypes.accountRemoved
@@ -413,10 +413,10 @@ class EffectsAnalyzer {
 
     processBalanceChange(account, asset, beforeBalance, afterBalance) {
         const balanceChange = fromStroops(diff(afterBalance, beforeBalance))
-        if (balanceChange < 0) {
-            this.debit(balanceChange.replace('-', ''), asset, account)
+        if (balanceChange[0] === '-') {
+            this.debit(balanceChange.replace('-', ''), asset, account, afterBalance)
         } else {
-            this.credit(balanceChange, asset, account)
+            this.credit(balanceChange, asset, account, afterBalance)
         }
     }
 
