@@ -33,7 +33,7 @@ function analyzeSignerChanges(before, after) {
                 type: effectTypes.accountSignerRemoved,
                 signer: bs.key,
                 weight: 0,
-                masterWeight: after.masterWeight,
+                masterWeight: after?.masterWeight || 0,
                 signers: afterSigners
             })
             if (bs.sponsor) { //signer sponsorship removed
@@ -48,7 +48,7 @@ function analyzeSignerChanges(before, after) {
         }
         //other signer removed
         if (as.key !== bs.key) {
-            if (afterSigners[a + 1]?.key !== bs.key)
+            if (beforeSigners[a + 1]?.key !== as.key)
                 throw new UnexpectedTxMetaChangeError({action: 'update', type: 'signer'})
             effects.push({
                 type: effectTypes.accountSignerRemoved,
