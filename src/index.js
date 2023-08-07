@@ -6,7 +6,6 @@ const {parseTxMetaChanges} = require('./tx-meta-changes-parser')
 const effectTypes = require('./effect-types')
 const {TxMetaEffectParserError, UnexpectedTxMetaChangeError} = require('./errors')
 const {analyzeSignerChanges} = require('./signer-changes-analyzer')
-const {normalizeAddress} = require('./analyzer-primitives')
 
 /**
  * Retrieve effects from transaction execution result metadata
@@ -57,6 +56,8 @@ function parseTxOperationsMeta({network, tx, result, meta}) {
     //take inner transaction if parsed tx is a fee bump tx
     if (isFeeBump) {
         parsedTx = parsedTx.innerTransaction
+        if (parsedTx.innerTransaction)
+            throw new TxMetaEffectParserError('Failed to process FeeBumpTransaction wrapped with another FeeBumpTransaction')
         if (!isEphemeral) {
             parsedResult = result.result().innerResultPair().result()
             feeBumpSuccess = parsedResult.result().switch().value >= 0
@@ -74,6 +75,9 @@ function parseTxOperationsMeta({network, tx, result, meta}) {
             op.effects = []
         }
     }
+
+    //process fee charge
+    res.effects = [processFeeChargedEffect(tx, tx.feeSource || parsedTx.source, result.feeCharged().toString(), isFeeBump)]
 
     //check execution result
     const {success, opResults} = parseTxResult(parsedResult)
@@ -93,14 +97,12 @@ function parseTxOperationsMeta({network, tx, result, meta}) {
         throw new TxMetaEffectParserError('Invalid transaction metadata XDR. ' + e.message)
     }
 
-    const sourceAccount = normalizeAddress(parsedTx.feeSource || parsedTx.source)
-    res.effects = [processFeeChargedEffect(tx, sourceAccount, result.feeCharged().toString(), isFeeBump)]
     //add tx-level effects
     for (const {before, after} of parseTxMetaChanges(meta)) {
         if (before.entry !== 'account')
             throw new UnexpectedTxMetaChangeError({type: before.entry, action: 'update'})
         for (const effect of analyzeSignerChanges(before, after)) {
-            effect.source = sourceAccount
+            effect.source = parsedTx.source
             res.effects.push(effect)
         }
     }

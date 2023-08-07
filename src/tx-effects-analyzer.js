@@ -1,7 +1,7 @@
 const effectTypes = require('./effect-types')
 const {parseLedgerEntryChanges} = require('./ledger-entry-changes-parser')
 const {xdrParseAsset, xdrParseAccountAddress} = require('./tx-xdr-parser-utils')
-const {normalizeAddress, fromStroops, trimZeros, encodeSponsorshipEffectName, diff} = require('./analyzer-primitives')
+const {fromStroops, trimZeros, encodeSponsorshipEffectName, diff} = require('./analyzer-primitives')
 const {analyzeSignerChanges} = require('./signer-changes-analyzer')
 const AssetSupplyProcessor = require('./asset-supply-processor')
 const {UnexpectedTxMetaChangeError, TxMetaEffectParserError} = require('./errors')
@@ -45,7 +45,7 @@ class EffectsAnalyzer {
         this.operation = operation
         this.result = result
         this.changes = parseLedgerEntryChanges(meta)
-        this.source = normalizeAddress(this.operation.source)
+        this.source = this.operation.source
         //find appropriate parsing method
         const parse = this[operation.type]
         if (parse) {
