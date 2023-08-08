@@ -8,7 +8,8 @@ const {TxMetaEffectParserError} = require('./errors')
  * @return {String|{muxedId: String, primary: String}}
  */
 function xdrParseAccountAddress(accountId, muxedAccountsSupported = false) {
-    if (!accountId) return undefined
+    if (!accountId)
+        return undefined
     if (accountId.arm) {
         switch (accountId.arm()) {
             case 'ed25519':

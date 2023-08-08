@@ -214,7 +214,6 @@ ClawbackClaimableBalance, InflationOp</td>
   source: 'GBWC…DXHN',
   signer: 'GBKP…YDLI',
   weight: 1,
-  masterWeight: 1,
   signers: [
     {key: 'GBWC…DXHN', weight: 1},
     {key: 'GBKP…YDLI', weight: 1}
@@ -238,7 +237,6 @@ ClawbackClaimableBalance, InflationOp</td>
   source: 'GBWC…DXHN',
   signer: 'GBKP…YDLI',
   weight: 2,
-  masterWeight: 1,
   signers: [
     {key: 'GBWC…DXHN', weight: 2},
     {key: 'GBKP…YDLI', weight: 1}
@@ -261,7 +259,6 @@ ClawbackClaimableBalance, InflationOp</td>
   type: 'accountSignerRemoved',
   source: 'GBWC…DXHN',
   weight: 0,
-  masterWeight: 1,
   signer: 'GBKP…YDLI',
   signers: [
     {key: 'GBWC…DXHN', weight: 1}

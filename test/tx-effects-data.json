@@ -53,8 +53,7 @@
           "source": "GADXFKEYVZNIQD4QTEIWOPDSDUKD6AR64ICSLNHRPBUUZOHS2LWKLEPK",
           "signer": "TCVVL4UJLKQHK6GCRDQTODK55TQCTOZ3QLSCP4FKOOV36KN4UQFJX35V",
           "weight": 0,
-          "signers": [],
-          "masterWeight": 0
+          "signers": []
         }
       ]
     }

@@ -91,7 +91,6 @@
       "expected": [
         [
           {
-            "masterWeight": 1,
             "signer": "GBWCS2C42PQYMDQVBIVUOWDPSM2T3BRJWG2ENQJQU3N75J4CSKJ6DXHN",
             "signers": [
               {
@@ -116,7 +115,6 @@
       "expected": [
         [
           {
-            "masterWeight": 1,
             "signer": "GBWCS2C42PQYMDQVBIVUOWDPSM2T3BRJWG2ENQJQU3N75J4CSKJ6DXHN",
             "signers": [
               {
@@ -131,7 +129,6 @@
         ],
         [
           {
-            "masterWeight": 1,
             "signer": "GBWCS2C42PQYMDQVBIVUOWDPSM2T3BRJWG2ENQJQU3N75J4CSKJ6DXHN",
             "signers": [
               {
@@ -156,7 +153,6 @@
       "expected": [
         [
           {
-            "masterWeight": 1,
             "signer": "GBWCS2C42PQYMDQVBIVUOWDPSM2T3BRJWG2ENQJQU3N75J4CSKJ6DXHN",
             "signers": [],
             "source": "GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI",
@@ -195,12 +191,16 @@
             "type": "accountInflationDestinationUpdated"
           },
           {
-            "masterWeight": 4,
-            "signer": "GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI",
-            "signers": [],
-            "source": "GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI",
             "type": "accountSignerUpdated",
-            "weight": 4
+            "source": "GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI",
+            "signer": "GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI",
+            "weight": 4,
+            "signers": [
+              {
+                "key": "GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI",
+                "weight": 4
+              }
+            ]
           }
         ],
         [
@@ -219,7 +219,6 @@
             "type": "accountThresholdsUpdated"
           },
           {
-            "masterWeight": 1,
             "signer": "GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI",
             "signers": [],
             "source": "GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI",
@@ -1383,7 +1382,6 @@
             "source": "GDNPPDR6QACI25Q3D4LIRTDZFDGWWPUP55XMU3ERR5C7A3LRGIXPCMXH",
             "signer": "GALF7U4GH4PTVNXVLECT76XQP6PXW4K3QTS46TSEWUPSWLOJH6MXCR2V",
             "weight": 1,
-            "masterWeight": 1,
             "signers": [
               {
                 "key": "GALF7U4GH4PTVNXVLECT76XQP6PXW4K3QTS46TSEWUPSWLOJH6MXCR2V",
@@ -1669,19 +1667,18 @@
       "expected": [
         [
           {
-            "type": "accountSignerRemoved",
-            "source": "GDNPPDR6QACI25Q3D4LIRTDZFDGWWPUP55XMU3ERR5C7A3LRGIXPCMXH",
-            "signer": "GALF7U4GH4PTVNXVLECT76XQP6PXW4K3QTS46TSEWUPSWLOJH6MXCR2V",
-            "weight": 0,
-            "masterWeight": 1,
-            "signers": []
-          },
-          {
             "type": "signerSponsorshipRemoved",
             "source": "GDNPPDR6QACI25Q3D4LIRTDZFDGWWPUP55XMU3ERR5C7A3LRGIXPCMXH",
             "account": "GDNPPDR6QACI25Q3D4LIRTDZFDGWWPUP55XMU3ERR5C7A3LRGIXPCMXH",
             "signer": "GALF7U4GH4PTVNXVLECT76XQP6PXW4K3QTS46TSEWUPSWLOJH6MXCR2V",
             "prevSponsor": "GBDO5AGQ4PCURSK623QQNGSLCRKQBPOV2KQBNGBD2TM65UEEFDGYXPCB"
+          },
+          {
+            "type": "accountSignerRemoved",
+            "source": "GDNPPDR6QACI25Q3D4LIRTDZFDGWWPUP55XMU3ERR5C7A3LRGIXPCMXH",
+            "signer": "GALF7U4GH4PTVNXVLECT76XQP6PXW4K3QTS46TSEWUPSWLOJH6MXCR2V",
+            "weight": 0,
+            "signers": []
           }
         ],
         [
@@ -2205,7 +2202,7 @@
             "source": "GCJMGG2MZ24AWKGTT5QEFA4YUVODMS4VHV4FMMK2ALAOA2OV2Q2ZQKFH",
             "asset": "XLM",
             "amount": "203639.34417",
-                 "balance": "547328.68834"
+            "balance": "547328.68834"
           },
           {
             "type": "accountDebited",

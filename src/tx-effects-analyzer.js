@@ -128,25 +128,6 @@ class EffectsAnalyzer {
                 inflationDestination: after.inflationDest
             })
         }
-        if (operation.masterWeight !== undefined && before.masterWeight !== after.masterWeight) {
-            if (operation.masterWeight > 0) {
-                this.addEffect({
-                    type: effectTypes.accountSignerUpdated,
-                    signer: after.address,
-                    weight: after.masterWeight,
-                    masterWeight: after.masterWeight,
-                    signers: after.signers
-                })
-            } else {
-                this.addEffect({
-                    type: effectTypes.accountSignerRemoved,
-                    signer: after.address,
-                    weight: after.masterWeight,
-                    masterWeight: after.masterWeight,
-                    signers: after.signers
-                })
-            }
-        }
     }
 
     allowTrust() {
