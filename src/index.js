@@ -130,7 +130,7 @@ function parseTxOperationsMeta({network, tx, result, meta}) {
  * @internal
  */
 function ensureXdrInputType(value, xdrType) {
-    if (value instanceof xdrType)
+    if (value?._attributes)
         return value
 
     if (!value || (typeof value !== 'string' && !(value instanceof Uint8Array)))
