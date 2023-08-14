@@ -27,7 +27,7 @@ function parseTxOperationsMeta({network, tx, result, meta}) {
     try {
         tx = ensureXdrInputType(tx, xdr.TransactionEnvelope)
     } catch (e) {
-        throw  new TxMetaEffectParserError('Invalid transaction envelope XDR. ' + e.message)
+        throw new TxMetaEffectParserError('Invalid transaction envelope XDR. ' + e.message)
     }
     try {
         result = ensureXdrInputType(result, xdr.TransactionResult)
@@ -102,7 +102,7 @@ function parseTxOperationsMeta({network, tx, result, meta}) {
         if (before.entry !== 'account')
             throw new UnexpectedTxMetaChangeError({type: before.entry, action: 'update'})
         for (const effect of analyzeSignerChanges(before, after)) {
-            effect.source = parsedTx.source
+            effect.source = (before || after).address
             res.effects.push(effect)
         }
     }
@@ -130,7 +130,7 @@ function parseTxOperationsMeta({network, tx, result, meta}) {
  * @internal
  */
 function ensureXdrInputType(value, xdrType) {
-    if (value?._attributes)
+    if (value?.toXDR) // duck-typing check XDR types
         return value
 
     if (!value || (typeof value !== 'string' && !(value instanceof Uint8Array)))
