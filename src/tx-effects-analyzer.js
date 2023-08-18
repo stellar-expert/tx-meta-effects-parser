@@ -1,8 +1,8 @@
-const {StrKey, bumpFootprintExpiration, restoreFootprint} = require('stellar-base')
 const effectTypes = require('./effect-types')
 const {parseLedgerEntryChanges} = require('./ledger-entry-changes-parser')
 const {xdrParseAsset, xdrParseAccountAddress} = require('./tx-xdr-parser-utils')
-const {normalizeAddress, fromStroops, trimZeros, encodeSponsorshipEffectName, diff} = require('./analyzer-primitives')
+const {fromStroops, trimZeros, encodeSponsorshipEffectName, diff} = require('./analyzer-primitives')
+const {analyzeSignerChanges} = require('./signer-changes-analyzer')
 const AssetSupplyProcessor = require('./asset-supply-processor')
 const {UnexpectedTxMetaChangeError, TxMetaEffectParserError} = require('./errors')
 
@@ -45,7 +45,7 @@ class EffectsAnalyzer {
         this.operation = operation
         this.result = result
         this.changes = parseLedgerEntryChanges(meta)
-        this.source = normalizeAddress(operation.source)
+        this.source = this.operation.source
         //find appropriate parsing method
         const parse = this[operation.type]
         if (parse) {
@@ -85,21 +85,23 @@ class EffectsAnalyzer {
         }
     }
 
-    debit(amount, asset, source = null) {
+    debit(amount, asset, source, balance) {
         this.addEffect({
             type: effectTypes.accountDebited,
             source,
             asset,
-            amount
+            amount,
+            balance: fromStroops(balance)
         })
     }
 
-    credit(amount, asset, source = null) {
+    credit(amount, asset, source, balance) {
         this.addEffect({
             type: effectTypes.accountCredited,
             source,
             asset,
-            amount
+            amount,
+            balance: fromStroops(balance)
         })
     }
 
@@ -112,10 +114,10 @@ class EffectsAnalyzer {
                 domain: after.homeDomain
             })
         }
-        if (JSON.stringify(before.thresholds) !== JSON.stringify(after.thresholds)) {
+        if (before.thresholds !== after.thresholds) {
             this.addEffect({
                 type: effectTypes.accountThresholdsUpdated,
-                thresholds: after.thresholds
+                thresholds: after.thresholds.split(',').map(v => parseInt(v, 10))
             })
         }
         if (before.flags !== after.flags) {
@@ -129,62 +131,6 @@ class EffectsAnalyzer {
                 type: effectTypes.accountInflationDestinationUpdated,
                 inflationDestination: after.inflationDest
             })
-        }
-        if (operation.masterWeight !== undefined && before.masterWeight !== after.masterWeight) {
-            if (operation.masterWeight > 0) {
-                this.addEffect({
-                    type: effectTypes.accountSignerUpdated,
-                    signer: after.address,
-                    weight: after.masterWeight,
-                    masterWeight: after.masterWeight,
-                    signers: after.signers
-                })
-            } else {
-                this.addEffect({
-                    type: effectTypes.accountSignerRemoved,
-                    signer: after.address,
-                    weight: after.masterWeight,
-                    masterWeight: after.masterWeight,
-                    signers: after.signers
-                })
-            }
-        }
-        if (operation.signer !== undefined && JSON.stringify(before.signers) !== JSON.stringify(after.signers)) {
-            const {signer} = operation
-            const weight = signer.weight || 0
-            let key
-            if (signer.sha256Hash) {
-                key = StrKey.encodeSha256Hash(signer.sha256Hash)
-            } else if (signer.preAuthTx) {
-                key = StrKey.encodePreAuthTx(signer.preAuthTx)
-            } else {
-                key = operation.signer.ed25519PublicKey || operation.signer.ed25519SignedPayload
-            }
-            if (weight === 0) {
-                this.addEffect({
-                    type: effectTypes.accountSignerRemoved,
-                    signer: key,
-                    weight,
-                    masterWeight: after.masterWeight,
-                    signers: after.signers
-                })
-            } else if (before.signers.length < after.signers.length) {
-                this.addEffect({
-                    type: effectTypes.accountSignerCreated,
-                    signer: key,
-                    weight,
-                    masterWeight: after.masterWeight,
-                    signers: after.signers
-                })
-            } else {
-                this.addEffect({
-                    type: effectTypes.accountSignerUpdated,
-                    signer: key,
-                    weight,
-                    masterWeight: after.masterWeight,
-                    signers: after.signers
-                })
-            }
         }
     }
 
@@ -442,7 +388,7 @@ class EffectsAnalyzer {
                 }
                 this.addEffect(accountCreated)
                 if (after.balance > 0) {
-                    this.credit(fromStroops(after.balance), 'XLM', after.address)
+                    this.credit(fromStroops(after.balance), 'XLM', after.address, after.balance)
                 }
                 break
             case 'updated':
@@ -456,7 +402,7 @@ class EffectsAnalyzer {
                 break
             case 'removed':
                 if (before.balance > 0) {
-                    this.debit(fromStroops(before.balance), 'XLM', before.address)
+                    this.debit(fromStroops(before.balance), 'XLM', before.address, '0')
                 }
                 const accountRemoved = {
                     type: effectTypes.accountRemoved
@@ -466,6 +412,10 @@ class EffectsAnalyzer {
                 }
                 this.addEffect(accountRemoved)
                 break
+        }
+
+        for (const effect of analyzeSignerChanges(before, after)) {
+            this.addEffect(effect)
         }
     }
 
@@ -507,10 +457,10 @@ class EffectsAnalyzer {
 
     processBalanceChange(account, asset, beforeBalance, afterBalance) {
         const balanceChange = fromStroops(diff(afterBalance, beforeBalance))
-        if (balanceChange < 0) {
-            this.debit(balanceChange.replace('-', ''), asset, account)
+        if (balanceChange[0] === '-') {
+            this.debit(balanceChange.replace('-', ''), asset, account, afterBalance)
         } else {
-            this.credit(balanceChange, asset, account)
+            this.credit(balanceChange, asset, account, afterBalance)
         }
     }
 
@@ -814,11 +764,12 @@ function analyzeOperationEffects({operation, meta, result, events}) {
 /**
  * Generates fee charged effect
  * @param {{}} tx - Transaction
+ * @param {String} source - Source account
  * @param {String} chargedAmount - Charged amount
  * @param {Boolean} feeBump? - Is fee bump transaction
  * @returns {{}} - Fee charged effect
  */
-function processFeeChargedEffect(tx, chargedAmount, feeBump = false) {
+function processFeeChargedEffect(tx, source, chargedAmount, feeBump = false) {
     if (tx._switch) { //raw XDR
         const txXdr = tx.value().tx()
         tx = {
@@ -828,7 +779,7 @@ function processFeeChargedEffect(tx, chargedAmount, feeBump = false) {
     }
     const res = {
         type: effectTypes.feeCharged,
-        source: normalizeAddress(tx.feeSource || tx.source),
+        source,
         asset: 'XLM',
         bid: fromStroops(tx.fee),
         charged: fromStroops(chargedAmount)

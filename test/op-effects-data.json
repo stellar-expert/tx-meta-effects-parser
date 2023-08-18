@@ -107,7 +107,8 @@
             "type": "accountDebited",
             "source": "GBWCS2C42PQYMDQVBIVUOWDPSM2T3BRJWG2ENQJQU3N75J4CSKJ6DXHN",
             "asset": "XLM",
-            "amount": "10000"
+            "amount": "10000",
+            "balance": "0"
           },
           {
             "type": "accountRemoved",
@@ -117,7 +118,8 @@
             "type": "accountCredited",
             "source": "GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI",
             "asset": "XLM",
-            "amount": "10000"
+            "amount": "10000",
+            "balance": "19999.99999"
           }
         ]
       ]
@@ -135,7 +137,8 @@
             "type": "accountDebited",
             "source": "GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI",
             "asset": "XLM",
-            "amount": "100"
+            "amount": "100",
+            "balance": "19898.4444861"
           },
           {
             "type": "accountCreated",
@@ -146,7 +149,8 @@
             "type": "accountCredited",
             "source": "GBWCS2C42PQYMDQVBIVUOWDPSM2T3BRJWG2ENQJQU3N75J4CSKJ6DXHN",
             "asset": "XLM",
-            "amount": "100"
+            "amount": "100",
+            "balance": "100"
           }
         ],
         [
@@ -183,7 +187,6 @@
       "expected": [
         [
           {
-            "masterWeight": 1,
             "signer": "GBWCS2C42PQYMDQVBIVUOWDPSM2T3BRJWG2ENQJQU3N75J4CSKJ6DXHN",
             "signers": [
               {
@@ -208,7 +211,6 @@
       "expected": [
         [
           {
-            "masterWeight": 1,
             "signer": "GBWCS2C42PQYMDQVBIVUOWDPSM2T3BRJWG2ENQJQU3N75J4CSKJ6DXHN",
             "signers": [
               {
@@ -223,7 +225,6 @@
         ],
         [
           {
-            "masterWeight": 1,
             "signer": "GBWCS2C42PQYMDQVBIVUOWDPSM2T3BRJWG2ENQJQU3N75J4CSKJ6DXHN",
             "signers": [
               {
@@ -248,7 +249,6 @@
       "expected": [
         [
           {
-            "masterWeight": 1,
             "signer": "GBWCS2C42PQYMDQVBIVUOWDPSM2T3BRJWG2ENQJQU3N75J4CSKJ6DXHN",
             "signers": [],
             "source": "GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI",
@@ -287,12 +287,16 @@
             "type": "accountInflationDestinationUpdated"
           },
           {
-            "masterWeight": 4,
-            "signer": "GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI",
-            "signers": [],
-            "source": "GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI",
             "type": "accountSignerUpdated",
-            "weight": 4
+            "source": "GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI",
+            "signer": "GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI",
+            "weight": 4,
+            "signers": [
+              {
+                "key": "GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI",
+                "weight": 4
+              }
+            ]
           }
         ],
         [
@@ -311,7 +315,6 @@
             "type": "accountThresholdsUpdated"
           },
           {
-            "masterWeight": 1,
             "signer": "GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI",
             "signers": [],
             "source": "GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI",
@@ -334,13 +337,15 @@
             "type": "accountDebited",
             "source": "GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI",
             "asset": "XLM",
-            "amount": "10"
+            "amount": "10",
+            "balance": "19889.99599"
           },
           {
             "type": "accountCredited",
             "source": "GBWCS2C42PQYMDQVBIVUOWDPSM2T3BRJWG2ENQJQU3N75J4CSKJ6DXHN",
             "asset": "XLM",
-            "amount": "10"
+            "amount": "10",
+            "balance": "110"
           }
         ],
         [
@@ -364,7 +369,8 @@
             "type": "accountCredited",
             "source": "GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI",
             "asset": "USD-GBWCS2C42PQYMDQVBIVUOWDPSM2T3BRJWG2ENQJQU3N75J4CSKJ6DXHN-1",
-            "amount": "100"
+            "amount": "100",
+            "balance": "100"
           }
         ],
         [
@@ -372,7 +378,8 @@
             "type": "accountDebited",
             "source": "GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI",
             "asset": "USD-GBWCS2C42PQYMDQVBIVUOWDPSM2T3BRJWG2ENQJQU3N75J4CSKJ6DXHN-1",
-            "amount": "100"
+            "amount": "100",
+            "balance": "0"
           },
           {
             "type": "assetBurned",
@@ -432,7 +439,8 @@
             "type": "accountCredited",
             "source": "GBWCS2C42PQYMDQVBIVUOWDPSM2T3BRJWG2ENQJQU3N75J4CSKJ6DXHN",
             "asset": "USD-GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI-1",
-            "amount": "100"
+            "amount": "100",
+            "balance": "100"
           }
         ],
         [
@@ -476,7 +484,8 @@
             "type": "accountDebited",
             "source": "GBWCS2C42PQYMDQVBIVUOWDPSM2T3BRJWG2ENQJQU3N75J4CSKJ6DXHN",
             "asset": "USD-GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI-1",
-            "amount": "100"
+            "amount": "100",
+            "balance": "0"
           },
           {
             "type": "assetBurned",
@@ -575,13 +584,15 @@
             "type": "accountDebited",
             "source": "GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI",
             "asset": "XLM",
-            "amount": "1000"
+            "amount": "1000",
+            "balance": "18889.96821"
           },
           {
             "type": "accountCredited",
             "source": "GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI",
             "asset": "52a8ac14451ebfa8418271b75b64fe657426d38096e5ad98a72786b4f3f6d6f8",
-            "amount": "1000"
+            "amount": "1000",
+            "balance": "1000"
           }
         ],
         [
@@ -622,13 +633,15 @@
             "type": "accountCredited",
             "source": "GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI",
             "asset": "XLM",
-            "amount": "500"
+            "amount": "500",
+            "balance": "19389.96821"
           },
           {
             "type": "accountDebited",
             "source": "GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI",
             "asset": "52a8ac14451ebfa8418271b75b64fe657426d38096e5ad98a72786b4f3f6d6f8",
-            "amount": "500"
+            "amount": "500",
+            "balance": "500"
           },
           {
             "type": "assetBurned",
@@ -675,13 +688,15 @@
             "type": "accountCredited",
             "source": "GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI",
             "asset": "XLM",
-            "amount": "500"
+            "amount": "500",
+            "balance": "19889.96821"
           },
           {
             "type": "accountDebited",
             "source": "GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI",
             "asset": "52a8ac14451ebfa8418271b75b64fe657426d38096e5ad98a72786b4f3f6d6f8",
-            "amount": "500"
+            "amount": "500",
+            "balance": "0"
           },
           {
             "type": "assetBurned",
@@ -768,7 +783,8 @@
             "type": "accountDebited",
             "source": "GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI",
             "asset": "XLM",
-            "amount": "100"
+            "amount": "100",
+            "balance": "19789.99293"
           },
           {
             "type": "claimableBalanceSponsorshipCreated",
@@ -822,7 +838,8 @@
             "type": "accountCredited",
             "source": "GBWCS2C42PQYMDQVBIVUOWDPSM2T3BRJWG2ENQJQU3N75J4CSKJ6DXHN",
             "asset": "XLM",
-            "amount": "100"
+            "amount": "100",
+            "balance": "209.99992"
           },
           {
             "type": "claimableBalanceRemoved",
@@ -947,7 +964,8 @@
             "type": "accountDebited",
             "source": "GBWCS2C42PQYMDQVBIVUOWDPSM2T3BRJWG2ENQJQU3N75J4CSKJ6DXHN",
             "asset": "XLM",
-            "amount": "10"
+            "amount": "10",
+            "balance": "199.99992"
           },
           {
             "type": "offerUpdated",
@@ -966,7 +984,8 @@
             "type": "accountCredited",
             "source": "GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI",
             "asset": "XLM",
-            "amount": "10"
+            "amount": "10",
+            "balance": "19799.98791"
           },
           {
             "type": "assetMinted",
@@ -978,7 +997,8 @@
             "type": "accountCredited",
             "source": "GBWCS2C42PQYMDQVBIVUOWDPSM2T3BRJWG2ENQJQU3N75J4CSKJ6DXHN",
             "asset": "USD-GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI-1",
-            "amount": "10"
+            "amount": "10",
+            "balance": "10"
           }
         ],
         [
@@ -1058,7 +1078,8 @@
             "type": "accountCredited",
             "source": "GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI",
             "asset": "3e5988f56d66c7d5946b32f844ae3cee0ff72a5d822809b9d5027cc1b897a473",
-            "amount": "100"
+            "amount": "100",
+            "balance": "100"
           }
         ],
         [
@@ -1094,7 +1115,8 @@
             "type": "accountDebited",
             "source": "GBWCS2C42PQYMDQVBIVUOWDPSM2T3BRJWG2ENQJQU3N75J4CSKJ6DXHN",
             "asset": "XLM",
-            "amount": "89.1"
+            "amount": "89.1",
+            "balance": "110.89992"
           },
           {
             "type": "offerUpdated",
@@ -1113,7 +1135,8 @@
             "type": "accountCredited",
             "source": "GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI",
             "asset": "XLM",
-            "amount": "89.1"
+            "amount": "89.1",
+            "balance": "19889.08791"
           },
           {
             "type": "offerRemoved",
@@ -1162,7 +1185,8 @@
             "type": "accountDebited",
             "source": "GBWCS2C42PQYMDQVBIVUOWDPSM2T3BRJWG2ENQJQU3N75J4CSKJ6DXHN",
             "asset": "USD-GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI-1",
-            "amount": "10"
+            "amount": "10",
+            "balance": "0"
           },
           {
             "type": "assetBurned",
@@ -1212,7 +1236,8 @@
             "type": "accountCredited",
             "source": "GBWCS2C42PQYMDQVBIVUOWDPSM2T3BRJWG2ENQJQU3N75J4CSKJ6DXHN",
             "asset": "USD-GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI-1",
-            "amount": "10000"
+            "amount": "10000",
+            "balance": "10000"
           }
         ],
         [
@@ -1278,13 +1303,15 @@
             "type": "accountDebited",
             "source": "GBWCS2C42PQYMDQVBIVUOWDPSM2T3BRJWG2ENQJQU3N75J4CSKJ6DXHN",
             "asset": "XLM",
-            "amount": "100"
+            "amount": "100",
+            "balance": "11.88842"
           },
           {
             "type": "accountDebited",
             "source": "GBWCS2C42PQYMDQVBIVUOWDPSM2T3BRJWG2ENQJQU3N75J4CSKJ6DXHN",
             "asset": "USD-GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI-1",
-            "amount": "100"
+            "amount": "100",
+            "balance": "9900"
           },
           {
             "type": "liquidityPoolUpdated",
@@ -1307,7 +1334,8 @@
             "type": "accountCredited",
             "source": "GBWCS2C42PQYMDQVBIVUOWDPSM2T3BRJWG2ENQJQU3N75J4CSKJ6DXHN",
             "asset": "52a8ac14451ebfa8418271b75b64fe657426d38096e5ad98a72786b4f3f6d6f8",
-            "amount": "100"
+            "amount": "100",
+            "balance": "100"
           }
         ],
         [
@@ -1366,7 +1394,8 @@
             "type": "accountDebited",
             "source": "GBWCS2C42PQYMDQVBIVUOWDPSM2T3BRJWG2ENQJQU3N75J4CSKJ6DXHN",
             "asset": "52a8ac14451ebfa8418271b75b64fe657426d38096e5ad98a72786b4f3f6d6f8",
-            "amount": "100"
+            "amount": "100",
+            "balance": "0"
           },
           {
             "type": "trustlineRemoved",
@@ -1449,11 +1478,11 @@
             "source": "GDNPPDR6QACI25Q3D4LIRTDZFDGWWPUP55XMU3ERR5C7A3LRGIXPCMXH",
             "signer": "GALF7U4GH4PTVNXVLECT76XQP6PXW4K3QTS46TSEWUPSWLOJH6MXCR2V",
             "weight": 1,
-            "masterWeight": 1,
             "signers": [
               {
                 "key": "GALF7U4GH4PTVNXVLECT76XQP6PXW4K3QTS46TSEWUPSWLOJH6MXCR2V",
-                "weight": 1
+                "weight": 1,
+                "sponsor": "GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI"
               }
             ]
           },
@@ -1637,7 +1666,8 @@
             "type": "accountCredited",
             "source": "GDNPPDR6QACI25Q3D4LIRTDZFDGWWPUP55XMU3ERR5C7A3LRGIXPCMXH",
             "asset": "e275415f9a73dd3d67207777469de4104875604a13d6b19d4cd4733f4f1695f2",
-            "amount": "1000"
+            "amount": "1000",
+            "balance": "1000"
           }
         ],
         []
@@ -1733,19 +1763,18 @@
       "expected": [
         [
           {
-            "type": "accountSignerRemoved",
-            "source": "GDNPPDR6QACI25Q3D4LIRTDZFDGWWPUP55XMU3ERR5C7A3LRGIXPCMXH",
-            "signer": "GALF7U4GH4PTVNXVLECT76XQP6PXW4K3QTS46TSEWUPSWLOJH6MXCR2V",
-            "weight": 0,
-            "masterWeight": 1,
-            "signers": []
-          },
-          {
             "type": "signerSponsorshipRemoved",
             "source": "GDNPPDR6QACI25Q3D4LIRTDZFDGWWPUP55XMU3ERR5C7A3LRGIXPCMXH",
             "account": "GDNPPDR6QACI25Q3D4LIRTDZFDGWWPUP55XMU3ERR5C7A3LRGIXPCMXH",
             "signer": "GALF7U4GH4PTVNXVLECT76XQP6PXW4K3QTS46TSEWUPSWLOJH6MXCR2V",
             "prevSponsor": "GBDO5AGQ4PCURSK623QQNGSLCRKQBPOV2KQBNGBD2TM65UEEFDGYXPCB"
+          },
+          {
+            "type": "accountSignerRemoved",
+            "source": "GDNPPDR6QACI25Q3D4LIRTDZFDGWWPUP55XMU3ERR5C7A3LRGIXPCMXH",
+            "signer": "GALF7U4GH4PTVNXVLECT76XQP6PXW4K3QTS46TSEWUPSWLOJH6MXCR2V",
+            "weight": 0,
+            "signers": []
           }
         ],
         [
@@ -1869,7 +1898,8 @@
             "type": "accountDebited",
             "source": "GDNPPDR6QACI25Q3D4LIRTDZFDGWWPUP55XMU3ERR5C7A3LRGIXPCMXH",
             "asset": "e275415f9a73dd3d67207777469de4104875604a13d6b19d4cd4733f4f1695f2",
-            "amount": "1000"
+            "amount": "1000",
+            "balance": "0"
           },
           {
             "type": "assetBurned",
@@ -1941,7 +1971,8 @@
             "type": "accountCredited",
             "source": "GD2BBP7LR5RLSQQOPDQD6I6RQCEMD2J7DFX4ADMYX4MBQBOC3CACAPUZ",
             "asset": "EUR-GBJNMLQVZTAS4WYXZBFHPK6ALNGBURAYQNLGUGVECW45GPO7O5QUKS6C-1",
-            "amount": "1"
+            "amount": "1",
+            "balance": "2001"
           }
         ]
       ]
@@ -1992,19 +2023,22 @@
             "type": "accountCredited",
             "source": "GD2BBP7LR5RLSQQOPDQD6I6RQCEMD2J7DFX4ADMYX4MBQBOC3CACAPUZ",
             "asset": "EUR-GBJNMLQVZTAS4WYXZBFHPK6ALNGBURAYQNLGUGVECW45GPO7O5QUKS6C-1",
-            "amount": "2000"
+            "amount": "2000",
+            "balance": "2000"
           },
           {
             "type": "accountCredited",
             "source": "GDP3EBGL6KNTQG6QHNV5BNVXTNJBL7XTJQCF5K3SIMT63SA2DXJMI7CB",
             "asset": "XLM",
-            "amount": "100"
+            "amount": "100",
+            "balance": "125"
           },
           {
             "type": "accountDebited",
             "source": "GD2BBP7LR5RLSQQOPDQD6I6RQCEMD2J7DFX4ADMYX4MBQBOC3CACAPUZ",
             "asset": "XLM",
-            "amount": "100"
+            "amount": "100",
+            "balance": "116443.803867"
           }
         ]
       ]
@@ -2022,7 +2056,8 @@
             "type": "accountDebited",
             "source": "GBPAAY5NG7P53XLXRDGMJMXUXBNGGY2JRFDHJXAN2F2LXTHBV6M7PTS3",
             "asset": "XLM",
-            "amount": "1"
+            "amount": "1",
+            "balance": "923.99991"
           }
         ]
       ]
@@ -2082,13 +2117,15 @@
             "type": "accountCredited",
             "source": "GAWQMXTNVW75NNPHSM7B3BHWTAPJUJMGLPBIMGL5RULAKQZAIKSB7A4O",
             "asset": "XLM",
-            "amount": "0.1259612"
+            "amount": "0.1259612",
+            "balance": "3616.9018908"
           },
           {
             "type": "accountDebited",
             "source": "GAWFOSAKYI2DKG7ZZVT3RVGFXPHAP7ZY3KNKXFUD6DVWVZZ7LC2MF3B6",
             "asset": "ETH-GBETHKBL5TCUTQ3JPDIYOZ5RDARTMHMEKIO2QZQ7IOZ4YC5XV3C2IKYU-1",
-            "amount": "0.0372851"
+            "amount": "0.0372851",
+            "balance": "13.7000006"
           },
           {
             "type": "offerUpdated",
@@ -2107,19 +2144,22 @@
             "type": "accountCredited",
             "source": "GBPLRPJNANQ2YYVNKWJWVILIVBOV7JGWLI63QQ6PIBXMBP7CTJXK4KXV",
             "asset": "ETH-GBETHKBL5TCUTQ3JPDIYOZ5RDARTMHMEKIO2QZQ7IOZ4YC5XV3C2IKYU-1",
-            "amount": "0.0372851"
+            "amount": "0.0372851",
+            "balance": "21.2590229"
           },
           {
             "type": "accountDebited",
             "source": "GBPLRPJNANQ2YYVNKWJWVILIVBOV7JGWLI63QQ6PIBXMBP7CTJXK4KXV",
             "asset": "XLM",
-            "amount": "54.2722"
+            "amount": "54.2722",
+            "balance": "11557.867016"
           },
           {
             "type": "accountCredited",
             "source": "GAWFOSAKYI2DKG7ZZVT3RVGFXPHAP7ZY3KNKXFUD6DVWVZZ7LC2MF3B6",
             "asset": "XCN-GCNY5OXYSY4FKHOPT2SPOQZAOEIGXB5LBYW3HVU3OWSTQITS65M5RCNY-1",
-            "amount": "119.1217253"
+            "amount": "119.1217253",
+            "balance": "27914.2092623"
           },
           {
             "type": "offerUpdated",
@@ -2151,13 +2191,15 @@
             "type": "accountDebited",
             "source": "GAC2WH4XGSJHZWR5AZGVATWCDRXU6MO2DNLR7UVOXHEPEPP4QCJV6PKZ",
             "asset": "XCN-GCNY5OXYSY4FKHOPT2SPOQZAOEIGXB5LBYW3HVU3OWSTQITS65M5RCNY-1",
-            "amount": "119.1217253"
+            "amount": "119.1217253",
+            "balance": "142065.4762301"
           },
           {
             "type": "accountCredited",
             "source": "GAC2WH4XGSJHZWR5AZGVATWCDRXU6MO2DNLR7UVOXHEPEPP4QCJV6PKZ",
             "asset": "XLM",
-            "amount": "54.1462388"
+            "amount": "54.1462388",
+            "balance": "120994.2474154"
           }
         ]
       ]
@@ -2175,13 +2217,15 @@
             "type": "accountCredited",
             "source": "GCEXWPMCBOE7PH76VSFWDFV3LXIJ6VD5HTGW2D7FRR52YSH4KNCDIEEW",
             "asset": "XLM",
-            "amount": "20.009852"
+            "amount": "20.009852",
+            "balance": "2217972.028729"
           },
           {
             "type": "accountDebited",
             "source": "GBSSDVJTXF6XJUN5EWCUXDMCGYGNCIDTPL6G6WM6FTG3G4GDGDKU7Z2T",
             "asset": "XLM",
-            "amount": "20.009852"
+            "amount": "20.009852",
+            "balance": "0"
           },
           {
             "type": "accountRemoved",
@@ -2193,7 +2237,8 @@
             "type": "accountCredited",
             "source": "GCEXWPMCBOE7PH76VSFWDFV3LXIJ6VD5HTGW2D7FRR52YSH4KNCDIEEW",
             "asset": "XLM",
-            "amount": "20.009852"
+            "amount": "20.009852",
+            "balance": "2217992.038581"
           }
         ]
       ]
@@ -2211,13 +2256,15 @@
             "type": "accountCredited",
             "source": "GCJMGG2MZ24AWKGTT5QEFA4YUVODMS4VHV4FMMK2ALAOA2OV2Q2ZQKFH",
             "asset": "XLM",
-            "amount": "203639.34417"
+            "amount": "203639.34417",
+            "balance": "343739.34417"
           },
           {
             "type": "accountDebited",
             "source": "GDLLL4D7LFILLJVJ4DKBDV2Y652S35WMZ6RFUASUXI6D4MKJ2YYS6IP4",
             "asset": "XLM",
-            "amount": "203639.34417"
+            "amount": "203639.34417",
+            "balance": "0"
           },
           {
             "type": "accountRemoved",
@@ -2229,7 +2276,8 @@
             "type": "accountDebited",
             "source": "GCJMGG2MZ24AWKGTT5QEFA4YUVODMS4VHV4FMMK2ALAOA2OV2Q2ZQKFH",
             "asset": "XLM",
-            "amount": "50"
+            "amount": "50",
+            "balance": "343689.34417"
           },
           {
             "type": "accountCreated",
@@ -2240,7 +2288,8 @@
             "type": "accountCredited",
             "source": "GDLLL4D7LFILLJVJ4DKBDV2Y652S35WMZ6RFUASUXI6D4MKJ2YYS6IP4",
             "asset": "XLM",
-            "amount": "50"
+            "amount": "50",
+            "balance": "50"
           }
         ],
         [
@@ -2248,13 +2297,15 @@
             "type": "accountCredited",
             "source": "GCJMGG2MZ24AWKGTT5QEFA4YUVODMS4VHV4FMMK2ALAOA2OV2Q2ZQKFH",
             "asset": "XLM",
-            "amount": "203639.34417"
+            "amount": "203639.34417",
+            "balance": "547328.68834"
           },
           {
             "type": "accountDebited",
             "source": "GDLLL4D7LFILLJVJ4DKBDV2Y652S35WMZ6RFUASUXI6D4MKJ2YYS6IP4",
             "asset": "XLM",
-            "amount": "50"
+            "amount": "50",
+            "balance": "0"
           },
           {
             "type": "accountRemoved",
@@ -2276,13 +2327,15 @@
             "type": "accountCredited",
             "source": "GCN4XKVWPA7DERDP36CC7FW3P3EFGHQBKDMSHX23AKNLS6TSFT2QFFLX",
             "asset": "XLM",
-            "amount": "1"
+            "amount": "1",
+            "balance": "88641.94273"
           },
           {
             "type": "accountDebited",
             "source": "GBAFRKLK27JOQE6GMBO2WCPWFKKVTXOQUKJWUZL3T6Y3HX75VXIZS5PF",
             "asset": "XLM",
-            "amount": "1"
+            "amount": "1",
+            "balance": "138500.91044"
           }
         ],
         [
@@ -2290,13 +2343,15 @@
             "type": "accountCredited",
             "source": "GCN4XKVWPA7DERDP36CC7FW3P3EFGHQBKDMSHX23AKNLS6TSFT2QFFLX",
             "asset": "XLM",
-            "amount": "138500.91044"
+            "amount": "138500.91044",
+            "balance": "227142.85317"
           },
           {
             "type": "accountDebited",
             "source": "GBAFRKLK27JOQE6GMBO2WCPWFKKVTXOQUKJWUZL3T6Y3HX75VXIZS5PF",
             "asset": "XLM",
-            "amount": "138500.91044"
+            "amount": "138500.91044",
+            "balance": "0"
           },
           {
             "type": "accountRemoved",
@@ -2308,7 +2363,8 @@
             "type": "accountDebited",
             "source": "GCN4XKVWPA7DERDP36CC7FW3P3EFGHQBKDMSHX23AKNLS6TSFT2QFFLX",
             "asset": "XLM",
-            "amount": "50"
+            "amount": "50",
+            "balance": "227092.85317"
           },
           {
             "type": "accountCreated",
@@ -2319,7 +2375,8 @@
             "type": "accountCredited",
             "source": "GBAFRKLK27JOQE6GMBO2WCPWFKKVTXOQUKJWUZL3T6Y3HX75VXIZS5PF",
             "asset": "XLM",
-            "amount": "50"
+            "amount": "50",
+            "balance": "50"
           }
         ],
         [
@@ -2327,13 +2384,15 @@
             "type": "accountCredited",
             "source": "GCN4XKVWPA7DERDP36CC7FW3P3EFGHQBKDMSHX23AKNLS6TSFT2QFFLX",
             "asset": "XLM",
-            "amount": "1"
+            "amount": "1",
+            "balance": "227093.85317"
           },
           {
             "type": "accountCredited",
             "source": "GBAFRKLK27JOQE6GMBO2WCPWFKKVTXOQUKJWUZL3T6Y3HX75VXIZS5PF",
             "asset": "XLM",
-            "amount": "138449.91044"
+            "amount": "138449.91044",
+            "balance": "138499.91044"
           }
         ]
       ]
@@ -2449,7 +2508,8 @@
             "type": "accountCredited",
             "source": "GBQLAJRFE4256KPIP6MK43JYLC7YIHSGAFCL557TLKLC5A7EX5UIJ5OK",
             "asset": "XLM",
-            "amount": "0.6897927"
+            "amount": "0.6897927",
+            "balance": "3070.5410546"
           },
           {
             "type": "offerUpdated",
@@ -2492,7 +2552,8 @@
             "type": "accountDebited",
             "source": "GBU6GMZZ2KTQ33CHNVPAWWEJ22ZHLYGBGO3LIBKNANXUMNEOFROZKO62",
             "asset": "XLM",
-            "amount": "0.6897927"
+            "amount": "0.6897927",
+            "balance": "242922.1250865"
           },
           {
             "type": "offerRemoved",
@@ -2560,13 +2621,15 @@
             "type": "accountCredited",
             "source": "GAENIE5LBJIXLMJIAJ7225IUPA6CX7EGHUXRX5FLCZFFAQSG2ZUYSWFK",
             "asset": "XLM",
-            "amount": "18512155.7280032"
+            "amount": "18512155.7280032",
+            "balance": "2046429624.7759228"
           },
           {
             "type": "accountCredited",
             "source": "GDWNY2POLGK65VVKIH5KQSH7VWLKRTQ5M6ADLJAYC2UEHEBEARCZJWWI",
             "asset": "XLM",
-            "amount": "953019.9301174"
+            "amount": "953019.9301174",
+            "balance": "34076020.7623876"
           }
         ]
       ]
@@ -2584,17 +2647,19 @@
             "type": "accountDebited",
             "source": "GAVDIEK6LJDYSBPAEG3PPS26QYHLVAVOH3SQHK4OWTHA7RHPFNDVOXKA",
             "asset": "XLM",
-            "amount": "9999.99999"
+            "amount": "9999.99999",
+            "balance": "0"
           },
           {
             "type": "accountRemoved",
-            "source": "GAVDIEK6LJDYSBPAEG3PPS26QYHLVAVOH3SQHK4OWTHA7RHPFNDVOXKA"
+            "source": "MAVDIEK6LJDYSBPAEG3PPS26QYHLVAVOH3SQHK4OWTHA7RHPFNDVOAAAAAAAL5PA74XY4"
           },
           {
             "type": "accountCredited",
             "source": "GAG5OVG57VHOSRJAZDVQ45FQEW2TEG5KPJYK55QERGZMW3XTIYJRWTIO",
             "asset": "XLM",
-            "amount": "9999.99999"
+            "amount": "9999.99999",
+            "balance": "19999.99999"
           }
         ]
       ]

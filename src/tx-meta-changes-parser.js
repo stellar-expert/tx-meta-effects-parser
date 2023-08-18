@@ -12,23 +12,24 @@ function parseTxMetaChanges(meta) {
 
     switch (meta.arm()) {
         case 'v1':
-            for (const ch of transactionMeta.txChanges()) {
-                txMetaChanges.push(parseLedgerEntryChanges(ch))
-            }
+            retrieveTopLevelChanges(transactionMeta.txChanges(), txMetaChanges)
             break
         case 'v2':
-            for (const ch of transactionMeta.txChangesBefore()) {
-                txMetaChanges.push(parseLedgerEntryChanges(ch))
-            }
-            for (const ch of transactionMeta.txChangesAfter()) {
-                txMetaChanges.push(parseLedgerEntryChanges(ch))
-            }
+        case 'v3':
+            retrieveTopLevelChanges(transactionMeta.txChangesBefore(), txMetaChanges)
+            retrieveTopLevelChanges(transactionMeta.txChangesAfter(), txMetaChanges)
             break
         default:
             throw new TxMetaEffectParserError(`Transaction meta version ${meta.arm()} is not supported.`)
     }
 
     return txMetaChanges
+}
+
+function retrieveTopLevelChanges(changes, res) {
+    for (const entry of parseLedgerEntryChanges(changes)) {
+        res.push(entry)
+    }
 }
 
 module.exports = {parseTxMetaChanges}

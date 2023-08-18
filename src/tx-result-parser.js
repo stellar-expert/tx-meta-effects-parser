@@ -9,12 +9,14 @@ const {TxMetaEffectParserError} = require('./errors')
  */
 function parseRawOpResult(rawOpResult) {
     const inner = rawOpResult.tr()
-    if (inner === undefined) return null //"opNoAccount" Case
+    if (inner === undefined)
+        return null //"opNoAccount" Case
     const opResult = inner.value()
     const successOpResultType = opResult.switch()
 
     //no need to parse failed operations
-    if (successOpResultType.value < 0) return null
+    if (successOpResultType.value < 0)
+        return null
 
     const res = {
         resultType: successOpResultType.name
@@ -22,24 +24,22 @@ function parseRawOpResult(rawOpResult) {
 
     switch (successOpResultType.name) {
         case 'pathPaymentStrictReceiveSuccess':
-        case 'pathPaymentStrictSendSuccess':
-            {
-                res.claimedOffers = opResult.value().offers().map(claimedOffer => xdrParseClaimedOffer(claimedOffer))
-                const paymentValue = opResult.value().last()
-                res.payment = {
-                    account: xdrParseAccountAddress(paymentValue.destination()),
-                    amount: paymentValue.amount().toString(),
-                    asset: xdrParseAsset(paymentValue.asset())
-                }
+        case 'pathPaymentStrictSendSuccess': {
+            res.claimedOffers = opResult.value().offers().map(claimedOffer => xdrParseClaimedOffer(claimedOffer))
+            const paymentValue = opResult.value().last()
+            res.payment = {
+                account: xdrParseAccountAddress(paymentValue.destination()),
+                amount: paymentValue.amount().toString(),
+                asset: xdrParseAsset(paymentValue.asset())
             }
+        }
             break
         case 'manageSellOfferSuccess':
-        case 'manageBuyOfferSuccess':
-            {
-                const makerOfferXdr = opResult.value().offer().value()
-                res.makerOffer = makerOfferXdr && xdrParseTradeAtom(makerOfferXdr)
-                res.claimedOffers = opResult.value().offersClaimed().map(claimedOffer => xdrParseClaimedOffer(claimedOffer))
-            }
+        case 'manageBuyOfferSuccess': {
+            const makerOfferXdr = opResult.value().offer().value()
+            res.makerOffer = makerOfferXdr && xdrParseTradeAtom(makerOfferXdr)
+            res.claimedOffers = opResult.value().offersClaimed().map(claimedOffer => xdrParseClaimedOffer(claimedOffer))
+        }
             break
         case 'accountMergeSuccess':
             //retrieve the actual amount of transferred XLM

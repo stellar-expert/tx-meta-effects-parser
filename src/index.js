@@ -3,8 +3,9 @@ const {processFeeChargedEffect, analyzeOperationEffects} = require('./tx-effects
 const {parseTxResult} = require('./tx-result-parser')
 const {parseLedgerEntryChanges} = require('./ledger-entry-changes-parser')
 const {parseTxMetaChanges} = require('./tx-meta-changes-parser')
+const {analyzeSignerChanges} = require('./signer-changes-analyzer')
 const effectTypes = require('./effect-types')
-const {TxMetaEffectParserError} = require('./errors')
+const {TxMetaEffectParserError, UnexpectedTxMetaChangeError} = require('./errors')
 
 /**
  * Retrieve effects from transaction execution result metadata
@@ -26,26 +27,15 @@ function parseTxOperationsMeta({network, tx, result, meta}) {
     try {
         tx = ensureXdrInputType(tx, xdr.TransactionEnvelope)
     } catch (e) {
-        throw  new TxMetaEffectParserError('Invalid transaction envelope XDR. ' + e.message)
+        throw new TxMetaEffectParserError('Invalid transaction envelope XDR. ' + e.message)
     }
-    let txResult
-    if (!isEphemeral) {
-        //retrieve operations result metadata
-        try {
-            meta = ensureXdrInputType(meta, xdr.TransactionMeta)
-        } catch (e) {
-            throw new TxMetaEffectParserError('Invalid transaction metadata XDR. ' + e.message)
-        }
-    }
-    //and tx result itself (for pre-Soroban environment it is stored separately)
     try {
-        txResult = ensureXdrInputType(result, xdr.TransactionResult)
+        result = ensureXdrInputType(result, xdr.TransactionResult)
     } catch (e) {
         try {
-            //try TransactionResultPair instead of TransactionResult
             const pair = ensureXdrInputType(result, xdr.TransactionResultPair)
-            txResult = pair.result()
-        } catch (e) {
+            result = pair.result()
+        } catch {
             throw new TxMetaEffectParserError('Invalid transaction result XDR. ' + e.message)
         }
     }
@@ -53,31 +43,31 @@ function parseTxOperationsMeta({network, tx, result, meta}) {
     tx = TransactionBuilder.fromXDR(tx, Networks[network.toUpperCase()] || network)
 
     let parsedTx = tx
+    let parsedResult = result
 
     const isFeeBump = !!parsedTx.innerTransaction
     let feeBumpSuccess
+
     const res = {
         tx,
         isEphemeral
     }
 
-    if (!isEphemeral) {
-        res.effects = [processFeeChargedEffect(parsedTx, txResult.feeCharged().toString(), isFeeBump)]
-        //TODO: process TxMetaChangesBefore and TxMetaChangesAfter to emit tx-level effects (e.g. SignerRemoved after pre-auth tx execution)
-    }
-
     //take inner transaction if parsed tx is a fee bump tx
     if (isFeeBump) {
         parsedTx = parsedTx.innerTransaction
+        if (parsedTx.innerTransaction)
+            throw new TxMetaEffectParserError('Failed to process FeeBumpTransaction wrapped with another FeeBumpTransaction')
         if (!isEphemeral) {
-            txResult = txResult.result().innerResultPair().result()
-            feeBumpSuccess = txResult.result().switch().value >= 0
+            parsedResult = result.result().innerResultPair().result()
+            feeBumpSuccess = parsedResult.result().switch().value >= 0
         }
     }
+
+    //normalize operation source and effects container
     if (parsedTx.operations) {
         res.operations = parsedTx.operations
 
-        //normalize operation source and effects container
         for (const op of parsedTx.operations) {
             if (!op.source) {
                 op.source = parsedTx.source
@@ -86,20 +76,39 @@ function parseTxOperationsMeta({network, tx, result, meta}) {
         }
     }
 
-    const {success, opResults} = parseTxResult(txResult)
+    //process fee charge
+    res.effects = [processFeeChargedEffect(tx, tx.feeSource || parsedTx.source, result.feeCharged().toString(), isFeeBump)]
+
+    //check execution result
+    const {success, opResults} = parseTxResult(parsedResult)
     if (!success || isFeeBump && !feeBumpSuccess) {
         res.failed = true
         return res
     }
 
-    //do not process meta for unsubmitted/rejected transactions
+    //do not parse meta for unsubmitted/rejected transactions
     if (isEphemeral)
         return res
 
+    //retrieve operations result metadata
+    try {
+        meta = ensureXdrInputType(meta, xdr.TransactionMeta)
+    } catch {
+        throw new TxMetaEffectParserError('Invalid transaction metadata XDR. ' + e.message)
+    }
+
+    //add tx-level effects
+    for (const {before, after} of parseTxMetaChanges(meta)) {
+        if (before.entry !== 'account')
+            throw new UnexpectedTxMetaChangeError({type: before.entry, action: 'update'})
+        for (const effect of analyzeSignerChanges(before, after)) {
+            effect.source = (before || after).address
+            res.effects.push(effect)
+        }
+    }
     const metaValue = meta.value()
     const opMeta = metaValue.operations()
     const events = metaValue.sorobanMeta ? metaValue.sorobanMeta().events() : []
-
     //analyze operation effects for each operation
     for (let i = 0; i < parsedTx.operations.length; i++) {
         const operation = parsedTx.operations[i]
@@ -123,7 +132,7 @@ function parseTxOperationsMeta({network, tx, result, meta}) {
  * @internal
  */
 function ensureXdrInputType(value, xdrType) {
-    if (value instanceof xdrType)
+    if (value?.toXDR) // duck-typing check XDR types
         return value
 
     if (!value || (typeof value !== 'string' && !(value instanceof Uint8Array)))
