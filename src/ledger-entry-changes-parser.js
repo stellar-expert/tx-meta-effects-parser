@@ -1,5 +1,5 @@
 const {StrKey} = require('stellar-base')
-const {xdrParseAsset, xdrParseAccountAddress, xdrParseClaimant, xdrParsePrice, xdrParseSignerKey} = require('./tx-xdr-parser-utils')
+const {xdrParseAsset, xdrParseAccountAddress, xdrParseClaimant, xdrParsePrice, xdrParseSignerKey, xdrParseScVal} = require('./tx-xdr-parser-utils')
 const {TxMetaEffectParserError} = require('./errors')
 
 /**
@@ -246,7 +246,7 @@ function parseContractData(value) {
         entry: 'contractData',
         contract,
         key: data.key().value()[0].value().toString(),
-        value: valueAttr.toXDR().toString('base64'),
+        value: xdrParseScVal(valueAttr),
         durability: data.durability().name
     }
 }

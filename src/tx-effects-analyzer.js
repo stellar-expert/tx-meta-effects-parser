@@ -1,10 +1,12 @@
-const effectTypes = require('./effect-types')
+const {StrKey} = require('stellar-base')
 const {parseLedgerEntryChanges} = require('./ledger-entry-changes-parser')
-const {xdrParseAsset, xdrParseAccountAddress} = require('./tx-xdr-parser-utils')
+const {xdrParseAsset, xdrParseAccountAddress, xdrParseScVal} = require('./tx-xdr-parser-utils')
 const {fromStroops, trimZeros, encodeSponsorshipEffectName, diff} = require('./analyzer-primitives')
 const {analyzeSignerChanges} = require('./signer-changes-analyzer')
+const {analyzeEvents} = require('./events-analyzer')
 const AssetSupplyProcessor = require('./asset-supply-processor')
 const {UnexpectedTxMetaChangeError, TxMetaEffectParserError} = require('./errors')
+const effectTypes = require('./effect-types')
 
 class EffectsAnalyzer {
     /**
@@ -38,7 +40,7 @@ class EffectsAnalyzer {
      */
     source = ''
 
-    analyze(operation, meta, result, events) {
+    analyze(operation, meta, result, events, diagnosticEvents) {
         //set execution context
         if (!operation.source)
             throw new TxMetaEffectParserError('Operation source is not defined')
@@ -48,23 +50,25 @@ class EffectsAnalyzer {
         this.source = this.operation.source
         //find appropriate parsing method
         const parse = this[operation.type]
+        //process Soroban events
+        if (events?.length) {
+            for (const evtEffect of analyzeEvents(events, diagnosticEvents)) {
+                this.addEffect(evtEffect)
+            }
+        }
         if (parse) {
             parse.call(this)
         }
+        //process ledger entry changes
         this.processChanges()
         //handle effects that are processed indirectly
         this.processSponsorshipEffects()
         //calculate minted/burned assets
         this.processAssetSupplyEffects()
-        //process Soroban events
-        if (events?.length) {
-            this.processEvents(events)
-        }
         const res = this.effects
         //reset context
         this.effects = []
         this.operation = null
-        this.meta = null
         this.result = null
         this.source = ''
         return res
@@ -72,9 +76,9 @@ class EffectsAnalyzer {
 
     /**
      * @param {{}} effect
-     * @param {Number} atPosition?
+     * @param {Number} [atPosition]
      */
-    addEffect(effect, atPosition = undefined) {
+    addEffect(effect, atPosition) {
         if (!effect.source) {
             effect.source = this.source
         }
@@ -247,48 +251,21 @@ class EffectsAnalyzer {
         })
     }
 
-    parseAuthInvocations(invocations, invoker) {
-        for (let invocation of invocations) {
-            const fn = invocation.function()
-            switch (fn.arm()) {
-                case 'contractFn':
-                    const value = fn.contractFn()
-                    const effect = {
-                        type: effectTypes.contractInvoked,
-                        contract: StrKey.encodeContract(value.contractAddress().contractId()),
-                        function: value.functionName().toString(),
-                        args: value.args().map(v => v.toXDR('base64'))
-                    }
-                    if (invoker) {
-                        effect.invoker = invoker
-                    }
-                    this.addEffect(effect)
-                    const sub = invocation.subInvocations()
-                    if (sub.length) {
-                        this.parseAuthInvocations(sub, effect.contract)
-                    }
-                    break
-                case 'createContractHostFn':
-                case 'sorobanAuthorizedFunctionTypeContractFn':
-                case 'sorobanAuthorizedFunctionTypeCreateContractHostFn':
-                default:
-                    throw new Error('Auth type not supported: ' + fn.arm())
-            }
-        }
-    }
-
-    invokeHostFunction() {
-        const {func, auth} = this.operation
+    invokeHostFunction(diagnosticEvents) {
+        const {func} = this.operation
         const value = func.value()
         switch (func.arm()) {
             case 'invokeContract':
-                this.parseAuthInvocations(auth.map(a => a.rootInvocation()), this.operation.source)
-                break
-            case 'createContract':
-                this.addEffect({
-                    type: effectTypes.contractCodeInstalled,
-                    wasmHash: value.executable().wasmHash().toString('hex')
-                })
+                if (!this.effects.some(e => e.type === effectTypes.contractInvoked)) {
+                    //add contract invocation effect only if it hasn't been processed by events processor yet
+                    const effect = {
+                        type: effectTypes.contractInvoked,
+                        contract: xdrParseScVal(value[0]),
+                        function: xdrParseScVal(value[1]),
+                        args: value.slice(2).map(xdrParseScVal)
+                    }
+                    this.addEffect(effect)
+                }
                 break
             case 'wasm':
                 this.addEffect({
@@ -296,6 +273,12 @@ class EffectsAnalyzer {
                     wasm: value.toString('base64')
                 })
                 break
+            /*case 'createContract':
+                this.addEffect({
+                    type: effectTypes.contractCodeInstalled,
+                    wasmHash: value.executable().wasmHash().toString('hex')
+                })
+                break*/
         }
     }
 
@@ -637,7 +620,7 @@ class EffectsAnalyzer {
         const {hash} = after || before
         const effect = {
             type: '',
-            hash
+            wasmHash: hash
         }
         switch (action) {
             case 'created':
@@ -647,7 +630,6 @@ class EffectsAnalyzer {
                 if (before.hash === after.hash)
                     return //value has not changed
                 throw new UnexpectedTxMetaChangeError({type: 'contractCode', action})
-                break
             default:
                 throw new UnexpectedTxMetaChangeError({type: 'contractCode', action})
         }
@@ -655,12 +637,13 @@ class EffectsAnalyzer {
     }
 
     processContractDataChanges({action, before, after}) {
-        const {contract, key, value} = after || before
+        const {contract, key, value, durability} = after || before
         const effect = {
             type: '',
             contract,
             key,
-            value
+            value,
+            durability
         }
         switch (action) {
             case 'created':
@@ -720,34 +703,7 @@ class EffectsAnalyzer {
         }
     }
 
-    processEvents(events) {
-        for (const evt of events) {
-            const body = evt.body().value()
-            const effect = {
-                type: effectTypes.event,
-                contract: StrKey.encodeContract(evt.contractId()),
-                topics: body.topics().map(t => {
-                    switch (t.arm()) {
-                        case 'sym':
-                            return t.value().toString()
-                        case 'obj':
-                            const objValue = t.value()
-                            switch (objValue.arm()) {
-                                case 'address':
-                                    return xdrParseAccountAddress(objValue.value().value(), true)
-                                default:
-                                    throw new Error('Not supported topic type: ' + t.arm())
-                            }
-                        default:
-                            throw new Error('Not supported topic type: ' + t.arm())
-                    }
 
-                }),
-                data: evt.body().value().data().value().toXDR('base64')
-            }
-            this.addEffect(effect)
-        }
-    }
 }
 
 const analyzer = new EffectsAnalyzer()
@@ -757,8 +713,8 @@ const analyzer = new EffectsAnalyzer()
  * @param {{operation: {}, meta: LedgerEntryChange[], result: {}}} operationData - operation data
  * @returns {{}[]} - operation effects
  */
-function analyzeOperationEffects({operation, meta, result, events}) {
-    return analyzer.analyze(operation, meta, result, events)
+function analyzeOperationEffects({operation, meta, result, events, diagnosticEvents}) {
+    return analyzer.analyze(operation, meta, result, events, diagnosticEvents)
 }
 
 /**

@@ -108,17 +108,23 @@ function parseTxOperationsMeta({network, tx, result, meta}) {
     }
     const metaValue = meta.value()
     const opMeta = metaValue.operations()
-    const events = metaValue.sorobanMeta ? metaValue.sorobanMeta().events() : []
+
     //analyze operation effects for each operation
     for (let i = 0; i < parsedTx.operations.length; i++) {
         const operation = parsedTx.operations[i]
         if (success) {
-            operation.effects = analyzeOperationEffects({
+            const params = {
                 operation,
                 meta: opMeta[i]?.changes(),
-                result: opResults[i],
-                events: events[i]
-            })
+                result: opResults[i]
+            }
+            //only for Soroban contract invocation
+            if (operation.type === 'invokeHostFunction') {
+                const sorobanMeta = metaValue.sorobanMeta()
+                params.events = sorobanMeta.events()
+                params.diagnosticEvents = sorobanMeta.diagnosticEvents()
+            }
+            operation.effects = analyzeOperationEffects(params)
         }
     }
     return res

@@ -1,4 +1,4 @@
-const {StrKey, LiquidityPoolId} = require('stellar-base')
+const {StrKey, LiquidityPoolId, scValToBigInt} = require('stellar-base')
 const {TxMetaEffectParserError} = require('./errors')
 
 /**
@@ -22,13 +22,22 @@ function xdrParseAccountAddress(accountId, muxedAccountsSupported = false) {
                     muxedId: accountId.value().id().toString()
                 }
             default:
-                throw new TxMetaEffectParserError(`Unsupported muxed account type: ${accountId.arm()}`)
+                throw new TxMetaEffectParserError(`Unsupported account type: ${accountId.arm()}`)
         }
     }
     if (accountId instanceof Buffer) {
         return StrKey.encodeEd25519PublicKey(accountId)
     }
     throw new TypeError(`Failed to identify and parse account address: ${accountId}`)
+}
+
+/**
+ * Parse Contract ID from raw bytes
+ * @param {Buffer} rawContractId
+ * @return {String}
+ */
+function xdrParseContractAddress(rawContractId) {
+    return StrKey.encodeContract(rawContractId)
 }
 
 /**
@@ -162,15 +171,15 @@ function xdrParseClaimant(claimant) {
     }
 }
 
-function xdrParseAsset(src, prefix = '') {
-    if (!src) return undefined
+function xdrParseAsset(src) {
+    if (!src)
+        return undefined
 
     if (src.arm) { //XDR
         switch (src.switch().name) {
             case 'assetTypeNative':
                 return 'XLM'
-            case 'assetTypePoolShare':
-            {
+            case 'assetTypePoolShare': {
                 const poolId = src.value()
                 if (poolId.length)
                     return poolId.toString('hex')
@@ -178,8 +187,7 @@ function xdrParseAsset(src, prefix = '') {
                     return LiquidityPoolId.fromOperation(poolId).getLiquidityPoolId()
                 throw new TxMetaEffectParserError('Unsupported liquidity pool asset id format')
             }
-            default:
-            {
+            default: {
                 const value = src.value()
                 return `${value.assetCode().toString().replace(/\0+$/, '')}-${StrKey.encodeEd25519PublicKey(value.issuer().ed25519())}-${src.arm() === 'alphaNum4' ? 1 : 2}`
             }
@@ -187,8 +195,8 @@ function xdrParseAsset(src, prefix = '') {
     }
 
     if (typeof src === 'string') {
-        if (src === 'XLM' || src.includes('-'))
-            return src//already parsed value
+        if (src === 'XLM' || src === 'native' || src.includes('-'))
+            return 'XLM'//already parsed value
         if (src.includes(':')) {
             const [code, issuer] = src.split(':')
             return `${code}-${issuer}-${code.length > 4 ? 2 : 1}`
@@ -202,12 +210,52 @@ function xdrParseAsset(src, prefix = '') {
         return `${src.code}-${src.issuer}-${src.type || (src.code.length > 4 ? 2 : 1)}`
 }
 
+
+function xdrParseScVal(value, treatBytesAsContractId = false) {
+    switch (value._arm) {
+        case 'vec':
+            return value._value.map(xdrParseScVal)
+        case 'map':
+            const res = {}
+            for (const entry of value._value) {
+                res[xdrParseScVal(entry.key())] = xdrParseScVal(entry.val())
+            }
+            return res
+        case 'i256':
+        case 'u256':
+        case 'i128':
+        case 'u128':
+        case 'i64':
+        case 'u64':
+            return scValToBigInt(value).toString()
+        case 'address':
+            if (value._value._arm === 'accountId')
+                return xdrParseAccountAddress(value._value.value())
+            if (value._value._arm === 'contractId')
+                return xdrParseContractAddress(value._value.value())
+            throw new TxMetaEffectParserError('Not supported XDR primitive type: ' + value.toString())
+        case 'bytes':
+            return treatBytesAsContractId ? xdrParseContractAddress(value.value()) : value._value.toString('base64')
+        case 'i32':
+        case 'u32':
+        case 'b':
+            return value._value
+        case 'str':
+        case 'sym':
+            return value._value.toString()
+        default:
+            throw new TxMetaEffectParserError('Not supported XDR primitive type: ' + value.toXDR ? value.toXDR() : value.toString())
+    }
+}
+
 module.exports = {
     xdrParseAsset,
     xdrParseAccountAddress,
+    xdrParseContractAddress,
     xdrParseClaimant,
     xdrParseClaimedOffer,
     xdrParseTradeAtom,
     xdrParseSignerKey,
-    xdrParsePrice
+    xdrParsePrice,
+    xdrParseScVal
 }
