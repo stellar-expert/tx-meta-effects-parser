@@ -110,8 +110,8 @@ class EffectsAnalyzer {
     }
 
     setOptions() {
-        const {operation} = this
-        const {before, after} = this.changes.find(ch => ch.type === 'account' && ch.before.address === this.source)
+        const sourceAccount = normalizeAddress(this.source)
+        const {before, after} = this.changes.find(ch => ch.type === 'account' && ch.before.address === sourceAccount)
         if (before.homeDomain !== after.homeDomain) {
             this.addEffect({
                 type: effectTypes.accountHomeDomainUpdated,
@@ -145,7 +145,7 @@ class EffectsAnalyzer {
     setTrustLineFlags() {
         if (!this.changes.length)
             return
-        const trustAsset = xdrParseAsset(this.operation.asset || {code: this.operation.assetCode, issuer: this.source})
+        const trustAsset = xdrParseAsset(this.operation.asset || {code: this.operation.assetCode, issuer: normalizeAddress(this.source)})
         const trustlineChange = this.changes.find(ch => ch.type === 'trustline' && ch.before.asset === trustAsset)
         if (trustlineChange) {
             if (trustlineChange.action !== 'updated')
@@ -722,7 +722,7 @@ function analyzeOperationEffects({operation, meta, result, events, diagnosticEve
  * @param {{}} tx - Transaction
  * @param {String} source - Source account
  * @param {String} chargedAmount - Charged amount
- * @param {Boolean} feeBump? - Is fee bump transaction
+ * @param {Boolean} [feeBump] - Is fee bump transaction
  * @returns {{}} - Fee charged effect
  */
 function processFeeChargedEffect(tx, source, chargedAmount, feeBump = false) {
@@ -744,6 +744,16 @@ function processFeeChargedEffect(tx, source, chargedAmount, feeBump = false) {
         res.bump = true
     }
     return res
+}
+
+function normalizeAddress(address) {
+    const prefix = address[0]
+    if (prefix === 'G')
+        return address
+    if (prefix !== 'M')
+        throw new TypeError('Expected ED25519 or Muxed address')
+    const rawBytes = StrKey.decodeMed25519PublicKey(address)
+    return StrKey.encodeEd25519PublicKey(rawBytes.subarray(0, 32))
 }
 
 module.exports = {analyzeOperationEffects, processFeeChargedEffect}
