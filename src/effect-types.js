@@ -81,8 +81,9 @@ const effectTypes = {
     signerSponsorshipCreated: 'signerSponsorshipCreated',
 
     contractCodeUploaded: 'contractCodeUploaded',
-    contractCodeInstalled: 'contractCodeInstalled',
-    contractCodeUpdated: 'contractCodeUpdated',
+
+    contractCreated: 'contractCreated',
+    contractUpdated: 'contractUpdated',
 
     contractInvoked: 'contractInvoked',
 
@@ -93,7 +94,7 @@ const effectTypes = {
     contractDataUpdated: 'contractDataUpdated',
     contractDataRemoved: 'contractDataRemoved',
 
-    event: 'event'
+    contractEvent: 'contractEvent'
 }
 
 module.exports = effectTypes

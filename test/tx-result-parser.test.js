@@ -1,12 +1,11 @@
 /*eslint-disable no-undef */
-const {Networks} = require('stellar-base')
 const {parseTxOperationsMeta} = require('../src/index')
 
-
+const network = 'Test SDF Future Network ; October 2022'
 describe('Effects', () => {
     test.each(require('./op-effects-data.json'))('Analyze operation effects - %s', (description, {tx, result, meta, expected}) => {
         const res = parseTxOperationsMeta({
-            network: Networks.TESTNET,
+            network,
             tx,
             result,
             meta
@@ -20,7 +19,7 @@ describe('Effects', () => {
     test.each(require('./tx-effects-data.json'))('Analyze transaction effects - %s', (description, {tx, result, meta, expected}) => {
         //merge account
         const res = parseTxOperationsMeta({
-            network: Networks.TESTNET,
+            network,
             tx,
             result,
             meta

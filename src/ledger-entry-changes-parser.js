@@ -237,17 +237,17 @@ function parseContractData(value) {
                 entry: 'contractCode',
                 contract,
                 hash: valueAttr.instance().executable().wasmHash().toString('hex'),
-                durability: data.durability().name,
                 aux: true
+                //durability: data.durability().name
             }
     }
 
     return {
         entry: 'contractData',
         contract,
-        key: data.key().value()[0].value().toString(),
-        value: xdrParseScVal(valueAttr),
-        durability: data.durability().name
+        key: data.key().toXDR('base64'),
+        value: valueAttr.toXDR('base64')
+        //durability: data.durability().name
     }
 }
 

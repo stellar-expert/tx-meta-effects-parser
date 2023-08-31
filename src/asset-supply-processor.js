@@ -1,7 +1,11 @@
 const effectTypes = require('./effect-types')
-const {isAsset, toStroops, fromStroops} = require('./analyzer-primitives')
+const {toStroops, fromStroops} = require('./analyzer-primitives')
 
+/**
+ * Effect supply computation processor
+ */
 class AssetSupplyProcessor {
+
     constructor(effects) {
         this.assetTransfers = {}
         for (const effect of effects) {
@@ -9,65 +13,70 @@ class AssetSupplyProcessor {
         }
     }
 
+    /**
+     * @type {Object.<String,BigInt>}
+     * @private
+     */
     assetTransfers
 
-    add(asset, amount, negative = false) {
-        let change = toStroops(amount)
-        if (negative) {
-            change *= -1n
-        }
-        this.assetTransfers[asset] = (this.assetTransfers[asset] || 0n) + change
-    }
+    /**
+     * @type {Boolean}
+     * @private
+     */
+    processXlmBalances = false
 
+    /**
+     * Process generated operation effect
+     * @param {{}} effect
+     */
     processEffect(effect) {
         switch (effect.type) {
             case effectTypes.accountCredited:
-                if (isAsset(effect.asset)) {
-                    this.add(effect.asset, effect.amount, false)
-                }
+            case effectTypes.contractCredited:
+            case effectTypes.claimableBalanceCreated:
+                //increase supply
+                this.increase(effect.asset, effect.amount)
                 break
             case effectTypes.accountDebited:
-                if (isAsset(effect.asset)) {
-                    this.add(effect.asset, effect.amount, true)
-                }
-                break
-            case effectTypes.claimableBalanceCreated:
-                if (isAsset(effect.asset)) {
-                    this.add(effect.asset, effect.amount, false)
-                }
-                break
+            case effectTypes.contractDebited:
             case effectTypes.claimableBalanceRemoved:
-                if (isAsset(effect.asset)) {
-                    this.add(effect.asset, effect.amount, true)
-                }
+                //decrease supply
+                this.decrease(effect.asset, effect.amount)
                 break
             case effectTypes.liquidityPoolDeposited:
+                //increase supply for every deposited asset (if liquidity provider is an issuer)
                 for (const {asset, amount} of effect.assets) {
-                    if (isAsset(asset)) {
-                        this.add(asset, amount, false)
-                    }
+                    this.increase(asset, amount)
                 }
                 break
             case effectTypes.liquidityPoolWithdrew:
+                //decrease supply for every deposited asset (if liquidity provider is an issuer)
                 for (const {asset, amount} of effect.assets) {
-                    if (isAsset(asset)) {
-                        this.add(asset, amount, true)
-                    }
+                    this.decrease(asset, amount)
                 }
                 break
             case effectTypes.trade:
                 if (effect.pool) {
                     for (let i = 0; i < effect.asset.length; i++) {
-                        const asset = effect.asset[i]
-                        if (isAsset(asset)) {
-                            this.add(asset, effect.amount[i], i === 0)
+                        if (i === 0) { //increase supply if the issuer is seller
+                            this.decrease(effect.asset[i], effect.amount[i])
+                        } else {
+                            this.increase(effect.asset[i], effect.amount[i])
                         }
                     }
                 }
                 break
+            case effectTypes.contractInvoked:
+                //start tracking XLM balance changes if there was at least one contract invocation
+                this.processXlmBalances = true
+                break
         }
     }
 
+    /**
+     * Calculate differences and generate minted/burned effects if needed
+     * @return {{}[]}
+     */
     resolve() {
         const res = []
         for (const [asset, sum] of Object.entries(this.assetTransfers))
@@ -85,6 +94,38 @@ class AssetSupplyProcessor {
                 })
             }
         return res
+    }
+
+    /**
+     * @param {String} asset
+     * @param {String} amount
+     * @private
+     */
+    increase(asset, amount) {
+        if (!this.shouldProcessAsset(asset))
+            return
+        this.assetTransfers[asset] = (this.assetTransfers[asset] || 0n) + toStroops(amount)
+    }
+
+    /**
+     * @param {String} asset
+     * @param {String} amount
+     * @private
+     */
+    decrease(asset, amount) {
+        if (!this.shouldProcessAsset(asset))
+            return
+        this.assetTransfers[asset] = (this.assetTransfers[asset] || 0n) - toStroops(amount)
+    }
+
+    /**
+     * @param {String} asset
+     * @return {Boolean}
+     */
+    shouldProcessAsset(asset) {
+        if (asset === 'XLM') //return true if we process XLM balance changes
+            return this.processXlmBalances
+        return asset.includes('-') || asset.startsWith('C') && asset.length == 56 //lazy checks for alphanum4/12 assets and contracts
     }
 }
 

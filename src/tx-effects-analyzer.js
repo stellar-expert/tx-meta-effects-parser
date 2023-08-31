@@ -3,12 +3,24 @@ const {parseLedgerEntryChanges} = require('./ledger-entry-changes-parser')
 const {xdrParseAsset, xdrParseAccountAddress, xdrParseScVal} = require('./tx-xdr-parser-utils')
 const {fromStroops, trimZeros, encodeSponsorshipEffectName, diff} = require('./analyzer-primitives')
 const {analyzeSignerChanges} = require('./signer-changes-analyzer')
-const {analyzeEvents} = require('./events-analyzer')
+const EventsAnalyzer = require('./events-analyzer')
 const AssetSupplyProcessor = require('./asset-supply-processor')
 const {UnexpectedTxMetaChangeError, TxMetaEffectParserError} = require('./errors')
 const effectTypes = require('./effect-types')
 
 class EffectsAnalyzer {
+    constructor({operation, meta, result, network, events, diagnosticEvents}) {
+        //set execution context
+        if (!operation.source)
+            throw new TxMetaEffectParserError('Operation source is not explicitly defined')
+        this.operation = operation
+        this.result = result
+        this.changes = parseLedgerEntryChanges(meta)
+        this.source = this.operation.source
+        this.events = events
+        this.diagnosticEvents = diagnosticEvents
+        this.network = network
+    }
     /**
      * @type {{}[]}
      * @private
@@ -21,6 +33,11 @@ class EffectsAnalyzer {
      * @readonly
      */
     operation = null
+    /**
+     * @type {String}
+     * @readonly
+     */
+    network
     /**
      * @type {ParsedLedgerEntryMeta[]}
      * @private
@@ -40,22 +57,11 @@ class EffectsAnalyzer {
      */
     source = ''
 
-    analyze(operation, meta, result, events, diagnosticEvents) {
-        //set execution context
-        if (!operation.source)
-            throw new TxMetaEffectParserError('Operation source is not defined')
-        this.operation = operation
-        this.result = result
-        this.changes = parseLedgerEntryChanges(meta)
-        this.source = this.operation.source
-        //find appropriate parsing method
-        const parse = this[operation.type]
+    analyze() {
         //process Soroban events
-        if (events?.length) {
-            for (const evtEffect of analyzeEvents(events, diagnosticEvents)) {
-                this.addEffect(evtEffect)
-            }
-        }
+        new EventsAnalyzer(this).analyze()
+        //find appropriate parsing method
+        const parse = this[this.operation.type]
         if (parse) {
             parse.call(this)
         }
@@ -65,13 +71,8 @@ class EffectsAnalyzer {
         this.processSponsorshipEffects()
         //calculate minted/burned assets
         this.processAssetSupplyEffects()
-        const res = this.effects
-        //reset context
-        this.effects = []
-        this.operation = null
-        this.result = null
-        this.source = ''
-        return res
+
+        return this.effects
     }
 
     /**
@@ -273,12 +274,6 @@ class EffectsAnalyzer {
                     wasm: value.toString('base64')
                 })
                 break
-            /*case 'createContract':
-                this.addEffect({
-                    type: effectTypes.contractCodeInstalled,
-                    wasmHash: value.executable().wasmHash().toString('hex')
-                })
-                break*/
         }
     }
 
@@ -617,14 +612,15 @@ class EffectsAnalyzer {
     }
 
     processContractCodeChanges({action, before, after}) {
-        const {hash} = after || before
+        const {hash, contract} = after || before
         const effect = {
             type: '',
+            contract,
             wasmHash: hash
         }
         switch (action) {
             case 'created':
-                effect.type = effectTypes.contractCodeInstalled
+                effect.type = effectTypes.contractCreated
                 break
             case 'updated':
                 if (before.hash === after.hash)
@@ -637,13 +633,12 @@ class EffectsAnalyzer {
     }
 
     processContractDataChanges({action, before, after}) {
-        const {contract, key, value, durability} = after || before
+        const {contract, key, value} = after || before
         const effect = {
             type: '',
             contract,
             key,
-            value,
-            durability
+            value
         }
         switch (action) {
             case 'created':
@@ -702,19 +697,6 @@ class EffectsAnalyzer {
                 undefined)
         }
     }
-
-
-}
-
-const analyzer = new EffectsAnalyzer()
-
-/**
- * Processes operation effects
- * @param {{operation: {}, meta: LedgerEntryChange[], result: {}}} operationData - operation data
- * @returns {{}[]} - operation effects
- */
-function analyzeOperationEffects({operation, meta, result, events, diagnosticEvents}) {
-    return analyzer.analyze(operation, meta, result, events, diagnosticEvents)
 }
 
 /**
@@ -756,4 +738,4 @@ function normalizeAddress(address) {
     return StrKey.encodeEd25519PublicKey(rawBytes.subarray(0, 32))
 }
 
-module.exports = {analyzeOperationEffects, processFeeChargedEffect}
+module.exports = {EffectsAnalyzer, processFeeChargedEffect}

@@ -1,5 +1,5 @@
 const {TransactionBuilder, Networks, xdr} = require('stellar-base')
-const {processFeeChargedEffect, analyzeOperationEffects} = require('./tx-effects-analyzer')
+const {processFeeChargedEffect, analyzeOperationEffects, EffectsAnalyzer} = require('./tx-effects-analyzer')
 const {parseTxResult} = require('./tx-result-parser')
 const {parseLedgerEntryChanges} = require('./ledger-entry-changes-parser')
 const {parseTxMetaChanges} = require('./tx-meta-changes-parser')
@@ -9,7 +9,7 @@ const {TxMetaEffectParserError, UnexpectedTxMetaChangeError} = require('./errors
 
 /**
  * Retrieve effects from transaction execution result metadata
- * @param {String} network - Network identifier or passphrase
+ * @param {String} network - Network passphrase
  * @param {String|Buffer|xdr.TransactionEnvelope} tx - Base64-encoded tx envelope xdr
  * @param {String|Buffer|xdr.TransactionResult} result? - Base64-encoded tx envelope result
  * @param {String|Buffer|xdr.TransactionMeta} meta? - Base64-encoded tx envelope meta
@@ -17,7 +17,7 @@ const {TxMetaEffectParserError, UnexpectedTxMetaChangeError} = require('./errors
  */
 function parseTxOperationsMeta({network, tx, result, meta}) {
     if (!network)
-        throw new TypeError(`Network passphrase/identifier argument is required.`)
+        throw new TypeError(`Network passphrase argument is required.`)
     if (typeof network !== 'string')
         throw new TypeError(`Invalid network passphrase or identifier: "${network}".`)
     if (!tx)
@@ -40,7 +40,7 @@ function parseTxOperationsMeta({network, tx, result, meta}) {
         }
     }
 
-    tx = TransactionBuilder.fromXDR(tx, Networks[network.toUpperCase()] || network)
+    tx = TransactionBuilder.fromXDR(tx, network)
 
     let parsedTx = tx
     let parsedResult = result
@@ -115,8 +115,8 @@ function parseTxOperationsMeta({network, tx, result, meta}) {
         if (success) {
             const params = {
                 operation,
-                meta: opMeta[i]?.changes(),
-                result: opResults[i]
+                meta:opMeta[i]?.changes(),
+                result:opResults[i],network
             }
             //only for Soroban contract invocation
             if (operation.type === 'invokeHostFunction') {
@@ -124,7 +124,8 @@ function parseTxOperationsMeta({network, tx, result, meta}) {
                 params.events = sorobanMeta.events()
                 params.diagnosticEvents = sorobanMeta.diagnosticEvents()
             }
-            operation.effects = analyzeOperationEffects(params)
+            const analyzer = new EffectsAnalyzer(params)
+            operation.effects = analyzer.analyze()
         }
     }
     return res

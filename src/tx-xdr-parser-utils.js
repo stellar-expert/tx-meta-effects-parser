@@ -199,7 +199,7 @@ function xdrParseAsset(src) {
             return 'XLM'//already parsed value
         if (src.includes(':')) {
             const [code, issuer] = src.split(':')
-            return `${code}-${issuer}-${code.length > 4 ? 2 : 1}`
+            return `${code.replace(/\0+$/, '')}-${issuer}-${code.length > 4 ? 2 : 1}`
         }
         if (src.length === 64)
             return src //pool id

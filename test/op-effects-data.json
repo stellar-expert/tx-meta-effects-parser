@@ -25,8 +25,9 @@
       "expected": [
         [
           {
-            "type": "contractCodeInstalled",
+            "type": "contractCreated",
             "source": "GCP2QKBFLLEEWYVKAIXIJIJNCZ6XEBIE4PCDB6BF3GUB6FGE2RQ3HDVP",
+            "contract": "CDQGZVUHBOWF4QZ5HMFT3QK5HR4PGCRKX3X2UI4CIZWRMTNW7CJXOLXB",
             "wasmHash": "e1db02ba29db61bb62ec0a77aafedced327e089bb714e744b0e28cadc338863f"
           }
         ]
@@ -61,14 +62,8 @@
             "type": "contractDataCreated",
             "source": "GCP2QKBFLLEEWYVKAIXIJIJNCZ6XEBIE4PCDB6BF3GUB6FGE2RQ3HDVP",
             "contract": "CDQGZVUHBOWF4QZ5HMFT3QK5HR4PGCRKX3X2UI4CIZWRMTNW7CJXOLXB",
-            "key": "Data",
-            "value": [
-              {
-                "val1": "644347181915159",
-                "val2": "100"
-              }
-            ],
-            "durability": "temporary"
+            "key": "AAAAEAAAAAEAAAABAAAADwAAAAREYXRh",
+            "value": "AAAAEAAAAAEAAAABAAAAEQAAAAEAAAACAAAADwAAAAR2YWwxAAAACgAAAAAAAAAAAAJKB8Tj3BcAAAAPAAAABHZhbDIAAAAFAAAAAAAAAGQ="
           }
         ]
       ]
@@ -152,14 +147,21 @@
             "depth": 2
           },
           {
-            "type": "contractCredited",
+            "type": "assetMinted",
             "source": "GCP2QKBFLLEEWYVKAIXIJIJNCZ6XEBIE4PCDB6BF3GUB6FGE2RQ3HDVP",
-            "contract": "CDO4YLJW3FB54F5QD2KZH3OC66WLRV4VJRYWHH6FNABLZBTA5N32LHRE",
-            "asset": "USD\u0000-GCP2QKBFLLEEWYVKAIXIJIJNCZ6XEBIE4PCDB6BF3GUB6FGE2RQ3HDVP-1",
+            "asset": "CCWNZPARJG7KQ6N4BGZ5OBWKSSK4AVQ5URLDRXB4ZJXKGEJQTIIRPAHN",
             "amount": "0.2173007"
           },
           {
-            "type": "event",
+            "type": "contractCredited",
+            "source": "GCP2QKBFLLEEWYVKAIXIJIJNCZ6XEBIE4PCDB6BF3GUB6FGE2RQ3HDVP",
+            "contract": "CDO4YLJW3FB54F5QD2KZH3OC66WLRV4VJRYWHH6FNABLZBTA5N32LHRE",
+            "asset": "CCWNZPARJG7KQ6N4BGZ5OBWKSSK4AVQ5URLDRXB4ZJXKGEJQTIIRPAHN",
+            "anchoredAsset": "USD-GCP2QKBFLLEEWYVKAIXIJIJNCZ6XEBIE4PCDB6BF3GUB6FGE2RQ3HDVP-1",
+            "amount": "0.2173007"
+          },
+          {
+            "type": "contractEvent",
             "source": "GCP2QKBFLLEEWYVKAIXIJIJNCZ6XEBIE4PCDB6BF3GUB6FGE2RQ3HDVP",
             "contract": "CCWNZPARJG7KQ6N4BGZ5OBWKSSK4AVQ5URLDRXB4ZJXKGEJQTIIRPAHN",
             "topics": [
@@ -174,13 +176,8 @@
             "type": "contractDataUpdated",
             "source": "GCP2QKBFLLEEWYVKAIXIJIJNCZ6XEBIE4PCDB6BF3GUB6FGE2RQ3HDVP",
             "contract": "CCWNZPARJG7KQ6N4BGZ5OBWKSSK4AVQ5URLDRXB4ZJXKGEJQTIIRPAHN",
-            "key": "Balance",
-            "value": {
-              "amount": "8692021",
-              "authorized": true,
-              "clawback": false
-            },
-            "durability": "persistent"
+            "key": "AAAAEAAAAAEAAAACAAAADwAAAAdCYWxhbmNlAAAAABIAAAAB3cwtNtlD3hewHpWT7cL3rLjXlUxxY5/FaAK8hmDrd6U=",
+            "value": "AAAAEQAAAAEAAAADAAAADwAAAAZhbW91bnQAAAAAAAoAAAAAAAAAAAAAAAAAhKE1AAAADwAAAAphdXRob3JpemVkAAAAAAAAAAAAAQAAAA8AAAAIY2xhd2JhY2sAAAAAAAAAAA=="
           }
         ]
       ]
@@ -218,14 +215,21 @@
             "depth": 1
           },
           {
-            "type": "contractCredited",
+            "type": "assetMinted",
             "source": "GCP2QKBFLLEEWYVKAIXIJIJNCZ6XEBIE4PCDB6BF3GUB6FGE2RQ3HDVP",
-            "contract": "CAJASUGSPYZ55HF3RTQZGPSD46SJJAZF3V4UP6C7PMSAQMBA7CSAQJ4A",
-            "asset": "XLM",
+            "asset": "CB64D3G7SM2RTH6JSGG34DDTFTQ5CFDKVDZJZSODMCX4NJ2HV2KN7OHT",
             "amount": "0.2175"
           },
           {
-            "type": "event",
+            "type": "contractCredited",
+            "source": "GCP2QKBFLLEEWYVKAIXIJIJNCZ6XEBIE4PCDB6BF3GUB6FGE2RQ3HDVP",
+            "contract": "CAJASUGSPYZ55HF3RTQZGPSD46SJJAZF3V4UP6C7PMSAQMBA7CSAQJ4A",
+            "asset": "CB64D3G7SM2RTH6JSGG34DDTFTQ5CFDKVDZJZSODMCX4NJ2HV2KN7OHT",
+            "anchoredAsset": "XLM",
+            "amount": "0.2175"
+          },
+          {
+            "type": "contractEvent",
             "source": "GCP2QKBFLLEEWYVKAIXIJIJNCZ6XEBIE4PCDB6BF3GUB6FGE2RQ3HDVP",
             "contract": "CB64D3G7SM2RTH6JSGG34DDTFTQ5CFDKVDZJZSODMCX4NJ2HV2KN7OHT",
             "topics": [
@@ -240,19 +244,20 @@
             "type": "contractDataCreated",
             "source": "GCP2QKBFLLEEWYVKAIXIJIJNCZ6XEBIE4PCDB6BF3GUB6FGE2RQ3HDVP",
             "contract": "CB64D3G7SM2RTH6JSGG34DDTFTQ5CFDKVDZJZSODMCX4NJ2HV2KN7OHT",
-            "key": "Balance",
-            "value": {
-              "amount": "2175000",
-              "authorized": true,
-              "clawback": false
-            },
-            "durability": "persistent"
+            "key": "AAAAEAAAAAEAAAACAAAADwAAAAdCYWxhbmNlAAAAABIAAAABEglQ0n4z3py7jOGTPkPnpJSDJd15R/hfeyQIMCD4pAg=",
+            "value": "AAAAEQAAAAEAAAADAAAADwAAAAZhbW91bnQAAAAAAAoAAAAAAAAAAAAAAAAAITAYAAAADwAAAAphdXRob3JpemVkAAAAAAAAAAAAAQAAAA8AAAAIY2xhd2JhY2sAAAAAAAAAAA=="
           },
           {
             "type": "accountDebited",
             "source": "GCP2QKBFLLEEWYVKAIXIJIJNCZ6XEBIE4PCDB6BF3GUB6FGE2RQ3HDVP",
             "asset": "XLM",
             "balance": "9999.7458682",
+            "amount": "0.2175"
+          },
+          {
+            "type": "assetBurned",
+            "asset": "XLM",
+            "source": "GCP2QKBFLLEEWYVKAIXIJIJNCZ6XEBIE4PCDB6BF3GUB6FGE2RQ3HDVP",
             "amount": "0.2175"
           }
         ]
@@ -291,14 +296,15 @@
             "depth": 1
           },
           {
+            "type": "contractDebited",
             "source": "GCP2QKBFLLEEWYVKAIXIJIJNCZ6XEBIE4PCDB6BF3GUB6FGE2RQ3HDVP",
             "contract": "CAJASUGSPYZ55HF3RTQZGPSD46SJJAZF3V4UP6C7PMSAQMBA7CSAQJ4A",
-            "type": "contractDebited",
-            "asset": "XLM",
+            "asset": "CB64D3G7SM2RTH6JSGG34DDTFTQ5CFDKVDZJZSODMCX4NJ2HV2KN7OHT",
+            "anchoredAsset": "XLM",
             "amount": "0.2174"
           },
           {
-            "type": "event",
+            "type": "contractEvent",
             "source": "GCP2QKBFLLEEWYVKAIXIJIJNCZ6XEBIE4PCDB6BF3GUB6FGE2RQ3HDVP",
             "contract": "CB64D3G7SM2RTH6JSGG34DDTFTQ5CFDKVDZJZSODMCX4NJ2HV2KN7OHT",
             "topics": [
@@ -313,13 +319,14 @@
             "type": "contractDataUpdated",
             "source": "GCP2QKBFLLEEWYVKAIXIJIJNCZ6XEBIE4PCDB6BF3GUB6FGE2RQ3HDVP",
             "contract": "CB64D3G7SM2RTH6JSGG34DDTFTQ5CFDKVDZJZSODMCX4NJ2HV2KN7OHT",
-            "key": "Balance",
-            "value": {
-              "amount": "2176000",
-              "authorized": true,
-              "clawback": false
-            },
-            "durability": "persistent"
+            "key": "AAAAEAAAAAEAAAACAAAADwAAAAdCYWxhbmNlAAAAABIAAAABEglQ0n4z3py7jOGTPkPnpJSDJd15R/hfeyQIMCD4pAg=",
+            "value": "AAAAEQAAAAEAAAADAAAADwAAAAZhbW91bnQAAAAAAAoAAAAAAAAAAAAAAAAAITQAAAAADwAAAAphdXRob3JpemVkAAAAAAAAAAAAAQAAAA8AAAAIY2xhd2JhY2sAAAAAAAAAAA=="
+          },
+          {
+            "type": "assetMinted",
+            "source": "GCP2QKBFLLEEWYVKAIXIJIJNCZ6XEBIE4PCDB6BF3GUB6FGE2RQ3HDVP",
+            "asset": "XLM",
+            "amount": "0.2174"
           },
           {
             "type": "accountCredited",
@@ -327,6 +334,12 @@
             "asset": "XLM",
             "amount": "0.2174",
             "balance": "9999.7234907"
+          },
+          {
+            "type": "assetBurned",
+            "source": "GCP2QKBFLLEEWYVKAIXIJIJNCZ6XEBIE4PCDB6BF3GUB6FGE2RQ3HDVP",
+            "asset": "CB64D3G7SM2RTH6JSGG34DDTFTQ5CFDKVDZJZSODMCX4NJ2HV2KN7OHT",
+            "amount": "0.2174"
           }
         ]
       ]
