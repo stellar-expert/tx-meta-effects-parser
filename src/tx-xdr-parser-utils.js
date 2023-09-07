@@ -1,4 +1,4 @@
-const {StrKey, LiquidityPoolId, scValToBigInt} = require('stellar-base')
+const {StrKey, LiquidityPoolId, scValToBigInt, xdr} = require('stellar-base')
 const {TxMetaEffectParserError} = require('./errors')
 
 /**
@@ -212,6 +212,9 @@ function xdrParseAsset(src) {
 
 
 function xdrParseScVal(value, treatBytesAsContractId = false) {
+    if (typeof value === 'string') {
+        value = xdr.ScVal.fromXDR(value, 'base64')
+    }
     switch (value._arm) {
         case 'vec':
             return value._value.map(xdrParseScVal)

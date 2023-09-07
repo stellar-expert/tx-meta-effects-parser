@@ -3,16 +3,6 @@ const effectTypes = require('./effect-types')
 const {UnexpectedTxMetaChangeError} = require('./errors')
 
 /**
- * Calculate difference between two amounts
- * @param {String} before
- * @param {String} after
- * @return {String}
- */
-function diff(before, after) {
-    return (BigInt(before) - BigInt(after)).toString()
-}
-
-/**
  * Returns true for AlphaNum4/12 assets adn false otherwise
  * @param {String} asset
  */
@@ -153,10 +143,8 @@ function isIssuer(account, asset) {
 module.exports = {
     fromStroops,
     toStroops,
-    trimZeros,
     normalizeAddress,
     encodeSponsorshipEffectName,
     isIssuer,
-    isAsset,
-    diff
+    isAsset
 }

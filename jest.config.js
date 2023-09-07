@@ -1,6 +1,6 @@
 module.exports = {
     clearMocks: true,
-    transformIgnorePatterns: []
+    transformIgnorePatterns: [],
+    maxWorkers: 1
     //runner: "jest-runner",
-
 }

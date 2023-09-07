@@ -256,7 +256,7 @@ function parseContractCode(value) {
     return {
         entry: 'contractCode',
         hash: contract.hash().toString('hex'),
-        code: contract.code().toString('base64')
+        code: contract.body().code().toString('base64')
     }
 }
 

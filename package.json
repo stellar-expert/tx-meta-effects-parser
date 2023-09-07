@@ -11,7 +11,7 @@
   "author": "team@stellar.expert",
   "license": "MIT",
   "peerDependencies": {
-    "stellar-base": "10.0.0-soroban.7"
+    "stellar-base": "10.0.0-soroban.8"
   },
   "devDependencies": {
     "@babel/core": "^7.22.9",

@@ -1,11 +1,9 @@
 const effectTypes = require('./effect-types')
-const {toStroops, fromStroops} = require('./analyzer-primitives')
 
 /**
  * Effect supply computation processor
  */
 class AssetSupplyProcessor {
-
     constructor(effects) {
         this.assetTransfers = {}
         for (const effect of effects) {
@@ -79,20 +77,21 @@ class AssetSupplyProcessor {
      */
     resolve() {
         const res = []
-        for (const [asset, sum] of Object.entries(this.assetTransfers))
+        for (const [asset, sum] of Object.entries(this.assetTransfers)) {
             if (sum > 0n) {
                 res.push({
                     type: effectTypes.assetMinted,
                     asset,
-                    amount: fromStroops(sum)
+                    amount: sum.toString()
                 })
             } else if (sum < 0n) {
                 res.push({
                     type: effectTypes.assetBurned,
                     asset,
-                    amount: fromStroops(-sum)
+                    amount: (-sum).toString()
                 })
             }
+        }
         return res
     }
 
@@ -104,7 +103,7 @@ class AssetSupplyProcessor {
     increase(asset, amount) {
         if (!this.shouldProcessAsset(asset))
             return
-        this.assetTransfers[asset] = (this.assetTransfers[asset] || 0n) + toStroops(amount)
+        this.assetTransfers[asset] = (this.assetTransfers[asset] || 0n) + BigInt(amount)
     }
 
     /**
@@ -115,7 +114,7 @@ class AssetSupplyProcessor {
     decrease(asset, amount) {
         if (!this.shouldProcessAsset(asset))
             return
-        this.assetTransfers[asset] = (this.assetTransfers[asset] || 0n) - toStroops(amount)
+        this.assetTransfers[asset] = (this.assetTransfers[asset] || 0n) - BigInt(amount)
     }
 
     /**
@@ -125,7 +124,7 @@ class AssetSupplyProcessor {
     shouldProcessAsset(asset) {
         if (asset === 'XLM') //return true if we process XLM balance changes
             return this.processXlmBalances
-        return asset.includes('-') || asset.startsWith('C') && asset.length == 56 //lazy checks for alphanum4/12 assets and contracts
+        return asset.includes('-') || (asset.length === 56 && asset.startsWith('C')) //lazy checks for alphanum4/12 assets and contracts
     }
 }
 

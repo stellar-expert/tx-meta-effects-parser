@@ -1,7 +1,7 @@
 const {StrKey} = require('stellar-base')
 const {parseLedgerEntryChanges} = require('./ledger-entry-changes-parser')
 const {xdrParseAsset, xdrParseAccountAddress, xdrParseScVal} = require('./tx-xdr-parser-utils')
-const {fromStroops, trimZeros, encodeSponsorshipEffectName, diff} = require('./analyzer-primitives')
+const {encodeSponsorshipEffectName} = require('./analyzer-primitives')
 const {analyzeSignerChanges} = require('./signer-changes-analyzer')
 const EventsAnalyzer = require('./events-analyzer')
 const AssetSupplyProcessor = require('./asset-supply-processor')
@@ -21,6 +21,7 @@ class EffectsAnalyzer {
         this.diagnosticEvents = diagnosticEvents
         this.network = network
     }
+
     /**
      * @type {{}[]}
      * @private
@@ -96,7 +97,7 @@ class EffectsAnalyzer {
             source,
             asset,
             amount,
-            balance: fromStroops(balance)
+            balance: balance
         })
     }
 
@@ -106,7 +107,7 @@ class EffectsAnalyzer {
             source,
             asset,
             amount,
-            balance: fromStroops(balance)
+            balance: balance
         })
     }
 
@@ -170,9 +171,9 @@ class EffectsAnalyzer {
                         pool: before.pool,
                         assets: before.asset.map((asset, i) => ({
                             asset,
-                            amount: fromStroops(diff(before.amount[i], after ? after.amount[i] : '0'))
+                            amount: (BigInt(before.amount[i]) - (after ? BigInt(after.amount[i]) : 0n)).toString()
                         })),
-                        shares: trimZeros(diff(before.shares, after ? after.shares : '0'))
+                        shares: (BigInt(before.shares) - (after ? BigInt(after.shares) : 0n)).toString()
                     })
                 }
             }
@@ -184,7 +185,7 @@ class EffectsAnalyzer {
             type: effectTypes.accountCredited,
             source: ip.account,
             asset: 'XLM',
-            amount: fromStroops(ip.amount)
+            amount: ip.amount
         }))*/
         this.addEffect({type: effectTypes.inflation})
     }
@@ -232,9 +233,9 @@ class EffectsAnalyzer {
             pool: this.operation.liquidityPoolId,
             assets: after.asset.map((asset, i) => ({
                 asset,
-                amount: fromStroops(diff(after.amount[i], before.amount[i]))
+                amount: (after.amount[i] - before.amount[i]).toString()
             })),
-            shares: trimZeros(diff(after.shares, before.shares))
+            shares: (after.shares - before.shares).toString()
         })
     }
 
@@ -246,9 +247,9 @@ class EffectsAnalyzer {
             pool,
             assets: before.asset.map((asset, i) => ({
                 asset,
-                amount: fromStroops(diff(before.amount[i], after.amount[i]))
+                amount: (before.amount[i] - after.amount[i]).toString()
             })),
-            shares: trimZeros(diff(before.shares, after.shares))
+            shares: (before.shares - after.shares).toString()
         })
     }
 
@@ -287,10 +288,9 @@ class EffectsAnalyzer {
     processDexOperationEffects() {
         //process trades first
         for (const claimedOffer of this.result.claimedOffers) {
-            const amount = claimedOffer.amount.map(fromStroops)
             const trade = {
                 type: effectTypes.trade,
-                amount,
+                amount: claimedOffer.amount,
                 asset: claimedOffer.asset
             }
             if (claimedOffer.poolId) {
@@ -366,7 +366,7 @@ class EffectsAnalyzer {
                 }
                 this.addEffect(accountCreated)
                 if (after.balance > 0) {
-                    this.credit(fromStroops(after.balance), 'XLM', after.address, after.balance)
+                    this.credit(after.balance, 'XLM', after.address, after.balance)
                 }
                 break
             case 'updated':
@@ -380,7 +380,7 @@ class EffectsAnalyzer {
                 break
             case 'removed':
                 if (before.balance > 0) {
-                    this.debit(fromStroops(before.balance), 'XLM', before.address, '0')
+                    this.debit(before.balance, 'XLM', before.address, '0')
                 }
                 const accountRemoved = {
                     type: effectTypes.accountRemoved
@@ -412,7 +412,7 @@ class EffectsAnalyzer {
         switch (action) {
             case 'created':
                 trustEffect.type = effectTypes.trustlineCreated
-                trustEffect.limit = fromStroops(snapshot.limit)
+                trustEffect.limit = snapshot.limit
                 break
             case 'updated':
                 if (before.balance !== after.balance) {
@@ -421,7 +421,7 @@ class EffectsAnalyzer {
                 if (before.limit === after.limit && before.flags === after.flags)
                     return
                 trustEffect.type = effectTypes.trustlineUpdated
-                trustEffect.limit = fromStroops(snapshot.limit)
+                trustEffect.limit = snapshot.limit
                 break
             case 'removed':
                 trustEffect.type = effectTypes.trustlineRemoved
@@ -434,11 +434,11 @@ class EffectsAnalyzer {
     }
 
     processBalanceChange(account, asset, beforeBalance, afterBalance) {
-        const balanceChange = fromStroops(diff(afterBalance, beforeBalance))
-        if (balanceChange[0] === '-') {
-            this.debit(balanceChange.replace('-', ''), asset, account, afterBalance)
+        const balanceChange = BigInt(afterBalance) - BigInt(beforeBalance)
+        if (balanceChange < 0n) {
+            this.debit((-balanceChange).toString(), asset, account, afterBalance)
         } else {
-            this.credit(balanceChange, asset, account, afterBalance)
+            this.credit(balanceChange.toString(), asset, account, afterBalance)
         }
     }
 
@@ -510,14 +510,14 @@ class EffectsAnalyzer {
         switch (action) {
             case 'created':
                 effect.type = effectTypes.offerCreated
-                effect.amount = fromStroops(after.amount)
+                effect.amount = after.amount
                 effect.price = after.price
                 break
             case 'updated':
                 if (before.price === after.price && before.asset.join() === after.asset.join() && before.amount === after.amount)
                     return //no changes - skip
                 effect.type = effectTypes.offerUpdated
-                effect.amount = fromStroops(after.amount)
+                effect.amount = after.amount
                 effect.price = after.price
                 break
         }
@@ -548,7 +548,7 @@ class EffectsAnalyzer {
                     type: effectTypes.liquidityPoolUpdated,
                     reserves: after.asset.map((asset, i) => ({
                         asset,
-                        amount: fromStroops(after.amount[i])
+                        amount: after.amount[i]
                     })),
                     shares: after.shares,
                     accounts: after.accounts
@@ -566,7 +566,7 @@ class EffectsAnalyzer {
                     sponsor: after.sponsor,
                     balance: after.balanceId,
                     asset: after.asset,
-                    amount: fromStroops(after.amount),
+                    amount: after.amount,
                     claimants: after.claimants
                 })
                 break
@@ -576,7 +576,7 @@ class EffectsAnalyzer {
                     sponsor: before.sponsor,
                     balance: before.balanceId,
                     asset: before.asset,
-                    amount: fromStroops(before.amount),
+                    amount: before.amount,
                     claimants: before.claimants
                 })
                 break
@@ -654,6 +654,7 @@ class EffectsAnalyzer {
                 delete effect.value
                 break
         }
+        console.log('Effect', {...effect, parsedKey: xdrParseScVal(key), parsedValue: xdrParseScVal(value)})
         this.addEffect(effect)
     }
 
@@ -719,8 +720,8 @@ function processFeeChargedEffect(tx, source, chargedAmount, feeBump = false) {
         type: effectTypes.feeCharged,
         source,
         asset: 'XLM',
-        bid: fromStroops(tx.fee),
-        charged: fromStroops(chargedAmount)
+        bid: tx.fee,
+        charged: chargedAmount
     }
     if (feeBump) {
         res.bump = true
