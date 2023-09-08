@@ -12,7 +12,7 @@ class AssetSupplyProcessor {
     }
 
     /**
-     * @type {Object.<String,BigInt>}
+     * @type {Object.<String,{amount:BigInt, [anchoredAsset]:String}>}
      * @private
      */
     assetTransfers
@@ -32,14 +32,16 @@ class AssetSupplyProcessor {
             case effectTypes.accountCredited:
             case effectTypes.contractCredited:
             case effectTypes.claimableBalanceCreated:
+            case effectTypes.assetBurned:
                 //increase supply
-                this.increase(effect.asset, effect.amount)
+                this.increase(effect.asset, effect.amount, effect.anchoredAsset)
                 break
             case effectTypes.accountDebited:
             case effectTypes.contractDebited:
             case effectTypes.claimableBalanceRemoved:
+            case effectTypes.assetMinted:
                 //decrease supply
-                this.decrease(effect.asset, effect.amount)
+                this.decrease(effect.asset, effect.amount, effect.anchoredAsset)
                 break
             case effectTypes.liquidityPoolDeposited:
                 //increase supply for every deposited asset (if liquidity provider is an issuer)
@@ -77,20 +79,25 @@ class AssetSupplyProcessor {
      */
     resolve() {
         const res = []
-        for (const [asset, sum] of Object.entries(this.assetTransfers)) {
-            if (sum > 0n) {
-                res.push({
-                    type: effectTypes.assetMinted,
-                    asset,
-                    amount: sum.toString()
-                })
-            } else if (sum < 0n) {
-                res.push({
-                    type: effectTypes.assetBurned,
-                    asset,
-                    amount: (-sum).toString()
-                })
+        for (const [asset, value] of Object.entries(this.assetTransfers)) {
+            if (value.amount === 0n)
+                continue
+            const effect = {
+                type: effectTypes.assetMinted,
+                asset
             }
+            if (value.anchoredAsset) {
+                effect.anchoredAsset = value.anchoredAsset
+            }
+            if (value.amount > 0n) {
+                effect.type = effectTypes.assetMinted
+                effect.amount = value.amount.toString()
+            }
+            if (value.amount < 0n) {
+                effect.type = effectTypes.assetBurned
+                effect.amount = (-value.amount).toString()
+            }
+            res.push(effect)
         }
         return res
     }
@@ -98,23 +105,37 @@ class AssetSupplyProcessor {
     /**
      * @param {String} asset
      * @param {String} amount
+     * @param {String} anchoredAsset
      * @private
      */
-    increase(asset, amount) {
+    increase(asset, amount, anchoredAsset = undefined) {
         if (!this.shouldProcessAsset(asset))
             return
-        this.assetTransfers[asset] = (this.assetTransfers[asset] || 0n) + BigInt(amount)
+        const value = {
+            amount: (this.assetTransfers[asset]?.amount || 0n) + BigInt(amount)
+        }
+        if (anchoredAsset !== undefined) {
+            value.anchoredAsset = anchoredAsset
+        }
+        this.assetTransfers[asset] = value
     }
 
     /**
      * @param {String} asset
      * @param {String} amount
+     * @param {String} anchoredAsset
      * @private
      */
-    decrease(asset, amount) {
+    decrease(asset, amount, anchoredAsset = undefined) {
         if (!this.shouldProcessAsset(asset))
             return
-        this.assetTransfers[asset] = (this.assetTransfers[asset] || 0n) - BigInt(amount)
+        const value = {
+            amount: (this.assetTransfers[asset]?.amount || 0n) - BigInt(amount)
+        }
+        if (anchoredAsset !== undefined) {
+            value.anchoredAsset = anchoredAsset
+        }
+        this.assetTransfers[asset] = value
     }
 
     /**

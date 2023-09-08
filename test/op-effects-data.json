@@ -55,6 +55,12 @@
             "amount": "1000000000"
           },
           {
+            "type": "accountCredited",
+            "source": "GB7HZCEXDQX5UI4O6Z5626UPEYGN4TDNDXHAFWCWSAKDFIZISBW4Q7KZ",
+            "asset": "CDEPTXQ2LKHDGNOPDBIC63ERJUJU7HSIX4GW7I4L7QBSVKYQB5BQ4KIF",
+            "amount": "1000000000"
+          },
+          {
             "type": "contractEvent",
             "contract": "CDEPTXQ2LKHDGNOPDBIC63ERJUJU7HSIX4GW7I4L7QBSVKYQB5BQ4KIF",
             "source": "GB7HZCEXDQX5UI4O6Z5626UPEYGN4TDNDXHAFWCWSAKDFIZISBW4Q7KZ",
@@ -224,9 +230,8 @@
             "depth": 2
           },
           {
-            "type": "contractDebited",
+            "type": "assetMinted",
             "source": "GCP2QKBFLLEEWYVKAIXIJIJNCZ6XEBIE4PCDB6BF3GUB6FGE2RQ3HDVP",
-            "contract": "GCP2QKBFLLEEWYVKAIXIJIJNCZ6XEBIE4PCDB6BF3GUB6FGE2RQ3HDVP",
             "asset": "CCWNZPARJG7KQ6N4BGZ5OBWKSSK4AVQ5URLDRXB4ZJXKGEJQTIIRPAHN",
             "anchoredAsset": "USD-GCP2QKBFLLEEWYVKAIXIJIJNCZ6XEBIE4PCDB6BF3GUB6FGE2RQ3HDVP-1",
             "amount": "2173007"
@@ -297,6 +302,7 @@
             "type": "assetMinted",
             "source": "GCP2QKBFLLEEWYVKAIXIJIJNCZ6XEBIE4PCDB6BF3GUB6FGE2RQ3HDVP",
             "asset": "CB64D3G7SM2RTH6JSGG34DDTFTQ5CFDKVDZJZSODMCX4NJ2HV2KN7OHT",
+            "anchoredAsset": "XLM",
             "amount": "2175000"
           },
           {
@@ -418,6 +424,7 @@
             "type": "assetBurned",
             "source": "GCP2QKBFLLEEWYVKAIXIJIJNCZ6XEBIE4PCDB6BF3GUB6FGE2RQ3HDVP",
             "asset": "CB64D3G7SM2RTH6JSGG34DDTFTQ5CFDKVDZJZSODMCX4NJ2HV2KN7OHT",
+            "anchoredAsset": "XLM",
             "amount": "2174000"
           }
         ]

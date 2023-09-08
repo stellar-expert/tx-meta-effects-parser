@@ -1,6 +1,6 @@
 const {StrKey} = require('stellar-base')
 const {xdrParseScVal, xdrParseAsset} = require('./tx-xdr-parser-utils')
-const {UnexpectedTxMetaChangeError} = require('./errors')
+const {UnexpectedTxMetaChangeError, TxMetaEffectParserError} = require('./errors')
 const {encodeAssetContractId} = require('./asset-contract-id-encoder')
 const effectTypes = require('./effect-types')
 
@@ -132,7 +132,8 @@ class EventsAnalyzer {
                     asset: contractId,
                     amount
                 })
-                this.credit(to, token, amount)            }
+                this.credit(to, token, amount)
+            }
                 break
             case 'burn': {
                 throw new Error('Not implemented')
@@ -188,16 +189,30 @@ class EventsAnalyzer {
      * @private
      */
     debit(from, token, amount) {
-        const effect = {
-            type: effectTypes.contractDebited,
-            contract: from,
+        if (from[0] === 'C') { //debit from contract
+            const effect = {
+                type: effectTypes.contractDebited,
+                contract: from,
+                asset: token.asset,
+                amount
+            }
+            if (token.anchoredAsset) {
+                effect.anchoredAsset = token.anchoredAsset
+            }
+            this.effectAnalyzer.addEffect(effect)
+            return
+        }
+
+        //debit from account
+        //TODO: check debits of Soroban assets from account
+        if (token.anchoredAsset)
+            return //skip processing changes for classic assets - they are processed elsewhere
+        this.effectAnalyzer.addEffect({
+            type: effectTypes.accountDebited,
+            source: from,
             asset: token.asset,
             amount
-        }
-        if (token.anchoredAsset) {
-            effect.anchoredAsset = token.anchoredAsset
-        }
-        this.effectAnalyzer.addEffect(effect)
+        })
     }
 
     /**
@@ -207,16 +222,29 @@ class EventsAnalyzer {
      * @private
      */
     credit(to, token, amount) {
-        const effect = {
-            type: effectTypes.contractCredited,
-            contract: to,
+        if (to[0] === 'C') { //credit contract
+            const effect = {
+                type: effectTypes.contractCredited,
+                contract: to,
+                asset: token.asset,
+                amount
+            }
+            if (token.anchoredAsset) {
+                effect.anchoredAsset = token.anchoredAsset
+            }
+            this.effectAnalyzer.addEffect(effect)
+        }
+
+        //credit account
+        //TODO: check credits of Soroban assets
+        if (token.anchoredAsset)
+            return //skip processing changes for classic assets - they are processed elsewhere
+        this.effectAnalyzer.addEffect({
+            type: effectTypes.accountCredited,
+            source: to,
             asset: token.asset,
             amount
-        }
-        if (token.anchoredAsset) {
-            effect.anchoredAsset = token.anchoredAsset
-        }
-        this.effectAnalyzer.addEffect(effect)
+        })
     }
 }
 
