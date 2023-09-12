@@ -6,13 +6,14 @@ const effectTypes = require('./effect-types')
 class AssetSupplyProcessor {
     constructor(effects) {
         this.assetTransfers = {}
+        this.processXlmBalances = effects.some(e => e.type === 'contractInvoked')
         for (const effect of effects) {
             this.processEffect(effect)
         }
     }
 
     /**
-     * @type {Object.<String,{amount:BigInt, [anchoredAsset]:String}>}
+     * @type {Object.<String,BigInt>}
      * @private
      */
     assetTransfers
@@ -30,18 +31,16 @@ class AssetSupplyProcessor {
     processEffect(effect) {
         switch (effect.type) {
             case effectTypes.accountCredited:
-            case effectTypes.contractCredited:
             case effectTypes.claimableBalanceCreated:
             case effectTypes.assetBurned:
                 //increase supply
-                this.increase(effect.asset, effect.amount, effect.anchoredAsset)
+                this.increase(effect.asset, effect.amount)
                 break
             case effectTypes.accountDebited:
-            case effectTypes.contractDebited:
             case effectTypes.claimableBalanceRemoved:
             case effectTypes.assetMinted:
                 //decrease supply
-                this.decrease(effect.asset, effect.amount, effect.anchoredAsset)
+                this.decrease(effect.asset, effect.amount)
                 break
             case effectTypes.liquidityPoolDeposited:
                 //increase supply for every deposited asset (if liquidity provider is an issuer)
@@ -66,10 +65,6 @@ class AssetSupplyProcessor {
                     }
                 }
                 break
-            case effectTypes.contractInvoked:
-                //start tracking XLM balance changes if there was at least one contract invocation
-                this.processXlmBalances = true
-                break
         }
     }
 
@@ -79,23 +74,20 @@ class AssetSupplyProcessor {
      */
     resolve() {
         const res = []
-        for (const [asset, value] of Object.entries(this.assetTransfers)) {
-            if (value.amount === 0n)
+        for (const [asset, amount] of Object.entries(this.assetTransfers)) {
+            if (amount === 0n)
                 continue
             const effect = {
                 type: effectTypes.assetMinted,
                 asset
             }
-            if (value.anchoredAsset) {
-                effect.anchoredAsset = value.anchoredAsset
-            }
-            if (value.amount > 0n) {
+            if (amount > 0n) {
                 effect.type = effectTypes.assetMinted
-                effect.amount = value.amount.toString()
+                effect.amount = amount.toString()
             }
-            if (value.amount < 0n) {
+            if (amount < 0n) {
                 effect.type = effectTypes.assetBurned
-                effect.amount = (-value.amount).toString()
+                effect.amount = (-amount).toString()
             }
             res.push(effect)
         }
@@ -105,37 +97,23 @@ class AssetSupplyProcessor {
     /**
      * @param {String} asset
      * @param {String} amount
-     * @param {String} anchoredAsset
      * @private
      */
-    increase(asset, amount, anchoredAsset = undefined) {
+    increase(asset, amount) {
         if (!this.shouldProcessAsset(asset))
             return
-        const value = {
-            amount: (this.assetTransfers[asset]?.amount || 0n) + BigInt(amount)
-        }
-        if (anchoredAsset !== undefined) {
-            value.anchoredAsset = anchoredAsset
-        }
-        this.assetTransfers[asset] = value
+        this.assetTransfers[asset] = (this.assetTransfers[asset] || 0n) + BigInt(amount)
     }
 
     /**
      * @param {String} asset
      * @param {String} amount
-     * @param {String} anchoredAsset
      * @private
      */
-    decrease(asset, amount, anchoredAsset = undefined) {
+    decrease(asset, amount) {
         if (!this.shouldProcessAsset(asset))
             return
-        const value = {
-            amount: (this.assetTransfers[asset]?.amount || 0n) - BigInt(amount)
-        }
-        if (anchoredAsset !== undefined) {
-            value.anchoredAsset = anchoredAsset
-        }
-        this.assetTransfers[asset] = value
+        this.assetTransfers[asset] = (this.assetTransfers[asset] || 0n) - BigInt(amount)
     }
 
     /**

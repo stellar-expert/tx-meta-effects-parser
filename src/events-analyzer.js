@@ -1,7 +1,7 @@
-const {StrKey} = require('stellar-base')
+const {StrKey, Asset} = require('stellar-base')
 const {xdrParseScVal, xdrParseAsset} = require('./tx-xdr-parser-utils')
 const {UnexpectedTxMetaChangeError, TxMetaEffectParserError} = require('./errors')
-const {encodeAssetContractId} = require('./asset-contract-id-encoder')
+const {contractIdFromAsset} = require('./contract-preimage-encoder')
 const effectTypes = require('./effect-types')
 
 const EVENT_TYPES = {
@@ -79,8 +79,6 @@ class EventsAnalyzer {
         const topics = body.topics()
         switch (xdrParseScVal(topics[0])) {
             case 'fn_call': // contract call
-                if (type !== EVENT_TYPES.DIAGNOSTIC)
-                    return // skip non-diagnostic events
                 const parsedEvent = {
                     type: effectTypes.contractInvoked,
                     contract: xdrParseScVal(topics[1], true),
@@ -99,59 +97,75 @@ class EventsAnalyzer {
                     return // skip non-diagnostic events
                 //attach execution result to the contract invocation event
                 const funcCall = this.callStack.pop()
-                const parsedResult = body.data().value()
-                if (parsedResult !== undefined) {
-                    funcCall.result = parsedResult
+                const result = body.data()
+                if (result.switch().name !== 'scvVoid') {
+                    funcCall.result = result.toXDR('base64')
                 }
                 break
             //handle standard token contract events
             case 'transfer': {
                 const from = xdrParseScVal(topics[1])
                 const to = xdrParseScVal(topics[2])
-                const token = this.parseToken(topics[3] || contractId)
+                const asset = contractId //topics[3]? xdrParseScVal(topics[3]) || contractId
                 const amount = processEventBodyValue(body.data())
-                this.debit(from, token, amount)
-                this.credit(to, token, amount)
-            }
-                break
-            case 'approve': {
-                if (!matchEventTopicsShape(topics, ['address', 'address', 'str?']))
-                    throw new Error('Non-standard event')
-                const from = xdrParseScVal(topics[1])
-                const spender = xdrParseScVal(topics[2])
+                const isClassicAsset = isContractAddress(asset)
+                if (!isClassicAsset || isContractAddress(from)) {
+                    this.debit(from, asset, amount)
+                }
+                if (!isClassicAsset || isContractAddress(to)) {
+                    this.credit(to, asset, amount)
+                }
             }
                 break
             case 'mint': {
                 if (!matchEventTopicsShape(topics, ['address', 'address', 'str?']))
                     throw new Error('Non-standard event')
                 const to = xdrParseScVal(topics[1])
-                const token = new TokenDescriptor(contractId)
                 const amount = processEventBodyValue(body.data())
                 this.effectAnalyzer.addEffect({
                     type: effectTypes.assetMinted,
                     asset: contractId,
                     amount
                 })
-                this.credit(to, token, amount)
+                this.credit(to, contractId, amount)
             }
                 break
             case 'burn': {
-                throw new Error('Not implemented')
                 if (!matchEventTopicsShape(topics, ['address', 'str?']))
                     throw new Error('Non-standard event')
                 const from = xdrParseScVal(topics[1])
+                const amount = processEventBodyValue(body.data())
+                this.debit(from, token, amount)
+                this.effectAnalyzer.addEffect({
+                    type: effectTypes.assetBurned,
+                    asset: contractId,
+                    amount
+                })
             }
                 break
             case 'clawback': {
-                throw new Error('Not implemented')
                 if (!matchEventTopicsShape(topics, ['address', 'address', 'str?']))
                     throw new Error('Non-standard event')
+                throw new Error('Check state modifications to confirm the clawback destination')
                 const admin = xdrParseScVal(topics[1])
                 const from = xdrParseScVal(topics[2])
+                const amount = processEventBodyValue(body.data())
+                this.debit(from, contractId, amount)
+                this.credit(admin, contractId, amount)
             }
                 break
+            //TODO: process token allowance, authorization approval, and admin modification for SAC contracts
+            /*case 'approve': {
+                if (!matchEventTopicsShape(topics, ['address', 'address', 'str?']))
+                    throw new Error('Non-standard event')
+                const from = xdrParseScVal(topics[1])
+                const spender = xdrParseScVal(topics[2])
+            }
+                break
+
             case 'set_authorized': {
                 throw new Error('Not implemented')
+                //trustlineAuthorizationUpdated
                 if (!matchEventTopicsShape(topics, ['address', 'address', 'bool', 'str?']))
                     throw new Error('Non-standard event')
                 const admin = xdrParseScVal(topics[1])
@@ -166,7 +180,7 @@ class EventsAnalyzer {
                 const prevAdmin = xdrParseScVal(topics[1])
                 const newAdmin = processEventBodyValue(topics[2])
             }
-                break
+                break*/
             default:
                 console.log(`Event ` + xdrParseScVal(topics[0]))
         }
@@ -174,77 +188,57 @@ class EventsAnalyzer {
     }
 
     /**
-     * @param {ScVal | String} src
-     * @return {TokenDescriptor}
-     * @private
-     */
-    parseToken(src) {
-        return new TokenDescriptor(typeof src === 'string' ? src : xdrParseScVal(src), this.effectAnalyzer.network)
-    }
-
-    /**
      * @param {String} from
-     * @param {TokenDescriptor} token
+     * @param {String} asset
      * @param {String} amount
      * @private
      */
-    debit(from, token, amount) {
-        if (from[0] === 'C') { //debit from contract
-            const effect = {
-                type: effectTypes.contractDebited,
-                contract: from,
-                asset: token.asset,
-                amount
-            }
-            if (token.anchoredAsset) {
-                effect.anchoredAsset = token.anchoredAsset
-            }
-            this.effectAnalyzer.addEffect(effect)
-            return
+    debit(from, asset, amount) {
+        const effect = {
+            type: effectTypes.accountDebited,
+            source: from,
+            asset,
+            amount
         }
+        this.effectAnalyzer.addEffect(effect)
 
         //debit from account
         //TODO: check debits of Soroban assets from account
-        if (token.anchoredAsset)
-            return //skip processing changes for classic assets - they are processed elsewhere
-        this.effectAnalyzer.addEffect({
+        //if (token.anchoredAsset)
+        //return //skip processing changes for classic assets - they are processed elsewhere
+        /*this.effectAnalyzer.addEffect({
             type: effectTypes.accountDebited,
             source: from,
             asset: token.asset,
             amount
-        })
+        })*/
     }
 
     /**
      * @param {String} to
-     * @param {TokenDescriptor} token
+     * @param {String} asset
      * @param {String} amount
      * @private
      */
-    credit(to, token, amount) {
-        if (to[0] === 'C') { //credit contract
-            const effect = {
-                type: effectTypes.contractCredited,
-                contract: to,
-                asset: token.asset,
-                amount
-            }
-            if (token.anchoredAsset) {
-                effect.anchoredAsset = token.anchoredAsset
-            }
-            this.effectAnalyzer.addEffect(effect)
+    credit(to, asset, amount) {
+        const effect = {
+            type: effectTypes.accountCredited,
+            source: to,
+            asset,
+            amount
         }
+        this.effectAnalyzer.addEffect(effect)
 
         //credit account
         //TODO: check credits of Soroban assets
-        if (token.anchoredAsset)
-            return //skip processing changes for classic assets - they are processed elsewhere
-        this.effectAnalyzer.addEffect({
+        //if (token.anchoredAsset)
+        //return //skip processing changes for classic assets - they are processed elsewhere
+        /*this.effectAnalyzer.addEffect({
             type: effectTypes.accountCredited,
             source: to,
             asset: token.asset,
             amount
-        })
+        })*/
     }
 }
 
@@ -271,8 +265,8 @@ function matchEventTopicsShape(topics, shape) {
 
 function processEventBodyValue(value) {
     const innerValue = value.value()
-    if (innerValue instanceof Array) //handle simple JS arrays
-        return innerValue.map(xdrParseScVal)
+    /*if (innerValue instanceof Array) //handle simple JS arrays
+        return innerValue.map(xdrParseScVal)*/
     if (!innerValue) //scVoid
         return undefined
     return xdrParseScVal(value) //other scValue
@@ -280,35 +274,6 @@ function processEventBodyValue(value) {
 
 function isContractAddress(address) {
     return address.length === 56 && address[0] === 'C'
-}
-
-class TokenDescriptor {
-    constructor(rawAsset, network) {
-        if (isContractAddress(rawAsset)) {
-            this.asset = rawAsset
-        } else {
-            this.asset = encodeAssetContractId(rawAsset, network)
-            this.anchoredAsset = xdrParseAsset(rawAsset)
-        }
-    }
-
-    /**
-     * @type {String}
-     * @readonly
-     */
-    asset
-
-    /**
-     * @type {String}
-     * @readonly
-     */
-    anchoredAsset
-
-    get kind() {
-        if (this.anchoredAsset)
-            return 'anchored'
-        return 'contract'
-    }
 }
 
 module.exports = EventsAnalyzer

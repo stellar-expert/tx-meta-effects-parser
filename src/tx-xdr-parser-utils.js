@@ -230,6 +230,8 @@ function xdrParseScVal(value, treatBytesAsContractId = false) {
         case 'u128':
         case 'i64':
         case 'u64':
+        case 'timepoint':
+        case 'duration':
             return scValToBigInt(value).toString()
         case 'address':
             if (value._value._arm === 'accountId')
@@ -246,7 +248,15 @@ function xdrParseScVal(value, treatBytesAsContractId = false) {
         case 'str':
         case 'sym':
             return value._value.toString()
+        case 'nonceKey':
+            return value._value.nonce()._value.toString()
+        case 'instance':
+            return value._value.executable.wasmHash().toString('base64')
+        case 'error':
+            return value.toXDR('base64')
         default:
+            if (value.switch().name === 'scvVoid') //scVoid
+                return undefined
             throw new TxMetaEffectParserError('Not supported XDR primitive type: ' + value.toXDR ? value.toXDR() : value.toString())
     }
 }

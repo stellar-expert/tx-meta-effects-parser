@@ -1,5 +1,12 @@
 const {StrKey} = require('stellar-base')
-const {xdrParseAsset, xdrParseAccountAddress, xdrParseClaimant, xdrParsePrice, xdrParseSignerKey, xdrParseScVal} = require('./tx-xdr-parser-utils')
+const {
+    xdrParseAsset,
+    xdrParseAccountAddress,
+    xdrParseClaimant,
+    xdrParsePrice,
+    xdrParseSignerKey,
+    xdrParseScVal
+} = require('./tx-xdr-parser-utils')
 const {TxMetaEffectParserError} = require('./errors')
 
 /**
@@ -22,6 +29,8 @@ function parseLedgerEntryChanges(ledgerEntryChanges) {
         const actionType = entry.arm()
 
         const stateData = parseEntry(entry.value(), actionType)
+        if (stateData === undefined)
+            continue
         const change = {action: actionType}
         switch (actionType) {
             case 'state':
@@ -55,7 +64,9 @@ function parseEntry(entry, actionType) {
     if (actionType === 'removed')
         return null //parseEntryData(entry)
     const parsed = parseEntryData(entry.data())
-    parsed.modified = entry.lastModifiedLedgerSeq()
+    if (parsed === null)
+        return null
+    //parsed.modified = entry.lastModifiedLedgerSeq()
     return parseLedgerEntryExt(parsed, entry)
 }
 
@@ -79,7 +90,7 @@ function parseEntryData(data) {
         case 'contractData':
             return parseContractData(data)
         case 'contractCode':
-            return parseContractCode(data)
+            return undefined
         default:
             throw new TxMetaEffectParserError(`Unknown meta entry type: ${updatedEntryType}`)
     }
@@ -229,35 +240,56 @@ function parseClaimableBalanceEntry(value) {
 
 function parseContractData(value) {
     const data = value.value()
-    const contract = StrKey.encodeContract(data.contract().contractId())
+    const owner = parseStateOwnerDataAddress(data.contract())
+
     const valueAttr = data.body().value().val()
     switch (data.key().switch()?.name) {
-        case 'scvLedgerKeyContractInstance':
-            return {
-                entry: 'contractCode',
-                contract,
-                hash: valueAttr.instance().executable().wasmHash().toString('hex'),
+        case 'scvLedgerKeyContractInstance':  //TODO: try to remove this logic completely
+            const entry = {
+                entry: 'contractCodeWasm',
+                owner,
+                expires: data.expirationLedgerSeq(),
                 aux: true
                 //durability: data.durability().name
             }
+            const type = valueAttr.instance().executable().switch().name
+            switch (type) {
+                case 'contractExecutableToken':
+                    entry.type = 'token'
+                    break
+                case 'contractExecutableWasm':
+                    entry.type = 'wasm'
+                    entry.hash = valueAttr.instance().executable().wasmHash().toString('hex')
+                    break
+                default:
+                    throw new TxMetaEffectParserError('Unsupported executable type: ' + type)
+            }
+            return entry
     }
 
     return {
         entry: 'contractData',
-        contract,
+        owner,
         key: data.key().toXDR('base64'),
-        value: valueAttr.toXDR('base64')
+        value: valueAttr.toXDR('base64'),
+        expires: data.expirationLedgerSeq()
         //durability: data.durability().name
     }
 }
 
-function parseContractCode(value) {
+function parseStateOwnerDataAddress(contract){
+    if (contract.switch().name === 'scAddressTypeContract')
+        return StrKey.encodeContract(contract.contractId())
+    return xdrParseAccountAddress(contract.accountId())
+}
+
+/*function parseContractCode(value) {
     const contract = value.value()
     return {
         entry: 'contractCode',
         hash: contract.hash().toString('hex'),
         code: contract.body().code().toString('base64')
     }
-}
+}*/
 
 module.exports = {parseLedgerEntryChanges}

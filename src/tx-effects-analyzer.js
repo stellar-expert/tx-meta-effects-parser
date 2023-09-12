@@ -7,6 +7,7 @@ const EventsAnalyzer = require('./events-analyzer')
 const AssetSupplyProcessor = require('./asset-supply-processor')
 const {UnexpectedTxMetaChangeError, TxMetaEffectParserError} = require('./errors')
 const effectTypes = require('./effect-types')
+const {contractIdFromPreimage} = require('./contract-preimage-encoder')
 
 class EffectsAnalyzer {
     constructor({operation, meta, result, network, events, diagnosticEvents}) {
@@ -18,7 +19,9 @@ class EffectsAnalyzer {
         this.changes = parseLedgerEntryChanges(meta)
         this.source = this.operation.source
         this.events = events
-        this.diagnosticEvents = diagnosticEvents
+        if (diagnosticEvents?.length) {
+            this.diagnosticEvents = diagnosticEvents
+        }
         this.network = network
     }
 
@@ -59,8 +62,6 @@ class EffectsAnalyzer {
     source = ''
 
     analyze() {
-        //process Soroban events
-        new EventsAnalyzer(this).analyze()
         //find appropriate parsing method
         const parse = this[this.operation.type]
         if (parse) {
@@ -70,8 +71,15 @@ class EffectsAnalyzer {
         this.processChanges()
         //handle effects that are processed indirectly
         this.processSponsorshipEffects()
+        //process Soroban events
+        new EventsAnalyzer(this).analyze()
         //calculate minted/burned assets
         this.processAssetSupplyEffects()
+        //process state data changes in the end
+        for (const change of this.changes)
+            if (change.type === 'contractData') {
+                this.processContractDataChanges(change)
+            }
 
         return this.effects
     }
@@ -253,13 +261,13 @@ class EffectsAnalyzer {
         })
     }
 
-    invokeHostFunction(diagnosticEvents) {
+    invokeHostFunction() {
         const {func} = this.operation
         const value = func.value()
         switch (func.arm()) {
             case 'invokeContract':
-                if (!this.effects.some(e => e.type === effectTypes.contractInvoked)) {
-                    //add contract invocation effect only if it hasn't been processed by events processor yet
+                if (!this.diagnosticEvents) {
+                    //add top-level contract invocation effect only if diagnostic events are unavailable
                     const effect = {
                         type: effectTypes.contractInvoked,
                         contract: xdrParseScVal(value[0]),
@@ -275,6 +283,41 @@ class EffectsAnalyzer {
                     wasm: value.toString('base64')
                 })
                 break
+            case 'createContract':
+                const preimage = value.contractIdPreimage()
+                const executable = value.executable()
+                const executableType = executable.switch().name
+
+                const effect = {
+                    type: effectTypes.contractCreated,
+                    contract: contractIdFromPreimage(preimage, this.network)
+                }
+                switch (executableType) {
+                    case 'contractExecutableWasm':
+                        effect.kind = 'wasm'
+                        effect.wasmHash = executable.wasmHash().toString('hex')
+                        break
+                    case 'contractExecutableToken':
+                        const preimageParams = preimage.value()
+                        switch (preimage.switch().name) {
+                            case 'contractIdPreimageFromAddress':
+                                effect.kind = 'fromAddress'
+                                effect.issuer = xdrParseAccountAddress(preimageParams.address().value())
+                                effect.salt = preimageParams.salt().toString('base64')
+                                break
+                            case 'contractIdPreimageFromAsset':
+                                effect.kind = 'fromAsset'
+                                effect.asset = xdrParseAsset(preimageParams)
+                                break
+                            default:
+                                throw new TxMetaEffectParserError('Unknown preimage type: ' + preimage.switch().name)
+                        }
+                        break
+                }
+                this.addEffect(effect)
+                break
+            default:
+                throw new TxMetaEffectParserError('Unknown host function call type: ' + func.arm())
         }
     }
 
@@ -611,32 +654,11 @@ class EffectsAnalyzer {
         this.addEffect(effect)
     }
 
-    processContractCodeChanges({action, before, after}) {
-        const {hash, contract} = after || before
-        const effect = {
-            type: '',
-            contract,
-            wasmHash: hash
-        }
-        switch (action) {
-            case 'created':
-                effect.type = effectTypes.contractCreated
-                break
-            case 'updated':
-                if (before.hash === after.hash)
-                    return //value has not changed
-                throw new UnexpectedTxMetaChangeError({type: 'contractCode', action})
-            default:
-                throw new UnexpectedTxMetaChangeError({type: 'contractCode', action})
-        }
-        this.addEffect(effect)
-    }
-
     processContractDataChanges({action, before, after}) {
-        const {contract, key, value} = after || before
+        const {owner, key, value} = after || before
         const effect = {
             type: '',
-            contract,
+            owner,
             key,
             value
         }
@@ -654,7 +676,6 @@ class EffectsAnalyzer {
                 delete effect.value
                 break
         }
-        console.log('Effect', {...effect, parsedKey: xdrParseScVal(key), parsedValue: xdrParseScVal(value)})
         this.addEffect(effect)
     }
 
@@ -680,10 +701,8 @@ class EffectsAnalyzer {
                     this.processDataEntryChanges(change)
                     break
                 case 'contractData':
-                    this.processContractDataChanges(change)
-                    break
-                case 'contractCode':
-                    this.processContractCodeChanges(change)
+                case 'contractCodeWasm':
+                    //this.processContractDataChanges(change)
                     break
                 default:
                     throw new UnexpectedTxMetaChangeError(change)

@@ -87,9 +87,6 @@ const effectTypes = {
 
     contractInvoked: 'contractInvoked',
 
-    contractDebited: 'contractDebited',
-    contractCredited: 'contractCredited',
-
     contractDataCreated: 'contractDataCreated',
     contractDataUpdated: 'contractDataUpdated',
     contractDataRemoved: 'contractDataRemoved',
