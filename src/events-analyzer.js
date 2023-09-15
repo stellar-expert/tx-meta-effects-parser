@@ -135,7 +135,7 @@ class EventsAnalyzer {
                     throw new Error('Non-standard event')
                 const from = xdrParseScVal(topics[1])
                 const amount = processEventBodyValue(body.data())
-                this.debit(from, token, amount)
+                this.debit(from, contractId, amount)
                 this.effectAnalyzer.addEffect({
                     type: effectTypes.assetBurned,
                     asset: contractId,
