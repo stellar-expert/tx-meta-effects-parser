@@ -313,6 +313,8 @@ class EffectsAnalyzer {
                                 throw new TxMetaEffectParserError('Unknown preimage type: ' + preimage.switch().name)
                         }
                         break
+                    default:
+                        throw new TxMetaEffectParserError('Unknown contract type: ' + executableType)
                 }
                 this.addEffect(effect)
                 break
