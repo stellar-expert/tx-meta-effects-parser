@@ -246,19 +246,19 @@ function parseContractData(value) {
     switch (data.key().switch()?.name) {
         case 'scvLedgerKeyContractInstance':  //TODO: try to remove this logic completely
             const entry = {
-                entry: 'contractCodeWasm',
-                owner,
-                expires: data.expirationLedgerSeq(),
-                aux: true
+                entry: 'contract',
+                contract: owner,
+                expires: data.expirationLedgerSeq()
                 //durability: data.durability().name
             }
             const type = valueAttr.instance().executable().switch().name
             switch (type) {
                 case 'contractExecutableToken':
                     entry.type = 'token'
+                    return undefined //scvContractInstance does not include any information from contractIdPreimageFromAddress or contractIdPreimageFromAsset, so it's impossible to parse it
                     break
                 case 'contractExecutableWasm':
-                    entry.type = 'wasm'
+                    entry.kind = 'wasm'
                     entry.hash = valueAttr.instance().executable().wasmHash().toString('hex')
                     break
                 default:

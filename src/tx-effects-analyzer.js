@@ -681,6 +681,24 @@ class EffectsAnalyzer {
         this.addEffect(effect)
     }
 
+    processContractChanges({action, after}) {
+        if (action === 'updated')
+            return // TODO: check whether any contract properties changed
+        if (action !== 'created')
+            throw new UnexpectedTxMetaChangeError({type: 'contract', action})
+        const {kind, contract, hash} = after
+        if (this.effects.some(e => e.contract === contract))
+            return //skip contract creation effects processed by top-level createContract operation call
+        const effect = {
+            type: effectTypes.contractCreated,
+            contract,
+            kind,
+            wasmHash: hash
+        }
+        this.addEffect(effect)
+
+    }
+
     processChanges() {
         for (const change of this.changes)
             switch (change.type) {
@@ -703,8 +721,10 @@ class EffectsAnalyzer {
                     this.processDataEntryChanges(change)
                     break
                 case 'contractData':
-                case 'contractCodeWasm':
                     //this.processContractDataChanges(change)
+                    break
+                case 'contract':
+                    this.processContractChanges(change)
                     break
                 default:
                     throw new UnexpectedTxMetaChangeError(change)
