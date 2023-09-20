@@ -61,7 +61,7 @@ class EventsAnalyzer {
         //diagnostic events
         for (const evt of diagnosticEvents) {
             if (!evt.inSuccessfulContractCall())
-                throw new UnexpectedTxMetaChangeError({type: 'diagnostic_event', action: 'failed'})
+                return //throw new UnexpectedTxMetaChangeError({type: 'diagnostic_event', action: 'failed'})
             //parse event
             const event = evt.event()
             const contractId = event.contractId()
@@ -119,7 +119,7 @@ class EventsAnalyzer {
                 break
             case 'mint': {
                 if (!matchEventTopicsShape(topics, ['address', 'address', 'str?']))
-                    throw new Error('Non-standard event')
+                    return //throw new Error('Non-standard event')
                 const to = xdrParseScVal(topics[1])
                 const amount = processEventBodyValue(body.data())
                 this.effectAnalyzer.addEffect({
@@ -145,13 +145,16 @@ class EventsAnalyzer {
                 break
             case 'clawback': {
                 if (!matchEventTopicsShape(topics, ['address', 'address', 'str?']))
-                    throw new Error('Non-standard event')
-                throw new Error('Check state modifications to confirm the clawback destination')
+                    return //throw new Error('Non-standard event')
                 const admin = xdrParseScVal(topics[1])
                 const from = xdrParseScVal(topics[2])
                 const amount = processEventBodyValue(body.data())
                 this.debit(from, contractId, amount)
-                this.credit(admin, contractId, amount)
+                this.effectAnalyzer.addEffect({
+                    type: effectTypes.assetBurned,
+                    asset: contractId,
+                    amount
+                })
             }
                 break
             //TODO: process token allowance, authorization approval, and admin modification for SAC contracts

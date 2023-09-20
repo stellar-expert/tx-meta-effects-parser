@@ -47,6 +47,8 @@ function parseLedgerEntryChanges(ledgerEntryChanges) {
                 change.type = stateData.entry
                 break
             case 'removed':
+                if (!state && entry._value._arm === 'expiration')
+                    continue //skip expiration processing for now
                 change.before = state
                 change.after = null
                 change.type = state.entry
@@ -90,6 +92,8 @@ function parseEntryData(data) {
         case 'contractData':
             return parseContractData(data)
         case 'contractCode':
+            return undefined
+        case 'expiration':
             return undefined
         default:
             throw new TxMetaEffectParserError(`Unknown meta entry type: ${updatedEntryType}`)
@@ -242,14 +246,12 @@ function parseContractData(value) {
     const data = value.value()
     const owner = parseStateOwnerDataAddress(data.contract())
 
-    const valueAttr = data.body().value().val()
+    const valueAttr = data.val()
     switch (data.key().switch()?.name) {
         case 'scvLedgerKeyContractInstance':  //TODO: try to remove this logic completely
             const entry = {
                 entry: 'contract',
-                contract: owner,
-                expires: data.expirationLedgerSeq()
-                //durability: data.durability().name
+                contract: owner
             }
             const type = valueAttr.instance().executable().switch().name
             switch (type) {
@@ -272,12 +274,11 @@ function parseContractData(value) {
         owner,
         key: data.key().toXDR('base64'),
         value: valueAttr.toXDR('base64'),
-        expires: data.expirationLedgerSeq()
-        //durability: data.durability().name
+        durability: data.durability().name
     }
 }
 
-function parseStateOwnerDataAddress(contract){
+function parseStateOwnerDataAddress(contract) {
     if (contract.switch().name === 'scAddressTypeContract')
         return StrKey.encodeContract(contract.contractId())
     return xdrParseAccountAddress(contract.accountId())

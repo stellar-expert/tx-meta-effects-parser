@@ -254,6 +254,8 @@ function xdrParseScVal(value, treatBytesAsContractId = false) {
             return value._value.executable.wasmHash().toString('base64')
         case 'error':
             return value.toXDR('base64')
+        case 'contractId':
+            return xdrParseContractAddress(value._value)
         default:
             if (value.switch().name === 'scvVoid') //scVoid
                 return undefined

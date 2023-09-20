@@ -270,9 +270,9 @@ class EffectsAnalyzer {
                     //add top-level contract invocation effect only if diagnostic events are unavailable
                     const effect = {
                         type: effectTypes.contractInvoked,
-                        contract: xdrParseScVal(value[0]),
-                        function: xdrParseScVal(value[1]),
-                        args: value.slice(2).map(xdrParseScVal)
+                        contract: xdrParseScVal(value.contractAddress()),
+                        function: value.functionName().toString(),
+                        args: value.args().map(xdrParseScVal)
                     }
                     this.addEffect(effect)
                 }
