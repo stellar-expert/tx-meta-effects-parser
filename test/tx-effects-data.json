@@ -84,10 +84,10 @@
       "expected": [
         {
           "type": "feeCharged",
-          "source": "GCP2QKBFLLEEWYVKAIXIJIJNCZ6XEBIE4PCDB6BF3GUB6FGE2RQ3HDVP",
+          "source": "GBD2ALDOSNTEW2QWQA6RGQXTZVWGFZYTT5DYZDCPPGNOYTXOAQ6RFUAC",
           "asset": "XLM",
-          "bid": "1000000",
-          "charged": "111154"
+          "bid": "10044198",
+          "charged": "42977"
         }
       ]
     }

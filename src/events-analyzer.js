@@ -1,7 +1,5 @@
-const {StrKey, Asset} = require('stellar-base')
-const {xdrParseScVal, xdrParseAsset} = require('./tx-xdr-parser-utils')
-const {UnexpectedTxMetaChangeError, TxMetaEffectParserError} = require('./errors')
-const {contractIdFromAsset} = require('./contract-preimage-encoder')
+const {StrKey} = require('stellar-base')
+const {xdrParseScVal} = require('./tx-xdr-parser-utils')
 const effectTypes = require('./effect-types')
 
 const EVENT_TYPES = {
@@ -132,7 +130,7 @@ class EventsAnalyzer {
                 break
             case 'burn': {
                 if (!matchEventTopicsShape(topics, ['address', 'str?']))
-                    throw new Error('Non-standard event')
+                    return //throw new Error('Non-standard event')
                 const from = xdrParseScVal(topics[1])
                 const amount = processEventBodyValue(body.data())
                 this.debit(from, contractId, amount)
@@ -185,7 +183,8 @@ class EventsAnalyzer {
             }
                 break*/
             default:
-                console.log(`Event ` + xdrParseScVal(topics[0]))
+                //console.log(`Event ` + xdrParseScVal(topics[0]))
+                break
         }
         return null
     }
