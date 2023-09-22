@@ -1,9 +1,10 @@
-const {TransactionBuilder, Networks, xdr} = require('stellar-base')
+const {TransactionBuilder, xdr} = require('stellar-base')
 const {processFeeChargedEffect, analyzeOperationEffects, EffectsAnalyzer} = require('./tx-effects-analyzer')
 const {parseTxResult} = require('./tx-result-parser')
 const {parseLedgerEntryChanges} = require('./ledger-entry-changes-parser')
 const {parseTxMetaChanges} = require('./tx-meta-changes-parser')
 const {analyzeSignerChanges} = require('./signer-changes-analyzer')
+const xdrParserUtils = require('./tx-xdr-parser-utils')
 const effectTypes = require('./effect-types')
 const {TxMetaEffectParserError, UnexpectedTxMetaChangeError} = require('./errors')
 
@@ -156,4 +157,4 @@ function ensureXdrInputType(value, xdrType) {
  * @property {{}[]} [effects]
  */
 
-module.exports = {parseTxOperationsMeta, parseTxResult, analyzeOperationEffects, parseLedgerEntryChanges, parseTxMetaChanges, effectTypes}
+module.exports = {parseTxOperationsMeta, parseTxResult, analyzeOperationEffects, parseLedgerEntryChanges, parseTxMetaChanges, effectTypes, xdrParserUtils}
