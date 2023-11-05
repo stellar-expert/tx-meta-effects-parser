@@ -35,15 +35,19 @@ class EventsAnalyzer {
         //contract-generated events
         for (const evt of events) {
             const body = evt.body().value()
-            const topics = body.topics().map(xdrParseScVal)
+            const rawTopics = body.topics()
+            const topics = rawTopics.map(xdrParseScVal)
             if (topics[0] === 'DATA' && topics[1] === 'set')
                 continue //skip data entries modifications
+            const rawData = body.data()
             //add event to the pipeline
             this.effectAnalyzer.addEffect({
                 type: effectTypes.contractEvent,
                 contract: StrKey.encodeContract(evt.contractId()),
                 topics,
-                data: processEventBodyValue(body.data())
+                rawTopics:rawTopics.map(v => v.toXDR('base64')),
+                data: processEventBodyValue(rawData),
+                rawData: rawData.toXDR('base64')
             })
         }
     }
