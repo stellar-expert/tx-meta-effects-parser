@@ -76,9 +76,9 @@ const effectTypes = {
     liquidityPoolSponsorshipUpdated: 'liquidityPoolSponsorshipUpdated',
     liquidityPoolSponsorshipRemoved: 'liquidityPoolSponsorshipRemoved',
 
-    signerSponsorshipRemoved: 'signerSponsorshipRemoved',
-    signerSponsorshipUpdated: 'signerSponsorshipUpdated',
     signerSponsorshipCreated: 'signerSponsorshipCreated',
+    signerSponsorshipUpdated: 'signerSponsorshipUpdated',
+    signerSponsorshipRemoved: 'signerSponsorshipRemoved',
 
     contractCodeUploaded: 'contractCodeUploaded',
 

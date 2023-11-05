@@ -137,7 +137,8 @@ class EffectsAnalyzer {
         if (before.flags !== after.flags) {
             this.addEffect({
                 type: effectTypes.accountFlagsUpdated,
-                flags: after.flags
+                flags: after.flags,
+                prevFlags: before.flags
             })
         }
         if (before.inflationDest !== after.inflationDest) {
@@ -268,11 +269,13 @@ class EffectsAnalyzer {
             case 'invokeContract':
                 if (!this.diagnosticEvents) {
                     //add top-level contract invocation effect only if diagnostic events are unavailable
+                    const rawArgs = value.args()
                     const effect = {
                         type: effectTypes.contractInvoked,
                         contract: xdrParseScVal(value.contractAddress()),
                         function: value.functionName().toString(),
-                        args: value.args().map(xdrParseScVal)
+                        args: rawArgs.map(xdrParseScVal),
+                        rawArgs: rawArgs.map(arg => arg.toXDR('base64'))
                     }
                     this.addEffect(effect)
                 }

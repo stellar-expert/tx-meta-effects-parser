@@ -77,11 +77,13 @@ class EventsAnalyzer {
         const topics = body.topics()
         switch (xdrParseScVal(topics[0])) {
             case 'fn_call': // contract call
+                const rawArgs = body.data()
                 const parsedEvent = {
                     type: effectTypes.contractInvoked,
                     contract: xdrParseScVal(topics[1], true),
                     function: xdrParseScVal(topics[2]),
-                    args: processEventBodyValue(body.data())
+                    args: processEventBodyValue(rawArgs),
+                    rawArgs: rawArgs._value.map(arg => arg.toXDR('base64'))
                 }
                 //add the invocation to the call stack
                 if (this.callStack.length) {

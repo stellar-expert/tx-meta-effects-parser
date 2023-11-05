@@ -1,4 +1,4 @@
-class Effect{
+class Effect {
     constructor(type, source) {
     }
 
@@ -14,11 +14,11 @@ class Effect{
      */
     source
 
-    toString(){
+    toString() {
         return this.toJSON()
     }
 
-    toJSON(){
+    toJSON() {
 
     }
 }
