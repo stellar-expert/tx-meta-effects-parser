@@ -45,7 +45,7 @@ class EventsAnalyzer {
                 type: effectTypes.contractEvent,
                 contract: StrKey.encodeContract(evt.contractId()),
                 topics,
-                rawTopics:rawTopics.map(v => v.toXDR('base64')),
+                rawTopics: rawTopics.map(v => v.toXDR('base64')),
                 data: processEventBodyValue(rawData),
                 rawData: rawData.toXDR('base64')
             })
@@ -87,7 +87,7 @@ class EventsAnalyzer {
                     contract: xdrParseScVal(topics[1], true),
                     function: xdrParseScVal(topics[2]),
                     args: processEventBodyValue(rawArgs),
-                    rawArgs: rawArgs._value.map(arg => arg.toXDR('base64'))
+                    rawArgs: rawArgs.toXDR('base64')
                 }
                 //add the invocation to the call stack
                 if (this.callStack.length) {

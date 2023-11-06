@@ -1,13 +1,13 @@
 const {StrKey} = require('stellar-base')
+const effectTypes = require('./effect-types')
 const {parseLedgerEntryChanges} = require('./ledger-entry-changes-parser')
 const {xdrParseAsset, xdrParseAccountAddress, xdrParseScVal} = require('./tx-xdr-parser-utils')
 const {encodeSponsorshipEffectName} = require('./analyzer-primitives')
 const {analyzeSignerChanges} = require('./signer-changes-analyzer')
+const {contractIdFromPreimage} = require('./contract-preimage-encoder')
 const EventsAnalyzer = require('./events-analyzer')
 const AssetSupplyProcessor = require('./asset-supply-processor')
 const {UnexpectedTxMetaChangeError, TxMetaEffectParserError} = require('./errors')
-const effectTypes = require('./effect-types')
-const {contractIdFromPreimage} = require('./contract-preimage-encoder')
 
 class EffectsAnalyzer {
     constructor({operation, meta, result, network, events, diagnosticEvents}) {
