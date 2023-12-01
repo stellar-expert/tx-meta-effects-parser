@@ -108,11 +108,13 @@ class EventsAnalyzer {
                 break
             //handle standard token contract events
             case 'transfer': {
+                if (!matchEventTopicsShape(topics, ['address', 'address', 'str?']))
+                    return
                 const from = xdrParseScVal(topics[1])
                 const to = xdrParseScVal(topics[2])
                 const asset = contractId //topics[3]? xdrParseScVal(topics[3]) || contractId
                 const amount = processEventBodyValue(body.data())
-                const isClassicAsset = isContractAddress(asset)
+                const isClassicAsset = isContractAddress(asset) //TODO: check this
                 if (!isClassicAsset || isContractAddress(from)) {
                     this.debit(from, asset, amount)
                 }
