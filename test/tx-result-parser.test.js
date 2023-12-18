@@ -3,7 +3,20 @@ const {parseTxOperationsMeta} = require('../src/index')
 
 const network = 'Test SDF Future Network ; October 2022'
 describe('Effects', () => {
-    test.each(require('./op-effects-data.json'))('Analyze operation effects - %s', (description, {tx, result, meta, expected}) => {
+    test.each(require('./op-effects-data.json'))('Analyze classic operation effects - %s', (description, {tx, result, meta, expected}) => {
+        const res = parseTxOperationsMeta({
+            network,
+            tx,
+            result,
+            meta
+        })
+
+        for (let i = 0; i < res.operations.length; i++) {
+            expect(res.operations[i].effects).toStrictEqual(expected[i])
+        }
+    })
+
+    test.each(require('./soroban-op-effects-data.json'))('Analyze Soroban operation effects - %s', (description, {tx, result, meta, expected}) => {
         const res = parseTxOperationsMeta({
             network,
             tx,
