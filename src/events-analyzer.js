@@ -107,6 +107,7 @@ class EventsAnalyzer {
                 }
                 break
             //handle standard token contract events
+            //see https://github.com/stellar/rs-soroban-sdk/blob/71170fba76e1aa4d50224316f1157f0fb10e6d79/soroban-sdk/src/token.rs
             case 'transfer': {
                 if (!matchEventTopicsShape(topics, ['address', 'address', 'str?']))
                     return
@@ -114,13 +115,13 @@ class EventsAnalyzer {
                 const to = xdrParseScVal(topics[2])
                 const asset = contractId //topics[3]? xdrParseScVal(topics[3]) || contractId
                 const amount = processEventBodyValue(body.data())
-                const isClassicAsset = isContractAddress(asset) //TODO: check this
-                if (!isClassicAsset || isContractAddress(from)) {
-                    this.debit(from, asset, amount)
-                }
-                if (!isClassicAsset || isContractAddress(to)) {
-                    this.credit(to, asset, amount)
-                }
+                if (!this.matchInvocationEffect(e =>
+                    (e.function === 'transfer' && matchArrays([from, to, amount], e.args)) ||
+                    (e.function === 'transferFrom' && matchArrays([undefined, from, to, amount], e.args))
+                ))
+                    return
+                this.debit(from, asset, amount)
+                this.credit(to, asset, amount)
             }
                 break
             case 'mint': {
@@ -128,6 +129,8 @@ class EventsAnalyzer {
                     return //throw new Error('Non-standard event')
                 const to = xdrParseScVal(topics[1])
                 const amount = processEventBodyValue(body.data())
+                if (!this.matchInvocationEffect(e => e.function === 'mint' && matchArrays([to, amount], e.args)))
+                    return
                 this.effectAnalyzer.addEffect({
                     type: effectTypes.assetMinted,
                     asset: contractId,
@@ -141,6 +144,11 @@ class EventsAnalyzer {
                     return //throw new Error('Non-standard event')
                 const from = xdrParseScVal(topics[1])
                 const amount = processEventBodyValue(body.data())
+                if (!this.matchInvocationEffect(e =>
+                    (e.function === 'burn' && matchArrays([from, amount], e.args)) ||
+                    (e.function === 'burn_from' && matchArrays([undefined, from, amount], e.args))
+                ))
+                    return
                 this.debit(from, contractId, amount)
                 this.effectAnalyzer.addEffect({
                     type: effectTypes.assetBurned,
@@ -155,6 +163,8 @@ class EventsAnalyzer {
                 const admin = xdrParseScVal(topics[1])
                 const from = xdrParseScVal(topics[2])
                 const amount = processEventBodyValue(body.data())
+                if (!this.matchInvocationEffect(e => e.function === 'clawback' && matchArrays([from, amount], e.args)))
+                    return
                 this.debit(from, contractId, amount)
                 this.effectAnalyzer.addEffect({
                     type: effectTypes.assetBurned,
@@ -204,13 +214,7 @@ class EventsAnalyzer {
      * @private
      */
     debit(from, asset, amount) {
-        const effect = {
-            type: effectTypes.accountDebited,
-            source: from,
-            asset,
-            amount
-        }
-        this.effectAnalyzer.addEffect(effect)
+        this.effectAnalyzer.debit(amount, asset, from)
 
         //debit from account
         //TODO: check debits of Soroban assets from account
@@ -231,13 +235,7 @@ class EventsAnalyzer {
      * @private
      */
     credit(to, asset, amount) {
-        const effect = {
-            type: effectTypes.accountCredited,
-            source: to,
-            asset,
-            amount
-        }
-        this.effectAnalyzer.addEffect(effect)
+        this.effectAnalyzer.credit(amount, asset, to)
 
         //credit account
         //TODO: check credits of Soroban assets
@@ -249,6 +247,10 @@ class EventsAnalyzer {
             asset: token.asset,
             amount
         })*/
+    }
+
+    matchInvocationEffect(cb) {
+        return this.effectAnalyzer.effects.find(e => e.type = effectTypes.contractInvoked && cb(e))
     }
 }
 
@@ -268,6 +270,18 @@ function matchEventTopicsShape(topics, shape) {
             if (topic._arm !== match)
                 return false
         } else if (!optional)
+            return false
+    }
+    return true
+}
+
+function matchArrays(a, b) {
+    if (!a || !b)
+        return false
+    if (a.length !== b.length)
+        return false
+    for (let i = a.length; i--;) {
+        if (a[i] !== undefined && a[i] !== b[i]) //undefined serves as * substitution
             return false
     }
     return true

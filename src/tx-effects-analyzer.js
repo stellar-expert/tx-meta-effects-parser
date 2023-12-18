@@ -1,4 +1,4 @@
-const {StrKey} = require('stellar-base')
+const {StrKey, hash} = require('stellar-base')
 const effectTypes = require('./effect-types')
 const {parseLedgerEntryChanges} = require('./ledger-entry-changes-parser')
 const {xdrParseAsset, xdrParseAccountAddress, xdrParseScVal} = require('./tx-xdr-parser-utils')
@@ -100,22 +100,26 @@ class EffectsAnalyzer {
     }
 
     debit(amount, asset, source, balance) {
+        if (amount === '0')
+            return
         this.addEffect({
             type: effectTypes.accountDebited,
             source,
             asset,
             amount,
-            balance: balance
+            balance
         })
     }
 
     credit(amount, asset, source, balance) {
+        if (amount === '0')
+            return
         this.addEffect({
             type: effectTypes.accountCredited,
             source,
             asset,
             amount,
-            balance: balance
+            balance
         })
     }
 
@@ -283,7 +287,8 @@ class EffectsAnalyzer {
             case 'wasm':
                 this.addEffect({
                     type: effectTypes.contractCodeUploaded,
-                    wasm: value.toString('base64')
+                    wasm: value.toString('base64'),
+                    wasmHash: hash(value).toString('hex')
                 })
                 break
             case 'createContract':
