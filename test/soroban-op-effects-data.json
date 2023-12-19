@@ -90,10 +90,7 @@
               "EL2ad/NalhnLlaP/8im/lKZ3W81EmiQ9xCy+5gHlGRk=",
               "CAAACAQDAQCQMBYIBEFAWDANBYHRAEISCMKBKFQXDAMRUGY4DUPB6N4O"
             ],
-            "rawArgs": [
-              "AAAADQAAACAQvZp381qWGcuVo//yKb+UpndbzUSaJD3ELL7mAeUZGQ==",
-              "AAAADQAAACAAAQIDBAUGBwgJCgsMDQ4PEBESExQVFhcYGRobHB0eHw=="
-            ]
+            "rawArgs": "AAAAEAAAAAEAAAACAAAADQAAACAQvZp381qWGcuVo//yKb+UpndbzUSaJD3ELL7mAeUZGQAAAA0AAAAgAAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8="
           },
           {
             "type": "contractCreated",
@@ -128,17 +125,15 @@
               ],
               1
             ],
-            "rawArgs": [
-              "AAAAEAAAAAEAAAABAAAAEQAAAAEAAAACAAAADwAAAAR2YWwxAAAABQAAAAAAAAB7AAAADwAAAAR2YWwyAAAABP////s=",
-              "AAAAAwAAAAE="
-            ]
+            "rawArgs": "AAAAEAAAAAEAAAACAAAAEAAAAAEAAAABAAAAEQAAAAEAAAACAAAADwAAAAR2YWwxAAAABQAAAAAAAAB7AAAADwAAAAR2YWwyAAAABP////sAAAADAAAAAQ=="
           },
           {
             "type": "contractDataCreated",
             "source": "GBD2ALDOSNTEW2QWQA6RGQXTZVWGFZYTT5DYZDCPPGNOYTXOAQ6RFUAC",
             "owner": "CAC6EQW2WCFXWEUANOAM3S7N7A6MROFX3ZC27YIS77HAKTJ465BF6BCO",
             "key": "AAAADwAAAAREQVRB",
-            "value": "AAAAEAAAAAEAAAABAAAAEQAAAAEAAAACAAAADwAAAAR2YWwxAAAABQAAAAAAAAB7AAAADwAAAAR2YWwyAAAABP////s="
+            "value": "AAAAEAAAAAEAAAABAAAAEQAAAAEAAAACAAAADwAAAAR2YWwxAAAABQAAAAAAAAB7AAAADwAAAAR2YWwyAAAABP////s=",
+            "durability": "temporary"
           }
         ]
       ]
@@ -161,20 +156,14 @@
               "CAC6EQW2WCFXWEUANOAM3S7N7A6MROFX3ZC27YIS77HAKTJ465BF6BCO",
               2
             ],
-            "rawArgs": [
-              "AAAAEgAAAAEF4kLasIt7EoBrgM3L7fg8yLi33kWv4RL/zgVNPPdCXw==",
-              "AAAAAwAAAAI="
-            ]
+            "rawArgs": "AAAAEAAAAAEAAAACAAAAEgAAAAEF4kLasIt7EoBrgM3L7fg8yLi33kWv4RL/zgVNPPdCXwAAAAMAAAAC"
           },
           {
             "type": "contractInvoked",
             "source": "GBD2ALDOSNTEW2QWQA6RGQXTZVWGFZYTT5DYZDCPPGNOYTXOAQ6RFUAC",
             "contract": "CAC6EQW2WCFXWEUANOAM3S7N7A6MROFX3ZC27YIS77HAKTJ465BF6BCO",
             "function": "set_data",
-            "rawArgs": [
-              "AAAAEAAAAAEAAAABAAAAEQAAAAEAAAACAAAADwAAAAR2YWwxAAAABQAAAAAAAAABAAAADwAAAAR2YWwyAAAABAAAAAE=",
-              "AAAAAwAAAAI="
-            ],
+            "rawArgs": "AAAAEAAAAAEAAAACAAAAEAAAAAEAAAABAAAAEQAAAAEAAAACAAAADwAAAAR2YWwxAAAABQAAAAAAAAABAAAADwAAAAR2YWwyAAAABAAAAAEAAAADAAAAAg==",
             "args": [
               [
                 {
@@ -208,11 +197,7 @@
               "CAC6EQW2WCFXWEUANOAM3S7N7A6MROFX3ZC27YIS77HAKTJ465BF6BCO",
               "100"
             ],
-            "rawArgs": [
-              "AAAAEgAAAAAAAAAAR6AsbpNmS2oWgD0TQvPNbGLnE59HjIxPeZrsTu4EPRI=",
-              "AAAAEgAAAAEF4kLasIt7EoBrgM3L7fg8yLi33kWv4RL/zgVNPPdCXw==",
-              "AAAACgAAAAAAAAAAAAAAAAAAAGQ="
-            ]
+            "rawArgs": "AAAAEAAAAAEAAAADAAAAEgAAAAAAAAAAR6AsbpNmS2oWgD0TQvPNbGLnE59HjIxPeZrsTu4EPRIAAAASAAAAAQXiQtqwi3sSgGuAzcvt+DzIuLfeRa/hEv/OBU0890JfAAAACgAAAAAAAAAAAAAAAAAAAGQ="
           },
           {
             "type": "assetMinted",
@@ -224,7 +209,8 @@
             "type": "accountCredited",
             "source": "CAC6EQW2WCFXWEUANOAM3S7N7A6MROFX3ZC27YIS77HAKTJ465BF6BCO",
             "asset": "CCPY7DW3LQNVWRSF5IV5K3OUWUPKQAT4PVD35FNAJS2SUBXZ67PZCMVH",
-            "amount": "100"
+            "amount": "100",
+            "balance": "100"
           },
           {
             "type": "contractEvent",
@@ -250,7 +236,8 @@
             "source": "GBD2ALDOSNTEW2QWQA6RGQXTZVWGFZYTT5DYZDCPPGNOYTXOAQ6RFUAC",
             "owner": "CCPY7DW3LQNVWRSF5IV5K3OUWUPKQAT4PVD35FNAJS2SUBXZ67PZCMVH",
             "key": "AAAAEAAAAAEAAAACAAAADwAAAAdCYWxhbmNlAAAAABIAAAABBeJC2rCLexKAa4DNy+34PMi4t95Fr+ES/84FTTz3Ql8=",
-            "value": "AAAAEQAAAAEAAAADAAAADwAAAAZhbW91bnQAAAAAAAoAAAAAAAAAAAAAAAAAAABkAAAADwAAAAphdXRob3JpemVkAAAAAAAAAAAAAQAAAA8AAAAIY2xhd2JhY2sAAAAAAAAAAA=="
+            "value": "AAAAEQAAAAEAAAADAAAADwAAAAZhbW91bnQAAAAAAAoAAAAAAAAAAAAAAAAAAABkAAAADwAAAAphdXRob3JpemVkAAAAAAAAAAAAAQAAAA8AAAAIY2xhd2JhY2sAAAAAAAAAAA==",
+            "durability": "persistent"
           }
         ]
       ]

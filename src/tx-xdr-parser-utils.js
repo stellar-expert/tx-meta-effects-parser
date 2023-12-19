@@ -1,4 +1,4 @@
-const {StrKey, LiquidityPoolId, scValToBigInt, xdr} = require('stellar-base')
+const {StrKey, LiquidityPoolId, scValToBigInt, xdr} = require('@stellar/stellar-base')
 const {TxMetaEffectParserError} = require('./errors')
 
 /**

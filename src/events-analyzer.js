@@ -1,4 +1,4 @@
-const {StrKey} = require('stellar-base')
+const {StrKey} = require('@stellar/stellar-base')
 const {xdrParseScVal} = require('./tx-xdr-parser-utils')
 const effectTypes = require('./effect-types')
 
@@ -120,8 +120,13 @@ class EventsAnalyzer {
                     (e.function === 'transferFrom' && matchArrays([undefined, from, to, amount], e.args))
                 ))
                     return
-                this.debit(from, asset, amount)
-                this.credit(to, asset, amount)
+                const isSorobanAsset = isContractAddress(asset)
+                if (!isSorobanAsset || isContractAddress(from)) {
+                    this.debit(from, asset, amount)
+                }
+                if (!isSorobanAsset || isContractAddress(to)) {
+                    this.credit(to, asset, amount)
+                }
             }
                 break
             case 'mint': {
@@ -250,7 +255,7 @@ class EventsAnalyzer {
     }
 
     matchInvocationEffect(cb) {
-        return this.effectAnalyzer.effects.find(e => e.type = effectTypes.contractInvoked && cb(e))
+        return this.effectAnalyzer.effects.find(e => e.type === effectTypes.contractInvoked && cb(e))
     }
 }
 

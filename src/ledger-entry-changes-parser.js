@@ -1,4 +1,4 @@
-const {StrKey} = require('stellar-base')
+const {StrKey} = require('@stellar/stellar-base')
 const {
     xdrParseAsset,
     xdrParseAccountAddress,
@@ -93,7 +93,7 @@ function parseEntryData(data) {
             return parseContractData(data)
         case 'contractCode':
             return undefined
-        case 'expiration':
+        case 'ttl':
             return undefined
         default:
             throw new TxMetaEffectParserError(`Unknown meta entry type: ${updatedEntryType}`)
@@ -248,16 +248,53 @@ function parseContractData(value) {
 
     const valueAttr = data.val()
     switch (data.key().switch()?.name) {
-        case 'scvLedgerKeyContractInstance':  //TODO: try to remove this logic completely
+        case 'scvLedgerKeyContractInstance':
             const entry = {
                 entry: 'contract',
                 contract: owner
             }
             const type = valueAttr.instance().executable().switch().name
             switch (type) {
-                case 'contractExecutableToken':
+                case 'contractExecutableStellarAsset':
                     entry.type = 'token'
-                    return undefined //scvContractInstance does not include any information from contractIdPreimageFromAddress or contractIdPreimageFromAsset, so it's impossible to parse it
+                    /**
+                     * data._attributes.val._value._attributes.storage
+                     *
+                     * ScVal: [scvContractInstance]
+                     * instance
+                     * executable: [contractExecutableStellarAsset]
+                     * storage: Array[3]
+                     * [0]
+                     * key: [scvSymbol]
+                     * sym: METADATA
+                     * val: [scvMap]
+                     * map: Array[3]
+                     * [0]
+                     * key: [scvSymbol]
+                     * sym: decimal
+                     * val: [scvU32]
+                     * u32: 7
+                     * [1]
+                     * key: [scvSymbol]
+                     * sym: name
+                     * val: [scvString]
+                     * str: ICGVCWUQXIHO:GBD2ALDOSNTEW2QWQA6RGQXTZVWGFZYTT5DYZDCPPGNOYTXOAQ6RFUAC
+                     * [2]
+                     * key: [scvSymbol]
+                     * sym: symbol
+                     * val: [scvString]
+                     * str: ICGVCWUQXIHO
+                     * [1]
+                     * key: [scvVec]
+                     * vec: Array[1]
+                     * [0]: [scvSymbol]
+                     * sym: Admin
+                     * val: [scvAddress]
+                     * address: [scAddressTypeAccount]
+                     * accountId: [publicKeyTypeEd25519]
+                     * ed25519: GBD2ALDOSNTEW2QWQA6RGQXTZVWGFZYTT5DYZDCPPGNOYTXOAQ6RFUAC
+                     */
+                    return undefined
                     break
                 case 'contractExecutableWasm':
                     entry.kind = 'wasm'

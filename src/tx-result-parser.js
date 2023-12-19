@@ -1,4 +1,4 @@
-const {xdr} = require('stellar-base')
+const {xdr} = require('@stellar/stellar-base')
 const {xdrParseAccountAddress, xdrParseTradeAtom, xdrParseClaimedOffer, xdrParseAsset} = require('./tx-xdr-parser-utils')
 const {TxMetaEffectParserError} = require('./errors')
 

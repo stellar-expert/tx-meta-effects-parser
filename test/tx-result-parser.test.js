@@ -16,7 +16,7 @@ describe('Effects', () => {
         }
     })
 
-    test.each(require('./soroban-op-effects-data.json'))('Analyze Soroban operation effects - %s', (description, {tx, result, meta, expected}) => {
+    test.each(require('./soroban-op-effects-data.json'))('Analyze Soroban effects - %s', (description, {tx, result, meta, expected}) => {
         const res = parseTxOperationsMeta({
             network,
             tx,

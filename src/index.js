@@ -1,4 +1,4 @@
-const {TransactionBuilder, xdr} = require('stellar-base')
+const {TransactionBuilder, xdr} = require('@stellar/stellar-base')
 const {processFeeChargedEffect, analyzeOperationEffects, EffectsAnalyzer} = require('./tx-effects-analyzer')
 const {parseTxResult} = require('./tx-result-parser')
 const {parseLedgerEntryChanges} = require('./ledger-entry-changes-parser')

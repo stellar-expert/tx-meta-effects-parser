@@ -1,4 +1,4 @@
-const {StrKey, hash} = require('stellar-base')
+const {StrKey, hash, xdr, nativeToScVal} = require('@stellar/stellar-base')
 const effectTypes = require('./effect-types')
 const {parseLedgerEntryChanges} = require('./ledger-entry-changes-parser')
 const {xdrParseAsset, xdrParseAccountAddress, xdrParseScVal} = require('./tx-xdr-parser-utils')
@@ -102,25 +102,31 @@ class EffectsAnalyzer {
     debit(amount, asset, source, balance) {
         if (amount === '0')
             return
-        this.addEffect({
+        const effect = {
             type: effectTypes.accountDebited,
             source,
             asset,
-            amount,
-            balance
-        })
+            amount
+        }
+        if (balance !== undefined) {
+            effect.balance = balance
+        }
+        this.addEffect(effect)
     }
 
     credit(amount, asset, source, balance) {
         if (amount === '0')
             return
-        this.addEffect({
+        const effect = {
             type: effectTypes.accountCredited,
             source,
             asset,
-            amount,
-            balance
-        })
+            amount
+        }
+        if (balance !== undefined) {
+            effect.balance = balance
+        }
+        this.addEffect(effect)
     }
 
     setOptions() {
@@ -279,7 +285,7 @@ class EffectsAnalyzer {
                         contract: xdrParseScVal(value.contractAddress()),
                         function: value.functionName().toString(),
                         args: rawArgs.map(xdrParseScVal),
-                        rawArgs: rawArgs.map(arg => arg.toXDR('base64'))
+                        rawArgs: nativeToScVal(rawArgs).toXDR('base64')
                     }
                     this.addEffect(effect)
                 }
@@ -305,7 +311,7 @@ class EffectsAnalyzer {
                         effect.kind = 'wasm'
                         effect.wasmHash = executable.wasmHash().toString('hex')
                         break
-                    case 'contractExecutableToken':
+                    case 'contractExecutableStellarAsset':
                         const preimageParams = preimage.value()
                         switch (preimage.switch().name) {
                             case 'contractIdPreimageFromAddress':
@@ -665,12 +671,13 @@ class EffectsAnalyzer {
     }
 
     processContractDataChanges({action, before, after}) {
-        const {owner, key, value} = after || before
+        const {owner, key, value, durability} = after || before
         const effect = {
             type: '',
             owner,
             key,
-            value
+            value,
+            durability
         }
         switch (action) {
             case 'created':
@@ -687,6 +694,34 @@ class EffectsAnalyzer {
                 break
         }
         this.addEffect(effect)
+        this.processContractBalance(effect)
+    }
+
+    processContractBalance(effect) {
+        const parsedKey = xdr.ScVal.fromXDR(effect.key, 'base64')
+        if (parsedKey._arm !== 'vec')
+            return
+        const keyParts = parsedKey._value
+        if (!(keyParts instanceof Array) || keyParts.length !== 2)
+            return
+        if (keyParts[0]._arm !== 'sym' || keyParts[1]._arm !== 'address' || keyParts[0]._value.toString() !== 'Balance')
+            return
+        const account = xdrParseScVal(keyParts[1])
+        const balanceEffects = this.effects.filter(e => (e.type === effectTypes.accountCredited || e.type === effectTypes.accountDebited) && e.source === account && e.asset === effect.owner)
+        if (balanceEffects.length !== 1) //we can set balance only when we found 1-1 mapping, if there are several balance changes, we can't establish balance relation
+            return
+        if (effect.type === effectTypes.contractDataRemoved) { //balance completely removed
+            balanceEffects[0].balance = '0'
+            return
+        }
+        const value = xdr.ScVal.fromXDR(effect.value, 'base64')
+        if (value._arm !== 'map')
+            return
+        const parsedValue = xdrParseScVal(value)
+        if (typeof parsedValue.clawback !== 'boolean' || typeof parsedValue.authorized !== 'boolean' || typeof parsedValue.amount !== 'string')
+            return
+        //set transfer effect balance
+        balanceEffects[0].balance = parsedValue.amount
     }
 
     processContractChanges({action, after}) {

@@ -1,4 +1,4 @@
-const {StrKey} = require('stellar-base')
+const {StrKey} = require('@stellar/stellar-base')
 const effectTypes = require('./effect-types')
 const {UnexpectedTxMetaChangeError} = require('./errors')
 
