@@ -1,6 +1,5 @@
 {
   "name": "@stellar-expert/tx-meta-effects-parser",
-  "private": true,
   "version": "5.0.0-beta10",
   "description": "Low-level effects parser for Stellar transaction results and meta XDR",
   "main": "src/index.js",
@@ -15,7 +14,7 @@
   "devDependencies": {
     "@babel/core": "^7.22.9",
     "@babel/preset-env": "^7.22.9",
-    "@stellar-expert/eslint-config-js": "github:stellar-expert/eslint-config-js",
+    "@stellar-expert/eslint-config-js": "^1.1.0",
     "babel-jest": "^29.6.1",
     "jest": "^29.6.1"
   }

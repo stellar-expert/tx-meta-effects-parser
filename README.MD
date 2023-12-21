@@ -10,13 +10,7 @@ directly from the transaction execution result and metadata.
 ## Installation
 
 ```
-npm i github:@stellar-expert/tx-meta-effects-parser
-```
-
-To install a specific version of this library, use `#` tag notation: 
-
-```
-npm i github:@stellar-expert/tx-meta-effects-parser#v2.2.0
+npm i @stellar-expert/tx-meta-effects-parser
 ```
 
 ## Usage
