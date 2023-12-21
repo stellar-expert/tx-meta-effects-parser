@@ -74,7 +74,7 @@ function parseRawOpResult(rawOpResult) {
         case 'liquidityPoolDepositSuccess':
         case 'liquidityPoolWithdrawSuccess':
         case 'restoreFootprintSuccess':
-        case 'bumpFootprintExpirationSuccess':
+        case 'extendFootprintTtlSuccess':
             break //no extra info available
         default:
             throw new TxMetaEffectParserError(`Unknown op result: ${successOpResultType.name}`)

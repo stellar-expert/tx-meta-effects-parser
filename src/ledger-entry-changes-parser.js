@@ -47,7 +47,7 @@ function parseLedgerEntryChanges(ledgerEntryChanges) {
                 change.type = stateData.entry
                 break
             case 'removed':
-                if (!state && entry._value._arm === 'expiration')
+                if (!state && entry._value._arm === 'ttl')
                     continue //skip expiration processing for now
                 change.before = state
                 change.after = null
