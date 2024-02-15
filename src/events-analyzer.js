@@ -79,6 +79,8 @@ class EventsAnalyzer {
      */
     processDiagnosticEvent(body, type, contractId) {
         const topics = body.topics()
+        if (!topics?.length)
+            return null
         switch (xdrParseScVal(topics[0])) {
             case 'fn_call': // contract call
                 const rawArgs = body.data()
