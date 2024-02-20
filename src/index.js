@@ -79,7 +79,8 @@ function parseTxOperationsMeta({network, tx, result, meta}) {
     }
 
     //process fee charge
-    res.effects = [processFeeChargedEffect(tx, tx.feeSource || parsedTx.source, result.feeCharged().toString(), isFeeBump)]
+    const feeEffect = processFeeChargedEffect(tx, tx.feeSource || parsedTx.source, result.feeCharged().toString(), isFeeBump)
+    res.effects = [feeEffect]
 
     //check execution result
     const {success, opResults} = parseTxResult(parsedResult)
@@ -95,7 +96,7 @@ function parseTxOperationsMeta({network, tx, result, meta}) {
     //retrieve operations result metadata
     try {
         meta = ensureXdrInputType(meta, xdr.TransactionMeta)
-    } catch {
+    } catch (e) {
         throw new TxMetaEffectParserError('Invalid transaction metadata XDR. ' + e.message)
     }
 
@@ -107,6 +108,9 @@ function parseTxOperationsMeta({network, tx, result, meta}) {
             effect.source = (before || after).address
             res.effects.push(effect)
         }
+        if (before.balance !== after.balance) { //
+            feeEffect.charged = (BigInt(feeEffect.charged) - BigInt(after.balance) + BigInt(before.balance)).toString()
+        }
     }
     const metaValue = meta.value()
     const opMeta = metaValue.operations()
@@ -117,8 +121,8 @@ function parseTxOperationsMeta({network, tx, result, meta}) {
         if (success) {
             const params = {
                 operation,
-                meta:opMeta[i]?.changes(),
-                result:opResults[i],network
+                meta: opMeta[i]?.changes(),
+                result: opResults[i], network
             }
             //only for Soroban contract invocation
             if (operation.type === 'invokeHostFunction') {
@@ -158,4 +162,13 @@ function ensureXdrInputType(value, xdrType) {
  * @property {{}[]} [effects]
  */
 
-module.exports = {parseTxOperationsMeta, parseTxResult, analyzeOperationEffects, parseLedgerEntryChanges, parseTxMetaChanges, effectTypes, xdrParserUtils, contractPreimageEncoder}
+module.exports = {
+    parseTxOperationsMeta,
+    parseTxResult,
+    analyzeOperationEffects,
+    parseLedgerEntryChanges,
+    parseTxMetaChanges,
+    effectTypes,
+    xdrParserUtils,
+    contractPreimageEncoder
+}
