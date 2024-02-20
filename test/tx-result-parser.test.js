@@ -1,11 +1,20 @@
 /*eslint-disable no-undef */
+const {Networks} = require('@stellar/stellar-base')
 const {parseTxOperationsMeta} = require('../src/index')
 
-const network = 'Test SDF Future Network ; October 2022'
+function resolveNetwork(network) {
+    if (!network)
+        return 'Test SDF Future Network ; October 2022' //futurenet by default
+    if (network.includes(' '))
+        return network
+    return Networks[network.toUpperCase()] //predefined
+}
+
 describe('Effects', () => {
-    test.each(require('./op-effects-data.json'))('Analyze classic operation effects - %s', (description, {tx, result, meta, expected}) => {
+    test.each(require('./op-effects-data.json'))('Analyze classic operation effects - %s', (description, params) => {
+        const {tx, result, meta, expected, network} = params
         const res = parseTxOperationsMeta({
-            network,
+            network: resolveNetwork(network),
             tx,
             result,
             meta
@@ -16,9 +25,10 @@ describe('Effects', () => {
         }
     })
 
-    test.each(require('./soroban-op-effects-data.json'))('Analyze Soroban effects - %s', (description, {tx, result, meta, expected}) => {
+    test.each(require('./soroban-op-effects-data.json'))('Analyze Soroban effects - %s', (description, params) => {
+        const {tx, result, meta, expected, network} = params
         const res = parseTxOperationsMeta({
-            network,
+            network: resolveNetwork(network),
             tx,
             result,
             meta
@@ -29,10 +39,11 @@ describe('Effects', () => {
         }
     })
 
-    test.each(require('./tx-effects-data.json'))('Analyze transaction effects - %s', (description, {tx, result, meta, expected}) => {
+    test.each(require('./tx-effects-data.json'))('Analyze transaction effects - %s', (description, params) => {
+        const {tx, result, meta, expected, network} = params
         //merge account
         const res = parseTxOperationsMeta({
-            network,
+            network: resolveNetwork(network),
             tx,
             result,
             meta

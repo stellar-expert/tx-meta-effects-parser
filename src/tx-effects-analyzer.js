@@ -15,6 +15,7 @@ class EffectsAnalyzer {
         if (!operation.source)
             throw new TxMetaEffectParserError('Operation source is not explicitly defined')
         this.operation = operation
+        this.isContractCall = this.operation.type === 'invokeHostFunction'
         this.result = result
         this.changes = parseLedgerEntryChanges(meta)
         this.source = this.operation.source
@@ -27,7 +28,7 @@ class EffectsAnalyzer {
 
     /**
      * @type {{}[]}
-     * @private
+     * @internal
      * @readonly
      */
     effects = []
@@ -60,6 +61,11 @@ class EffectsAnalyzer {
      * @readonly
      */
     source = ''
+    /**
+     * @type {boolean}
+     * @private
+     */
+    isContractCall = false
 
     analyze() {
         //find appropriate parsing method
@@ -74,13 +80,12 @@ class EffectsAnalyzer {
         //process Soroban events
         new EventsAnalyzer(this).analyze()
         //calculate minted/burned assets
-        this.processAssetSupplyEffects()
+        new AssetSupplyProcessor(this).analyze()
         //process state data changes in the end
         for (const change of this.changes)
             if (change.type === 'contractData') {
                 this.processContractDataChanges(change)
             }
-
         return this.effects
     }
 
@@ -127,6 +132,25 @@ class EffectsAnalyzer {
             effect.balance = balance
         }
         this.addEffect(effect)
+    }
+
+    mint(asset, amount, autoLookupPosition = false) {
+        const position = autoLookupPosition ?
+            this.effects.findIndex(e => e.asset === asset || e.assets?.find(a => a.asset === asset)) :
+            undefined
+        this.addEffect({
+            type: effectTypes.assetMinted,
+            asset,
+            amount
+        }, position)
+    }
+
+    burn(asset, amount) {
+        this.addEffect({
+            type: effectTypes.assetBurned,
+            asset,
+            amount
+        })
     }
 
     setOptions() {
@@ -772,15 +796,6 @@ class EffectsAnalyzer {
                 default:
                     throw new UnexpectedTxMetaChangeError(change)
             }
-    }
-
-    processAssetSupplyEffects() {
-        const supplyProcessor = new AssetSupplyProcessor(this.effects)
-        for (const effect of supplyProcessor.resolve()) {
-            this.addEffect(effect, effect.type === effectTypes.assetMinted ?
-                this.effects.findIndex(e => e.asset === effect.asset || e.assets?.find(a => a.asset === effect.asset)) :
-                undefined)
-        }
     }
 }
 

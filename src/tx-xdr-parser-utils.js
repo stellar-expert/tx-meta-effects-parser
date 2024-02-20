@@ -1,5 +1,27 @@
-const {StrKey, LiquidityPoolId, scValToBigInt, xdr} = require('@stellar/stellar-base')
+const {StrKey, LiquidityPoolId, scValToBigInt, xdr, Asset} = require('@stellar/stellar-base')
 const {TxMetaEffectParserError} = require('./errors')
+
+/**
+ * @param {String} address
+ * @return {Boolean}
+ */
+function isContractAddress(address) {
+    return address.length === 56 && address[0] === 'C'
+}
+
+/**
+ * @param {String} assetDescriptor
+ * @return {Asset}
+ */
+function toStellarAsset(assetDescriptor) {
+    if (assetDescriptor === 'XLM')
+        return Asset.native()
+    if (assetDescriptor.includes('-')) {
+        const [code, issuer] = assetDescriptor.split('-')
+        return new Asset(code, issuer)
+    }
+    throw new TypeError('Unsupported asset format ' + assetDescriptor)
+}
 
 /**
  * Parse account address from XDR representation
@@ -195,12 +217,14 @@ function xdrParseAsset(src) {
     }
 
     if (typeof src === 'string') {
-        if (src === 'XLM' || src === 'native' || src.includes('-'))
+        if (src === 'XLM' || src === 'native')
             return 'XLM'//already parsed value
         if (src.includes(':')) {
             const [code, issuer] = src.split(':')
             return `${code.replace(/\0+$/, '')}-${issuer}-${code.length > 4 ? 2 : 1}`
         }
+        if (src.includes('-'))
+            return src //already parsed
         if (src.length === 64)
             return src //pool id
     }
@@ -272,5 +296,7 @@ module.exports = {
     xdrParseTradeAtom,
     xdrParseSignerKey,
     xdrParsePrice,
-    xdrParseScVal
+    xdrParseScVal,
+    isContractAddress,
+    toStellarAsset
 }

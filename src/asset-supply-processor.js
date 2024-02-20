@@ -4,20 +4,25 @@ const effectTypes = require('./effect-types')
  * Effect supply computation processor
  */
 class AssetSupplyProcessor {
-    constructor(effects) {
+    /**
+     * @param {EffectsAnalyzer} effectsAnalyzer
+     */
+    constructor(effectsAnalyzer) {
         this.assetTransfers = {}
-        this.processXlmBalances = effects.some(e => e.type === 'contractInvoked')
-        for (const effect of effects) {
-            this.processEffect(effect)
-        }
+        this.processXlmBalances = effectsAnalyzer.isContractCall
+        this.effectsAnalyzer = effectsAnalyzer
     }
 
+    /**
+     * @type {EffectsAnalyzer}
+     * @private
+     */
+    effectsAnalyzer
     /**
      * @type {Object.<String,BigInt>}
      * @private
      */
     assetTransfers
-
     /**
      * @type {Boolean}
      * @private
@@ -70,28 +75,18 @@ class AssetSupplyProcessor {
 
     /**
      * Calculate differences and generate minted/burned effects if needed
-     * @return {{}[]}
      */
-    resolve() {
-        const res = []
-        for (const [asset, amount] of Object.entries(this.assetTransfers)) {
-            if (amount === 0n)
-                continue
-            const effect = {
-                type: effectTypes.assetMinted,
-                asset
-            }
-            if (amount > 0n) {
-                effect.type = effectTypes.assetMinted
-                effect.amount = amount.toString()
-            }
-            if (amount < 0n) {
-                effect.type = effectTypes.assetBurned
-                effect.amount = (-amount).toString()
-            }
-            res.push(effect)
+    analyze() {
+        for (const effect of this.effectsAnalyzer.effects) {
+            this.processEffect(effect)
         }
-        return res
+        for (const [asset, amount] of Object.entries(this.assetTransfers)) {
+            if (amount > 0n) {
+                this.effectsAnalyzer.mint(asset, amount.toString(), true)
+            } else if (amount < 0n) {
+                this.effectsAnalyzer.burn(asset, (-amount).toString())
+            }
+        }
     }
 
     /**

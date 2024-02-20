@@ -1,5 +1,6 @@
 const {StrKey} = require('@stellar/stellar-base')
-const {xdrParseScVal} = require('./tx-xdr-parser-utils')
+const {xdrParseScVal, xdrParseAsset, isContractAddress, toStellarAsset} = require('./tx-xdr-parser-utils')
+const {contractIdFromAsset} = require('./contract-preimage-encoder')
 const effectTypes = require('./effect-types')
 
 const EVENT_TYPES = {
@@ -115,20 +116,46 @@ class EventsAnalyzer {
                     return
                 const from = xdrParseScVal(topics[1])
                 const to = xdrParseScVal(topics[2])
-                const asset = contractId //topics[3]? xdrParseScVal(topics[3]) || contractId
+                if (to === from) //self transfer - nothing happens
+                    return // TODO: need additional checks
+                const sorobanAsset = contractId
                 const amount = processEventBodyValue(body.data())
                 if (!this.matchInvocationEffect(e =>
                     (e.function === 'transfer' && matchArrays([from, to, amount], e.args)) ||
                     (e.function === 'transfer_from' && matchArrays([undefined, from, to, amount], e.args))
                 ))
                     return
-                const isSorobanAsset = isContractAddress(asset)
-                if (!isSorobanAsset || isContractAddress(from)) {
-                    this.debit(from, asset, amount)
+                let classicAsset
+                if (topics.length > 3) {
+                    classicAsset = xdrParseAsset(xdrParseScVal(topics[3]))
+                    //validate
+                    if (contractIdFromAsset(toStellarAsset(classicAsset), this.effectAnalyzer.network) !== sorobanAsset)
+                        return //not an SAC transfer
                 }
-                if (!isSorobanAsset || isContractAddress(to)) {
-                    this.credit(to, asset, amount)
+                if (classicAsset && (classicAsset.includes(from) || classicAsset.includes(to))) { //SAC transfer by asset issuer
+                    if (classicAsset.includes(from)) {
+                        this.effectAnalyzer.mint(sorobanAsset, amount)
+                        this.effectAnalyzer.credit(amount, isContractAddress(to) ? sorobanAsset : classicAsset, to)
+                    }
+                    if (classicAsset.includes(to)) {
+                        this.effectAnalyzer.debit(amount, isContractAddress(from) ? sorobanAsset : classicAsset, from)
+                        this.effectAnalyzer.burn(sorobanAsset, amount)
+                    }
+                } else { //other cases
+                    if (classicAsset && !isContractAddress(from)) { //classic asset bridged to Soroban
+                        this.effectAnalyzer.burn(classicAsset, amount)
+                        this.effectAnalyzer.mint(sorobanAsset, amount)
+                    } else {
+                        this.effectAnalyzer.debit(amount, isContractAddress(from) ? sorobanAsset : classicAsset, from)
+                    }
+                    if (classicAsset && !isContractAddress(to)) { //classic asset bridged from Soroban
+                        this.effectAnalyzer.burn(sorobanAsset, amount)
+                        this.effectAnalyzer.mint(classicAsset, amount)
+                    } else {
+                        this.effectAnalyzer.credit(amount, isContractAddress(to) ? sorobanAsset : classicAsset, to)
+                    }
                 }
+
             }
                 break
             case 'mint': {
@@ -143,7 +170,7 @@ class EventsAnalyzer {
                     asset: contractId,
                     amount
                 })
-                this.credit(to, contractId, amount)
+                this.effectAnalyzer.credit(amount, contractId, to)
             }
                 break
             case 'burn': {
@@ -156,12 +183,9 @@ class EventsAnalyzer {
                     (e.function === 'burn_from' && matchArrays([undefined, from, amount], e.args))
                 ))
                     return
-                this.debit(from, contractId, amount)
-                this.effectAnalyzer.addEffect({
-                    type: effectTypes.assetBurned,
-                    asset: contractId,
-                    amount
-                })
+
+                this.effectAnalyzer.debit(amount, contractId, from)
+                this.effectAnalyzer.burn(contractId, amount)
             }
                 break
             case 'clawback': {
@@ -172,12 +196,8 @@ class EventsAnalyzer {
                 const amount = processEventBodyValue(body.data())
                 if (!this.matchInvocationEffect(e => e.function === 'clawback' && matchArrays([from, amount], e.args)))
                     return
-                this.debit(from, contractId, amount)
-                this.effectAnalyzer.addEffect({
-                    type: effectTypes.assetBurned,
-                    asset: contractId,
-                    amount
-                })
+                this.effectAnalyzer.debit(amount, contractId, from)
+                this.effectAnalyzer.burn(contractId, amount)
             }
                 break
             //TODO: process token allowance, authorization approval, and admin modification for SAC contracts
@@ -212,48 +232,6 @@ class EventsAnalyzer {
                 break
         }
         return null
-    }
-
-    /**
-     * @param {String} from
-     * @param {String} asset
-     * @param {String} amount
-     * @private
-     */
-    debit(from, asset, amount) {
-        this.effectAnalyzer.debit(amount, asset, from)
-
-        //debit from account
-        //TODO: check debits of Soroban assets from account
-        //if (token.anchoredAsset)
-        //return //skip processing changes for classic assets - they are processed elsewhere
-        /*this.effectAnalyzer.addEffect({
-            type: effectTypes.accountDebited,
-            source: from,
-            asset: token.asset,
-            amount
-        })*/
-    }
-
-    /**
-     * @param {String} to
-     * @param {String} asset
-     * @param {String} amount
-     * @private
-     */
-    credit(to, asset, amount) {
-        this.effectAnalyzer.credit(amount, asset, to)
-
-        //credit account
-        //TODO: check credits of Soroban assets
-        //if (token.anchoredAsset)
-        //return //skip processing changes for classic assets - they are processed elsewhere
-        /*this.effectAnalyzer.addEffect({
-            type: effectTypes.accountCredited,
-            source: to,
-            asset: token.asset,
-            amount
-        })*/
     }
 
     matchInvocationEffect(cb) {
@@ -301,10 +279,6 @@ function processEventBodyValue(value) {
     if (!innerValue) //scVoid
         return undefined
     return xdrParseScVal(value) //other scValue
-}
-
-function isContractAddress(address) {
-    return address.length === 56 && address[0] === 'C'
 }
 
 module.exports = EventsAnalyzer
