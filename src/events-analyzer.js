@@ -146,13 +146,13 @@ class EventsAnalyzer {
                         this.effectAnalyzer.burn(classicAsset, amount)
                         this.effectAnalyzer.mint(sorobanAsset, amount)
                     } else {
-                        this.effectAnalyzer.debit(amount, isContractAddress(from) ? sorobanAsset : classicAsset, from)
+                        this.effectAnalyzer.debit(amount, sorobanAsset, from)
                     }
                     if (classicAsset && !isContractAddress(to)) { //classic asset bridged from Soroban
                         this.effectAnalyzer.burn(sorobanAsset, amount)
                         this.effectAnalyzer.mint(classicAsset, amount)
                     } else {
-                        this.effectAnalyzer.credit(amount, isContractAddress(to) ? sorobanAsset : classicAsset, to)
+                        this.effectAnalyzer.credit(amount, sorobanAsset, to)
                     }
                 }
 
