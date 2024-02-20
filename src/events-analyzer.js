@@ -119,7 +119,7 @@ class EventsAnalyzer {
                 const amount = processEventBodyValue(body.data())
                 if (!this.matchInvocationEffect(e =>
                     (e.function === 'transfer' && matchArrays([from, to, amount], e.args)) ||
-                    (e.function === 'transferFrom' && matchArrays([undefined, from, to, amount], e.args))
+                    (e.function === 'transfer_from' && matchArrays([undefined, from, to, amount], e.args))
                 ))
                     return
                 const isSorobanAsset = isContractAddress(asset)
