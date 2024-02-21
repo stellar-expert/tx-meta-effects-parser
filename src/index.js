@@ -31,17 +31,18 @@ function parseTxOperationsMeta({network, tx, result, meta}) {
     } catch (e) {
         throw new TxMetaEffectParserError('Invalid transaction envelope XDR. ' + e.message)
     }
-    try {
-        result = ensureXdrInputType(result, xdr.TransactionResult)
-    } catch (e) {
+    if (!isEphemeral) {
         try {
-            const pair = ensureXdrInputType(result, xdr.TransactionResultPair)
-            result = pair.result()
-        } catch {
-            throw new TxMetaEffectParserError('Invalid transaction result XDR. ' + e.message)
+            result = ensureXdrInputType(result, xdr.TransactionResult)
+        } catch (e) {
+            try {
+                const pair = ensureXdrInputType(result, xdr.TransactionResultPair)
+                result = pair.result()
+            } catch {
+                throw new TxMetaEffectParserError('Invalid transaction result XDR. ' + e.message)
+            }
         }
     }
-
     tx = TransactionBuilder.fromXDR(tx, network)
 
     let parsedTx = tx
@@ -78,9 +79,14 @@ function parseTxOperationsMeta({network, tx, result, meta}) {
         }
     }
 
+    res.effects = []
+
+    if (isEphemeral)
+        return res //do not parse meta for unsubmitted/rejected transactions
+
     //process fee charge
     const feeEffect = processFeeChargedEffect(tx, tx.feeSource || parsedTx.source, result.feeCharged().toString(), isFeeBump)
-    res.effects = [feeEffect]
+    res.effects.push(feeEffect)
 
     //check execution result
     const {success, opResults} = parseTxResult(parsedResult)
@@ -88,10 +94,6 @@ function parseTxOperationsMeta({network, tx, result, meta}) {
         res.failed = true
         return res
     }
-
-    //do not parse meta for unsubmitted/rejected transactions
-    if (isEphemeral)
-        return res
 
     //retrieve operations result metadata
     try {
