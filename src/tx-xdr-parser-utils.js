@@ -47,7 +47,7 @@ function xdrParseAccountAddress(accountId, muxedAccountsSupported = false) {
                 throw new TxMetaEffectParserError(`Unsupported account type: ${accountId.arm()}`)
         }
     }
-    if (accountId instanceof Buffer) {
+    if (accountId instanceof Uint8Array) {
         return StrKey.encodeEd25519PublicKey(accountId)
     }
     throw new TypeError(`Failed to identify and parse account address: ${accountId}`)
