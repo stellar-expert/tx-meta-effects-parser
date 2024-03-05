@@ -110,8 +110,12 @@ function parseTxOperationsMeta({network, tx, result, meta}) {
             effect.source = (before || after).address
             res.effects.push(effect)
         }
-        if (before.balance !== after.balance) { //
-            feeEffect.charged = (BigInt(feeEffect.charged) - BigInt(after.balance) + BigInt(before.balance)).toString()
+        if (isFeeBump && before.balance !== after.balance) { //fee bump fee calculation bug
+            const currentFee = BigInt(feeEffect.charged)
+            const diff = BigInt(after.balance) - BigInt(before.balance)
+            if (diff < currentFee) { // do not allow negative fee
+                feeEffect.charged = (currentFee - diff).toString()
+            }
         }
     }
     const metaValue = meta.value()
