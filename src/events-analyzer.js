@@ -161,7 +161,7 @@ class EventsAnalyzer {
             case 'mint': {
                 if (!matchEventTopicsShape(topics, ['address', 'address', 'str?']))
                     return //throw new Error('Non-standard event')
-                const to = xdrParseScVal(topics[1])
+                const to = xdrParseScVal(topics[2])
                 const amount = processEventBodyValue(body.data())
                 if (!this.matchInvocationEffect(e => e.function === 'mint' && matchArrays([to, amount], e.args)))
                     return
@@ -191,7 +191,6 @@ class EventsAnalyzer {
             case 'clawback': {
                 if (!matchEventTopicsShape(topics, ['address', 'address', 'str?']))
                     return //throw new Error('Non-standard event')
-                const admin = xdrParseScVal(topics[1])
                 const from = xdrParseScVal(topics[2])
                 const amount = processEventBodyValue(body.data())
                 if (!this.matchInvocationEffect(e => e.function === 'clawback' && matchArrays([from, amount], e.args)))
