@@ -145,12 +145,12 @@ class EffectsAnalyzer {
         }, position)
     }
 
-    burn(asset, amount) {
+    burn(asset, amount, position = undefined) {
         this.addEffect({
             type: effectTypes.assetBurned,
             asset,
             amount
-        })
+        }, position)
     }
 
     setOptions() {
@@ -694,33 +694,6 @@ class EffectsAnalyzer {
         this.addEffect(effect)
     }
 
-    processContractDataChanges({action, before, after}) {
-        const {owner, key, value, durability} = after || before
-        const effect = {
-            type: '',
-            owner,
-            key,
-            value,
-            durability
-        }
-        switch (action) {
-            case 'created':
-                effect.type = effectTypes.contractDataCreated
-                break
-            case 'updated':
-                if (before.value === after.value)
-                    return //value has not changed
-                effect.type = effectTypes.contractDataUpdated
-                break
-            case 'removed':
-                effect.type = effectTypes.contractDataRemoved
-                delete effect.value
-                break
-        }
-        this.addEffect(effect)
-        this.processContractBalance(effect)
-    }
-
     processContractBalance(effect) {
         const parsedKey = xdr.ScVal.fromXDR(effect.key, 'base64')
         if (parsedKey._arm !== 'vec')
@@ -748,22 +721,108 @@ class EffectsAnalyzer {
         balanceEffects[0].balance = parsedValue.amount
     }
 
-    processContractChanges({action, after}) {
-        if (action === 'updated')
-            return // TODO: check whether any contract properties changed
-        if (action !== 'created')
+    processContractChanges({action, before, after}) {
+        if (action !== 'created' && action !== 'updated')
             throw new UnexpectedTxMetaChangeError({type: 'contract', action})
         const {kind, contract, hash} = after
-        if (this.effects.some(e => e.contract === contract))
-            return //skip contract creation effects processed by top-level createContract operation call
         const effect = {
             type: effectTypes.contractCreated,
             contract,
             kind,
             wasmHash: hash
         }
+        if (action === 'created') {
+            if (this.effects.some(e => e.contract === contract))
+                return //skip contract creation effects processed by top-level createContract operation call
+        } else if (action === 'updated') {
+            effect.type = effectTypes.contractUpdated
+            effect.prevWasmHash = before.hash
+            if (before.storage?.length || after.storage?.length) {
+                this.processInstanceDataChanges(before, after)
+            }
+            if (before.hash === hash) //skip if hash unchanged
+                return
+        }
         this.addEffect(effect)
+    }
 
+    processContractDataChanges({action, before, after}) {
+        const {owner, key, durability} = after || before
+        const effect = {
+            type: '',
+            owner,
+            durability,
+            key
+        }
+        switch (action) {
+            case 'created':
+                effect.type = effectTypes.contractDataCreated
+                effect.value = after.value
+                break
+            case 'updated':
+                if (before.value === after.value)
+                    return //value has not changed
+                effect.type = effectTypes.contractDataUpdated
+                effect.value = after.value
+                effect.prevValue = before.value
+                break
+            case 'removed':
+                effect.type = effectTypes.contractDataRemoved
+                effect.prevValue = before.value
+                break
+        }
+        this.addEffect(effect)
+        this.processContractBalance(effect)
+    }
+
+    processInstanceDataChanges(before, after) {
+        const storageBefore = before.storage
+        const storageAfter = [...after.storage || []]
+        for (const {key, val} of storageBefore) {
+            let newVal
+            for (let i = 0; i < storageAfter.length; i++) {
+                const afterValue = storageAfter[i]
+                if (afterValue.key === key) {
+                    newVal = afterValue.val //update new value
+                    storageAfter.splice(i, 1) //remove from array to simplify iteration
+                    break
+                }
+            }
+            if (newVal === undefined) { //removed
+                const effect = {
+                    type: effectTypes.contractDataRemoved,
+                    owner: after.contract || before.contract,
+                    key,
+                    prevValue: val,
+                    durability: 'instance'
+                }
+                this.addEffect(effect)
+                continue
+            }
+            if (val === newVal) //value has not changed
+                continue
+
+            const effect = {
+                type: effectTypes.contractDataUpdated,
+                owner: after.contract || before.contract,
+                key,
+                value: newVal,
+                prevValue: val,
+                durability: 'instance'
+            }
+            this.addEffect(effect)
+        }
+        //iterate all storage items left
+        for (const {key, val} of storageAfter) {
+            const effect = {
+                type: effectTypes.contractDataCreated,
+                owner: after.contract || before.contract,
+                key,
+                value: val,
+                durability: 'instance'
+            }
+            this.addEffect(effect)
+        }
     }
 
     processChanges() {

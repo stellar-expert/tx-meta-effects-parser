@@ -298,7 +298,14 @@ function parseContractData(value) {
                     break
                 case 'contractExecutableWasm':
                     entry.kind = 'wasm'
-                    entry.hash = valueAttr.instance().executable().wasmHash().toString('hex')
+                    const instance = valueAttr.instance()._attributes
+                    entry.hash = instance.executable.wasmHash().toString('hex')
+                    if (instance.storage?.length) {
+                        entry.storage = instance.storage.map(entry => ({
+                            key: entry.key().toXDR('base64'),
+                            val: entry.val().toXDR('base64')
+                        }))
+                    }
                     break
                 default:
                     throw new TxMetaEffectParserError('Unsupported executable type: ' + type)
