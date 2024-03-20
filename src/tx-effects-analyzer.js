@@ -776,8 +776,8 @@ class EffectsAnalyzer {
     }
 
     processInstanceDataChanges(before, after) {
-        const storageBefore = before.storage
-        const storageAfter = [...after.storage || []]
+        const storageBefore = before.storage || []
+        const storageAfter = [...(after.storage || [])]
         for (const {key, val} of storageBefore) {
             let newVal
             for (let i = 0; i < storageAfter.length; i++) {

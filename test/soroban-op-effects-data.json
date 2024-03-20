@@ -659,49 +659,49 @@
       "expected": [
         [
           {
-            "amount": "100",
-            "asset": "XLM",
-            "balance": "99999934935",
+            "type": "accountCredited",
             "source": "GC3RT6UQREHPRPKKQ6OTGVSSKTZJ5A4OPOXKA2C325LJFFQDNS4LMIKH",
-            "type": "accountCredited"
-          },
-          {
-            "amount": "100",
             "asset": "XLM",
-            "balance": "99998472131",
-            "source": "GBO35GRPSFZQVSXBKITBR2F6KY3L77ZT7M66EQPOZKB7WJTX37YFLUQW",
-            "type": "accountDebited"
+            "amount": "100",
+            "balance": "99999934935"
           },
           {
+            "type": "accountDebited",
+            "source": "GBO35GRPSFZQVSXBKITBR2F6KY3L77ZT7M66EQPOZKB7WJTX37YFLUQW",
+            "asset": "XLM",
+            "amount": "100",
+            "balance": "99998472131"
+          },
+          {
+            "type": "contractInvoked",
+            "source": "GBO35GRPSFZQVSXBKITBR2F6KY3L77ZT7M66EQPOZKB7WJTX37YFLUQW",
+            "contract": "CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC",
+            "function": "transfer",
             "args": [
               "GBO35GRPSFZQVSXBKITBR2F6KY3L77ZT7M66EQPOZKB7WJTX37YFLUQW",
               "GC3RT6UQREHPRPKKQ6OTGVSSKTZJ5A4OPOXKA2C325LJFFQDNS4LMIKH",
               "100"
             ],
-            "contract": "CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC",
-            "function": "transfer",
-            "rawArgs": "AAAAEAAAAAEAAAADAAAAEgAAAAAAAAAAXb6aL5FzCsrhUiYY6L5WNr//M/s94kHuyoP7Jnff8FUAAAASAAAAAAAAAAC3GfqQiQ74vUqHnTNWUlTynoOOe66gaFvXVpKWA2y4tgAAAAoAAAAAAAAAAAAAAAAAAABk",
-            "source": "GBO35GRPSFZQVSXBKITBR2F6KY3L77ZT7M66EQPOZKB7WJTX37YFLUQW",
-            "type": "contractInvoked"
+            "rawArgs": "AAAAEAAAAAEAAAADAAAAEgAAAAAAAAAAXb6aL5FzCsrhUiYY6L5WNr//M/s94kHuyoP7Jnff8FUAAAASAAAAAAAAAAC3GfqQiQ74vUqHnTNWUlTynoOOe66gaFvXVpKWA2y4tgAAAAoAAAAAAAAAAAAAAAAAAABk"
           },
           {
-            "contract": "CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC",
-            "data": "100",
-            "rawData": "AAAACgAAAAAAAAAAAAAAAAAAAGQ=",
-            "rawTopics": [
-              "AAAADwAAAAh0cmFuc2Zlcg==",
-              "AAAAEgAAAAAAAAAAXb6aL5FzCsrhUiYY6L5WNr//M/s94kHuyoP7Jnff8FU=",
-              "AAAAEgAAAAAAAAAAtxn6kIkO+L1Kh50zVlJU8p6DjnuuoGhb11aSlgNsuLY=",
-              "AAAADgAAAAZuYXRpdmUAAA=="
-            ],
+            "type": "contractEvent",
             "source": "GBO35GRPSFZQVSXBKITBR2F6KY3L77ZT7M66EQPOZKB7WJTX37YFLUQW",
+            "contract": "CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC",
             "topics": [
               "transfer",
               "GBO35GRPSFZQVSXBKITBR2F6KY3L77ZT7M66EQPOZKB7WJTX37YFLUQW",
               "GC3RT6UQREHPRPKKQ6OTGVSSKTZJ5A4OPOXKA2C325LJFFQDNS4LMIKH",
               "native"
             ],
-            "type": "contractEvent"
+            "data": "100",
+            "rawTopics": [
+              "AAAADwAAAAh0cmFuc2Zlcg==",
+              "AAAAEgAAAAAAAAAAXb6aL5FzCsrhUiYY6L5WNr//M/s94kHuyoP7Jnff8FU=",
+              "AAAAEgAAAAAAAAAAtxn6kIkO+L1Kh50zVlJU8p6DjnuuoGhb11aSlgNsuLY=",
+              "AAAADgAAAAZuYXRpdmUAAA=="
+            ],
+            "rawData": "AAAACgAAAAAAAAAAAAAAAAAAAGQ="
           }
         ]
       ]
