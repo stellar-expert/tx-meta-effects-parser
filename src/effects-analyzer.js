@@ -1,16 +1,15 @@
 const {StrKey, hash, xdr, nativeToScVal} = require('@stellar/stellar-base')
 const effectTypes = require('./effect-types')
-const {parseLedgerEntryChanges} = require('./ledger-entry-changes-parser')
-const {xdrParseAsset, xdrParseAccountAddress, xdrParseScVal} = require('./tx-xdr-parser-utils')
-const {encodeSponsorshipEffectName} = require('./analyzer-primitives')
-const {analyzeSignerChanges} = require('./signer-changes-analyzer')
-const {contractIdFromPreimage} = require('./contract-preimage-encoder')
-const EventsAnalyzer = require('./events-analyzer')
-const AssetSupplyProcessor = require('./asset-supply-processor')
+const {parseLedgerEntryChanges} = require('./parser/ledger-entry-changes-parser')
+const {xdrParseAsset, xdrParseAccountAddress, xdrParseScVal} = require('./parser/tx-xdr-parser-utils')
+const {analyzeSignerChanges} = require('./aggregation/signer-changes-analyzer')
+const {contractIdFromPreimage} = require('./parser/contract-preimage-encoder')
+const EventsAnalyzer = require('./aggregation/events-analyzer')
+const AssetSupplyAnalyzer = require('./aggregation/asset-supply-analyzer')
 const {UnexpectedTxMetaChangeError, TxMetaEffectParserError} = require('./errors')
 
 class EffectsAnalyzer {
-    constructor({operation, meta, result, network, events, diagnosticEvents}) {
+    constructor({operation, meta, result, network, events, diagnosticEvents, mapSac}) {
         //set execution context
         if (!operation.source)
             throw new TxMetaEffectParserError('Operation source is not explicitly defined')
@@ -24,6 +23,9 @@ class EffectsAnalyzer {
             this.diagnosticEvents = diagnosticEvents
         }
         this.network = network
+        if (mapSac) {
+            this.sacMap = {}
+        }
     }
 
     /**
@@ -43,6 +45,11 @@ class EffectsAnalyzer {
      * @readonly
      */
     network
+    /**
+     * @type {{}}
+     * @readonly
+     */
+    sacMap
     /**
      * @type {ParsedLedgerEntryMeta[]}
      * @private
@@ -68,7 +75,7 @@ class EffectsAnalyzer {
     isContractCall = false
 
     analyze() {
-        //find appropriate parsing method
+        //find appropriate parser method
         const parse = this[this.operation.type]
         if (parse) {
             parse.call(this)
@@ -80,7 +87,7 @@ class EffectsAnalyzer {
         //process Soroban events
         new EventsAnalyzer(this).analyze()
         //calculate minted/burned assets
-        new AssetSupplyProcessor(this).analyze()
+        new AssetSupplyAnalyzer(this).analyze()
         //process state data changes in the end
         for (const change of this.changes)
             if (change.type === 'contractData') {
@@ -895,6 +902,30 @@ function normalizeAddress(address) {
         throw new TypeError('Expected ED25519 or Muxed address')
     const rawBytes = StrKey.decodeMed25519PublicKey(address)
     return StrKey.encodeEd25519PublicKey(rawBytes.subarray(0, 32))
+}
+
+
+/**
+ * @param {String} action
+ * @param {String} type
+ * @return {String}
+ */
+function encodeSponsorshipEffectName(action, type) {
+    let actionKey
+    switch (action) {
+        case 'created':
+            actionKey = 'Created'
+            break
+        case 'updated':
+            actionKey = 'Updated'
+            break
+        case 'removed':
+            actionKey = 'Removed'
+            break
+        default:
+            throw new UnexpectedTxMetaChangeError({action, type})
+    }
+    return effectTypes[`${type}Sponsorship${actionKey}`]
 }
 
 module.exports = {EffectsAnalyzer, processFeeChargedEffect}

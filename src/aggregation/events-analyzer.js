@@ -1,7 +1,7 @@
 const {StrKey} = require('@stellar/stellar-base')
-const {xdrParseScVal, xdrParseAsset, isContractAddress, toStellarAsset} = require('./tx-xdr-parser-utils')
-const {contractIdFromAsset} = require('./contract-preimage-encoder')
-const effectTypes = require('./effect-types')
+const effectTypes = require('../effect-types')
+const {xdrParseScVal, xdrParseAsset, isContractAddress} = require('../parser/tx-xdr-parser-utils')
+const {mapSacContract} = require('./sac-contract-mapper')
 
 const EVENT_TYPES = {
     SYSTEM: 0,
@@ -10,8 +10,11 @@ const EVENT_TYPES = {
 }
 
 class EventsAnalyzer {
-    constructor(effectAnalyzer) {
-        this.effectAnalyzer = effectAnalyzer
+    /**
+     * @param {EffectsAnalyzer} effectsAnalyzer
+     */
+    constructor(effectsAnalyzer) {
+        this.effectsAnalyzer = effectsAnalyzer
         this.callStack = []
     }
 
@@ -30,7 +33,7 @@ class EventsAnalyzer {
      * @private
      */
     analyzeEvents() {
-        const {events} = this.effectAnalyzer
+        const {events} = this.effectsAnalyzer
         if (!events)
             return
         //contract-generated events
@@ -42,7 +45,7 @@ class EventsAnalyzer {
                 continue //skip data entries modifications
             const rawData = body.data()
             //add event to the pipeline
-            this.effectAnalyzer.addEffect({
+            this.effectsAnalyzer.addEffect({
                 type: effectTypes.contractEvent,
                 contract: StrKey.encodeContract(evt.contractId()),
                 topics,
@@ -58,7 +61,7 @@ class EventsAnalyzer {
      * @private
      */
     analyzeDiagnosticEvents() {
-        const {diagnosticEvents} = this.effectAnalyzer
+        const {diagnosticEvents} = this.effectsAnalyzer
         if (!diagnosticEvents)
             return
         //diagnostic events
@@ -81,9 +84,11 @@ class EventsAnalyzer {
     processDiagnosticEvent(body, type, contractId) {
         const topics = body.topics()
         if (!topics?.length)
-            return null
+            return
         switch (xdrParseScVal(topics[0])) {
             case 'fn_call': // contract call
+                if (type !== EVENT_TYPES.DIAGNOSTIC)
+                    return // skip non-diagnostic events
                 const rawArgs = body.data()
                 const parsedEvent = {
                     type: effectTypes.contractInvoked,
@@ -97,7 +102,7 @@ class EventsAnalyzer {
                     parsedEvent.depth = this.callStack.length
                 }
                 this.callStack.push(parsedEvent)
-                this.effectAnalyzer.addEffect(parsedEvent)
+                this.effectsAnalyzer.addEffect(parsedEvent)
                 break
             case 'fn_return':
                 if (type !== EVENT_TYPES.DIAGNOSTIC)
@@ -118,7 +123,6 @@ class EventsAnalyzer {
                 const to = xdrParseScVal(topics[2])
                 if (to === from) //self transfer - nothing happens
                     return // TODO: need additional checks
-                const sorobanAsset = contractId
                 const amount = processEventBodyValue(body.data())
                 if (!this.matchInvocationEffect(e =>
                     (e.function === 'transfer' && matchArrays([from, to, amount], e.args)) ||
@@ -128,31 +132,31 @@ class EventsAnalyzer {
                 let classicAsset
                 if (topics.length > 3) {
                     classicAsset = xdrParseAsset(xdrParseScVal(topics[3]))
-                    //validate
-                    if (contractIdFromAsset(toStellarAsset(classicAsset), this.effectAnalyzer.network) !== sorobanAsset)
-                        return //not an SAC transfer
+                    if (!mapSacContract(this.effectsAnalyzer, contractId, classicAsset)) {
+                        classicAsset = null  //not an SAC event
+                    }
                 }
                 if (classicAsset && (classicAsset.includes(from) || classicAsset.includes(to))) { //SAC transfer by asset issuer
                     if (classicAsset.includes(from)) {
-                        this.effectAnalyzer.mint(sorobanAsset, amount)
-                        this.effectAnalyzer.credit(amount, isContractAddress(to) ? sorobanAsset : classicAsset, to)
+                        this.effectsAnalyzer.mint(contractId, amount)
+                        this.effectsAnalyzer.credit(amount, isContractAddress(to) ? contractId : classicAsset, to)
                     }
                     if (classicAsset.includes(to)) {
-                        this.effectAnalyzer.debit(amount, isContractAddress(from) ? sorobanAsset : classicAsset, from)
-                        this.effectAnalyzer.burn(sorobanAsset, amount)
+                        this.effectsAnalyzer.debit(amount, isContractAddress(from) ? contractId : classicAsset, from)
+                        this.effectsAnalyzer.burn(contractId, amount)
                     }
                 } else { //other cases
                     if (classicAsset && !isContractAddress(from)) { //classic asset bridged to Soroban
-                        this.effectAnalyzer.burn(classicAsset, amount)
-                        this.effectAnalyzer.mint(sorobanAsset, amount)
+                        this.effectsAnalyzer.burn(classicAsset, amount)
+                        this.effectsAnalyzer.mint(contractId, amount)
                     } else {
-                        this.effectAnalyzer.debit(amount, sorobanAsset, from)
+                        this.effectsAnalyzer.debit(amount, contractId, from)
                     }
                     if (classicAsset && !isContractAddress(to)) { //classic asset bridged from Soroban
-                        this.effectAnalyzer.burn(sorobanAsset, amount)
-                        this.effectAnalyzer.mint(classicAsset, amount)
+                        this.effectsAnalyzer.burn(contractId, amount)
+                        this.effectsAnalyzer.mint(classicAsset, amount)
                     } else {
-                        this.effectAnalyzer.credit(amount, sorobanAsset, to)
+                        this.effectsAnalyzer.credit(amount, contractId, to)
                     }
                 }
 
@@ -165,12 +169,15 @@ class EventsAnalyzer {
                 const amount = processEventBodyValue(body.data())
                 if (!this.matchInvocationEffect(e => e.function === 'mint' && matchArrays([to, amount], e.args)))
                     return
-                this.effectAnalyzer.addEffect({
+                this.effectsAnalyzer.addEffect({
                     type: effectTypes.assetMinted,
                     asset: contractId,
                     amount
                 })
-                this.effectAnalyzer.credit(amount, contractId, to)
+                this.effectsAnalyzer.credit(amount, contractId, to)
+                if (topics.length > 3) {
+                    mapSacContract(this.effectsAnalyzer, contractId, xdrParseAsset(xdrParseScVal(topics[3])))
+                }
             }
                 break
             case 'burn': {
@@ -184,8 +191,11 @@ class EventsAnalyzer {
                 ))
                     return
 
-                this.effectAnalyzer.debit(amount, contractId, from)
-                this.effectAnalyzer.burn(contractId, amount)
+                this.effectsAnalyzer.debit(amount, contractId, from)
+                this.effectsAnalyzer.burn(contractId, amount)
+                if (topics.length > 2) {
+                    mapSacContract(this.effectsAnalyzer, contractId, xdrParseAsset(xdrParseScVal(topics[2])))
+                }
             }
                 break
             case 'clawback': {
@@ -195,46 +205,28 @@ class EventsAnalyzer {
                 const amount = processEventBodyValue(body.data())
                 if (!this.matchInvocationEffect(e => e.function === 'clawback' && matchArrays([from, amount], e.args)))
                     return
-                this.effectAnalyzer.debit(amount, contractId, from)
-                this.effectAnalyzer.burn(contractId, amount)
+                this.effectsAnalyzer.debit(amount, contractId, from)
+                this.effectsAnalyzer.burn(contractId, amount)
+                if (topics.length > 3) {
+                    mapSacContract(this.effectsAnalyzer, contractId, xdrParseAsset(xdrParseScVal(topics[3])))
+                }
             }
                 break
-            //TODO: process token allowance, authorization approval, and admin modification for SAC contracts
-            /*case 'approve': {
+            /*case 'approve': { //TODO: think about processing this effect
                 if (!matchEventTopicsShape(topics, ['address', 'address', 'str?']))
                     throw new Error('Non-standard event')
                 const from = xdrParseScVal(topics[1])
                 const spender = xdrParseScVal(topics[2])
-            }
-                break
-
-            case 'set_authorized': {
-                throw new Error('Not implemented')
-                //trustlineAuthorizationUpdated
-                if (!matchEventTopicsShape(topics, ['address', 'address', 'bool', 'str?']))
-                    throw new Error('Non-standard event')
-                const admin = xdrParseScVal(topics[1])
-                const id = xdrParseScVal(topics[2])
-                const authorize = xdrParseScVal(topics[3])
-            }
-                break
-            case 'set_admin': {
-                throw new Error('Not implemented')
-                if (!matchEventTopicsShape(topics, ['address']))
-                    throw new Error('Non-standard event')
-                const prevAdmin = xdrParseScVal(topics[1])
-                const newAdmin = processEventBodyValue(topics[2])
+                if (topics.length > 3) {
+                    mapSacContract(this.effectsAnalyzer, contractId, xdrParseAsset(xdrParseScVal(topics[3])))
+                }
             }
                 break*/
-            default:
-                //console.log(`Event ` + xdrParseScVal(topics[0]))
-                break
         }
-        return null
     }
 
     matchInvocationEffect(cb) {
-        return this.effectAnalyzer.effects.find(e => e.type === effectTypes.contractInvoked && cb(e))
+        return this.effectsAnalyzer.effects.find(e => e.type === effectTypes.contractInvoked && cb(e))
     }
 }
 

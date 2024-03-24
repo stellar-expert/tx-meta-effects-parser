@@ -1,5 +1,5 @@
 const {StrKey, LiquidityPoolId, scValToBigInt, xdr, Asset} = require('@stellar/stellar-base')
-const {TxMetaEffectParserError} = require('./errors')
+const {TxMetaEffectParserError} = require('../errors')
 
 /**
  * @param {String} address

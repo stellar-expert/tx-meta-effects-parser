@@ -1,13 +1,6 @@
 const {StrKey} = require('@stellar/stellar-base')
-const {
-    xdrParseAsset,
-    xdrParseAccountAddress,
-    xdrParseClaimant,
-    xdrParsePrice,
-    xdrParseSignerKey,
-    xdrParseScVal
-} = require('./tx-xdr-parser-utils')
-const {TxMetaEffectParserError} = require('./errors')
+const {TxMetaEffectParserError} = require('../errors')
+const {xdrParseAsset, xdrParseAccountAddress, xdrParseClaimant, xdrParsePrice, xdrParseSignerKey} = require('./tx-xdr-parser-utils')
 
 /**
  * @typedef {{}} ParsedLedgerEntryMeta

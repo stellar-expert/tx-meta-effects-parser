@@ -1,9 +1,9 @@
-const effectTypes = require('./effect-types')
+const effectTypes = require('../effect-types')
 
 /**
  * Effect supply computation processor
  */
-class AssetSupplyProcessor {
+class AssetSupplyAnalyzer {
     /**
      * @param {EffectsAnalyzer} effectsAnalyzer
      */
@@ -201,4 +201,4 @@ class CollapsibleMintsAnalyzer {
     }
 }
 
-module.exports = AssetSupplyProcessor
+module.exports = AssetSupplyAnalyzer

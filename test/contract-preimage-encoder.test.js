@@ -1,5 +1,5 @@
 const {Asset, xdr} = require('@stellar/stellar-base')
-const {contractIdFromAsset, contractIdFromPreimage} = require('../src/contract-preimage-encoder')
+const {contractIdFromAsset, contractIdFromPreimage} = require('../src/parser/contract-preimage-encoder')
 
 const futurenetPassphrase = 'Test SDF Future Network ; October 2022'
 

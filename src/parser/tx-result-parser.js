@@ -1,6 +1,6 @@
 const {xdr} = require('@stellar/stellar-base')
 const {xdrParseAccountAddress, xdrParseTradeAtom, xdrParseClaimedOffer, xdrParseAsset} = require('./tx-xdr-parser-utils')
-const {TxMetaEffectParserError} = require('./errors')
+const {TxMetaEffectParserError} = require('../errors')
 
 /**
  * Parse extra data from operation result

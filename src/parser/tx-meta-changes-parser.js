@@ -1,5 +1,5 @@
 const {parseLedgerEntryChanges} = require('./ledger-entry-changes-parser')
-const {TxMetaEffectParserError} = require('./errors')
+const {TxMetaEffectParserError} = require('../errors')
 
 /**
  * Parse top-level transaction metadata changes

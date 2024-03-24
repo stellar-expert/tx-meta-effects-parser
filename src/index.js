@@ -1,23 +1,25 @@
 const {TransactionBuilder, xdr} = require('@stellar/stellar-base')
-const {processFeeChargedEffect, analyzeOperationEffects, EffectsAnalyzer} = require('./tx-effects-analyzer')
-const {parseTxResult} = require('./tx-result-parser')
-const {parseLedgerEntryChanges} = require('./ledger-entry-changes-parser')
-const {parseTxMetaChanges} = require('./tx-meta-changes-parser')
-const {analyzeSignerChanges} = require('./signer-changes-analyzer')
-const contractPreimageEncoder = require('./contract-preimage-encoder')
-const xdrParserUtils = require('./tx-xdr-parser-utils')
-const effectTypes = require('./effect-types')
 const {TxMetaEffectParserError, UnexpectedTxMetaChangeError} = require('./errors')
+const {processFeeChargedEffect, analyzeOperationEffects, EffectsAnalyzer} = require('./effects-analyzer')
+const {disposeSacCache} = require('./aggregation/sac-contract-mapper')
+const {parseTxResult} = require('./parser/tx-result-parser')
+const {parseLedgerEntryChanges} = require('./parser/ledger-entry-changes-parser')
+const {parseTxMetaChanges} = require('./parser/tx-meta-changes-parser')
+const {analyzeSignerChanges} = require('./aggregation/signer-changes-analyzer')
+const contractPreimageEncoder = require('./parser/contract-preimage-encoder')
+const xdrParserUtils = require('./parser/tx-xdr-parser-utils')
+const effectTypes = require('./effect-types')
 
 /**
  * Retrieve effects from transaction execution result metadata
  * @param {String} network - Network passphrase
  * @param {String|Buffer|xdr.TransactionEnvelope} tx - Base64-encoded tx envelope xdr
- * @param {String|Buffer|xdr.TransactionResult} result? - Base64-encoded tx envelope result
- * @param {String|Buffer|xdr.TransactionMeta} meta? - Base64-encoded tx envelope meta
+ * @param {String|Buffer|xdr.TransactionResult} [result] - Base64-encoded tx envelope result
+ * @param {String|Buffer|xdr.TransactionMeta} [meta] - Base64-encoded tx envelope meta
+ * @param {Boolean} [mapSac] - Whether to create a map SAC->Asset
  * @return {ParsedTxOperationsMetadata}
  */
-function parseTxOperationsMeta({network, tx, result, meta}) {
+function parseTxOperationsMeta({network, tx, result, meta, mapSac = false}) {
     if (!network)
         throw new TypeError(`Network passphrase argument is required.`)
     if (typeof network !== 'string')
@@ -135,9 +137,13 @@ function parseTxOperationsMeta({network, tx, result, meta}) {
                 const sorobanMeta = metaValue.sorobanMeta()
                 params.events = sorobanMeta.events()
                 params.diagnosticEvents = sorobanMeta.diagnosticEvents()
+                params.mapSac = mapSac
             }
             const analyzer = new EffectsAnalyzer(params)
             operation.effects = analyzer.analyze()
+            if (analyzer.sacMap && !isEmptyObject(analyzer.sacMap)) {
+                operation.sacMap = analyzer.sacMap
+            }
         }
     }
     return res
@@ -159,13 +165,20 @@ function ensureXdrInputType(value, xdrType) {
     return xdrType.fromXDR(value, typeof value === 'string' ? 'base64' : 'raw')
 }
 
+function isEmptyObject(obj) {
+    for (const key in obj)
+        return false
+    return true
+}
+
 /**
  * @typedef {{}} ParsedTxOperationsMetadata
- * @property {Transaction|FeeBumpTransaction} tx
- * @property {BaseOperation[]} operations
- * @property {Boolean} isEphemeral
- * @property {Boolean} [failed]
- * @property {{}[]} [effects]
+ * @property {Transaction|FeeBumpTransaction} tx - Parsed transaction object
+ * @property {BaseOperation[]} operations - Transaction operations
+ * @property {Boolean} isEphemeral - True for transactions without result metadata
+ * @property {Boolean} [failed] - True for transactions failed during on-chain execution
+ * @property {{}[]} [effects] - Top-level transaction effects (fee charges and )
+ * @property {Object<String,String>} [sacMap] - Optional map of SAC->Asset
  */
 
 module.exports = {
@@ -176,5 +189,6 @@ module.exports = {
     parseTxMetaChanges,
     effectTypes,
     xdrParserUtils,
-    contractPreimageEncoder
+    contractPreimageEncoder,
+    disposeSacCache
 }

@@ -1,4 +1,4 @@
-const effectTypes = require('./effect-types')
+const effectTypes = require('../effect-types')
 
 class SignerChangesAnalyzer {
     constructor(before, after) {

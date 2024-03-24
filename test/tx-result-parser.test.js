@@ -1,6 +1,6 @@
 /*eslint-disable no-undef */
 const {Networks} = require('@stellar/stellar-base')
-const {parseTxOperationsMeta} = require('../src/index')
+const {parseTxOperationsMeta, disposeSacCache} = require('../src')
 
 function resolveNetwork(network) {
     if (!network)
@@ -39,6 +39,18 @@ describe('Effects', () => {
         }
     })
 
+    test.each(require('./soroban-sac-map-data.json'))('Verify SAC map for Soroban effects - %s', (description, params) => {
+        const {tx, result, meta, expected, network} = params
+        const res = parseTxOperationsMeta({
+            network: resolveNetwork(network),
+            tx,
+            result,
+            meta,
+            mapSac: true
+        })
+        expect(res.operations[0].sacMap).toEqual(expected || undefined)
+    })
+
     test.each(require('./tx-effects-data.json'))('Analyze transaction effects - %s', (description, params) => {
         const {tx, result, meta, expected, network} = params
         //merge account
@@ -50,5 +62,9 @@ describe('Effects', () => {
         })
 
         expect(res.effects).toStrictEqual(expected)
+    })
+
+    afterAll(() => {
+        disposeSacCache()
     })
 })
