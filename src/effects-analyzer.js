@@ -375,6 +375,15 @@ class EffectsAnalyzer {
     restoreFootprint() {
     }
 
+    setAdmin(contractId, newAdmin) {
+        const effect = {
+            type: effectTypes.contractUpdated,
+            contract: contractId,
+            admin: newAdmin
+        }
+        this.addEffect(effect)
+    }
+
     processDexOperationEffects() {
         //process trades first
         for (const claimedOffer of this.result.claimedOffers) {

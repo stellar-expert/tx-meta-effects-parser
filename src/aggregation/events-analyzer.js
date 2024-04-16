@@ -115,7 +115,7 @@ class EventsAnalyzer {
                 }
                 break
             //handle standard token contract events
-            //see https://github.com/stellar/rs-soroban-sdk/blob/71170fba76e1aa4d50224316f1157f0fb10e6d79/soroban-sdk/src/token.rs
+            //see https://github.com/stellar/rs-soroban-sdk/blob/main/soroban-sdk/src/token.rs
             case 'transfer': {
                 if (!matchEventTopicsShape(topics, ['address', 'address', 'str?']))
                     return
@@ -209,6 +209,19 @@ class EventsAnalyzer {
                 this.effectsAnalyzer.burn(contractId, amount)
                 if (topics.length > 3) {
                     mapSacContract(this.effectsAnalyzer, contractId, xdrParseAsset(xdrParseScVal(topics[3])))
+                }
+            }
+                break
+            case 'set_admin': {
+                if (!matchEventTopicsShape(topics, ['address', 'str?']))
+                    return //throw new Error('Non-standard event')
+                const currentAdmin = xdrParseScVal(topics[1])
+                const newAdmin = processEventBodyValue(body.data())
+                if (!this.matchInvocationEffect(e => e.function === 'set_admin' && matchArrays([currentAdmin, newAdmin], [this.effectsAnalyzer.source, e.args])))
+                    return
+                this.effectsAnalyzer.setAdmin(contractId, newAdmin)
+                if (topics.length > 2) {
+                    mapSacContract(this.effectsAnalyzer, contractId, xdrParseAsset(xdrParseScVal(topics[2])))
                 }
             }
                 break
