@@ -61,13 +61,13 @@ class EventsAnalyzer {
      * @private
      */
     analyzeDiagnosticEvents() {
-        const {diagnosticEvents} = this.effectsAnalyzer
+        const {diagnosticEvents, processSystemEvents} = this.effectsAnalyzer
         if (!diagnosticEvents)
             return
         //diagnostic events
         for (const evt of diagnosticEvents) {
-            if (!evt.inSuccessfulContractCall())
-                return //throw new UnexpectedTxMetaChangeError({type: 'diagnostic_event', action: 'failed'})
+            if (!processSystemEvents && !evt.inSuccessfulContractCall())
+                continue //throw new UnexpectedTxMetaChangeError({type: 'diagnostic_event', action: 'failed'})
             //parse event
             const event = evt.event()
             const contractId = event.contractId()
@@ -90,7 +90,7 @@ class EventsAnalyzer {
                 if (type !== EVENT_TYPES.DIAGNOSTIC)
                     return // skip non-diagnostic events
                 const rawArgs = body.data()
-                const parsedEvent = {
+                const funcCall = {
                     type: effectTypes.contractInvoked,
                     contract: xdrParseScVal(topics[1], true),
                     function: xdrParseScVal(topics[2]),
@@ -99,20 +99,34 @@ class EventsAnalyzer {
                 }
                 //add the invocation to the call stack
                 if (this.callStack.length) {
-                    parsedEvent.depth = this.callStack.length
+                    funcCall.depth = this.callStack.length
                 }
-                this.callStack.push(parsedEvent)
-                this.effectsAnalyzer.addEffect(parsedEvent)
+                this.callStack.push(funcCall)
+                this.effectsAnalyzer.addEffect(funcCall)
                 break
             case 'fn_return':
                 if (type !== EVENT_TYPES.DIAGNOSTIC)
                     return // skip non-diagnostic events
                 //attach execution result to the contract invocation event
-                const funcCall = this.callStack.pop()
+                const lastFuncCall = this.callStack.pop()
                 const result = body.data()
                 if (result.switch().name !== 'scvVoid') {
-                    funcCall.result = result.toXDR('base64')
+                    lastFuncCall.result = result.toXDR('base64')
                 }
+                break
+            case 'error':
+                if (type !== EVENT_TYPES.DIAGNOSTIC)
+                    return // skip non-diagnostic events
+                this.effectsAnalyzer.addEffect({
+                    type: effectTypes.contractError,
+                    code: topics[1].value().value(),
+                    details: processEventBodyValue(body.data())
+                })
+                break
+            case 'core_metrics':
+                if (type !== EVENT_TYPES.DIAGNOSTIC)
+                    return // skip non-diagnostic events
+                this.effectsAnalyzer.addMetric(xdrParseScVal(topics[1]), parseInt(processEventBodyValue(body.data())))
                 break
             //handle standard token contract events
             //see https://github.com/stellar/rs-soroban-sdk/blob/main/soroban-sdk/src/token.rs

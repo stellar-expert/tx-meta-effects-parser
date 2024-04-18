@@ -9,7 +9,7 @@ const AssetSupplyAnalyzer = require('./aggregation/asset-supply-analyzer')
 const {UnexpectedTxMetaChangeError, TxMetaEffectParserError} = require('./errors')
 
 class EffectsAnalyzer {
-    constructor({operation, meta, result, network, events, diagnosticEvents, mapSac}) {
+    constructor({operation, meta, result, network, events, diagnosticEvents, mapSac, processSystemEvents}) {
         //set execution context
         if (!operation.source)
             throw new TxMetaEffectParserError('Operation source is not explicitly defined')
@@ -21,6 +21,9 @@ class EffectsAnalyzer {
         this.events = events
         if (diagnosticEvents?.length) {
             this.diagnosticEvents = diagnosticEvents
+            if (processSystemEvents) {
+                this.processSystemEvents = true
+            }
         }
         this.network = network
         if (mapSac) {
@@ -69,10 +72,20 @@ class EffectsAnalyzer {
      */
     source = ''
     /**
-     * @type {boolean}
+     * @type {Boolean}
      * @private
      */
     isContractCall = false
+    /**
+     * @type {Boolean}
+     * @readonly
+     */
+    processSystemEvents = false
+    /**
+     * @type {{}}
+     * @private
+     */
+    metrics
 
     analyze() {
         //find appropriate parser method
@@ -158,6 +171,17 @@ class EffectsAnalyzer {
             asset,
             amount
         }, position)
+    }
+
+    addMetric(metric, value) {
+        let {metrics} = this
+        if (!metrics) {
+            metrics = this.metrics = {
+                type: effectTypes.contractMetrics
+            }
+            this.addEffect(metrics)
+        }
+        metrics[metric] = value
     }
 
     setOptions() {

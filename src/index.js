@@ -17,9 +17,10 @@ const effectTypes = require('./effect-types')
  * @param {String|Buffer|xdr.TransactionResult} [result] - Base64-encoded tx envelope result
  * @param {String|Buffer|xdr.TransactionMeta} [meta] - Base64-encoded tx envelope meta
  * @param {Boolean} [mapSac] - Whether to create a map SAC->Asset
+ * @param {Boolean} [processSystemEvents] - Emit effects for contract errors and resource stats
  * @return {ParsedTxOperationsMetadata}
  */
-function parseTxOperationsMeta({network, tx, result, meta, mapSac = false}) {
+function parseTxOperationsMeta({network, tx, result, meta, mapSac = false, processSystemEvents = false}) {
     if (!network)
         throw new TypeError(`Network passphrase argument is required.`)
     if (typeof network !== 'string')
@@ -138,6 +139,7 @@ function parseTxOperationsMeta({network, tx, result, meta, mapSac = false}) {
                 params.events = sorobanMeta.events()
                 params.diagnosticEvents = sorobanMeta.diagnosticEvents()
                 params.mapSac = mapSac
+                params.processSystemEvents = processSystemEvents
             }
             const analyzer = new EffectsAnalyzer(params)
             operation.effects = analyzer.analyze()

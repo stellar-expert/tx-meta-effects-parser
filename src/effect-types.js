@@ -86,12 +86,14 @@ const effectTypes = {
     contractUpdated: 'contractUpdated',
 
     contractInvoked: 'contractInvoked',
+    contractError: 'contractError',
 
     contractDataCreated: 'contractDataCreated',
     contractDataUpdated: 'contractDataUpdated',
     contractDataRemoved: 'contractDataRemoved',
 
-    contractEvent: 'contractEvent'
+    contractEvent: 'contractEvent',
+    contractMetrics: 'contractMetrics'
 }
 
 module.exports = effectTypes

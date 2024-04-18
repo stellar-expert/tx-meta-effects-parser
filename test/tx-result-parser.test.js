@@ -1,5 +1,6 @@
 /*eslint-disable no-undef */
 const {Networks} = require('@stellar/stellar-base')
+const effectTypes = require('../src/effect-types')
 const {parseTxOperationsMeta, disposeSacCache} = require('../src')
 
 function resolveNetwork(network) {
@@ -37,6 +38,18 @@ describe('Effects', () => {
         for (let i = 0; i < res.operations.length; i++) {
             expect(res.operations[i].effects).toStrictEqual(expected[i])
         }
+    })
+
+    test.each(require('./soroban-contract-metrics.json'))('Analyze contract metrics Soroban effects - %s', (description, params) => {
+        const {tx, result, meta, expected, network} = params
+        const res = parseTxOperationsMeta({
+            network: resolveNetwork(network),
+            tx,
+            result,
+            meta,
+            processSystemEvents: true
+        })
+        expect(res.operations[0].effects.filter(e => e.type === effectTypes.contractMetrics || e.type === effectTypes.contractError)).toEqual(expected[0])
     })
 
     test.each(require('./soroban-sac-map-data.json'))('Verify SAC map for Soroban effects - %s', (description, params) => {
