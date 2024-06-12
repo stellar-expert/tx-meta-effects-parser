@@ -66,7 +66,6 @@ describe('Effects', () => {
 
     test.each(require('./tx-effects-data.json'))('Analyze transaction effects - %s', (description, params) => {
         const {tx, result, meta, expected, network} = params
-        //merge account
         const res = parseTxOperationsMeta({
             network: resolveNetwork(network),
             tx,
@@ -75,6 +74,28 @@ describe('Effects', () => {
         })
 
         expect(res.effects).toStrictEqual(expected)
+    })
+
+    test.each(require('./soroban-fee-refund-bug-protocol20.json'))('Quirks - %s', (description, params) => {
+        const {tx, result, meta, expected, network, normalFee} = params
+        const res = parseTxOperationsMeta({
+            network: resolveNetwork(network),
+            tx,
+            result,
+            meta,
+            protocol: 20
+        })
+
+        expect(res.effects).toStrictEqual(expected)
+
+        const normal = parseTxOperationsMeta({
+            network: resolveNetwork(network),
+            tx,
+            result,
+            meta
+        })
+
+        expect(normal.effects[0]).toStrictEqual({...expected[0], charged: normalFee})
     })
 
     afterAll(() => {

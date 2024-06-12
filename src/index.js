@@ -18,9 +18,10 @@ const effectTypes = require('./effect-types')
  * @param {String|Buffer|xdr.TransactionMeta} [meta] - Base64-encoded tx envelope meta
  * @param {Boolean} [mapSac] - Whether to create a map SAC->Asset
  * @param {Boolean} [processSystemEvents] - Emit effects for contract errors and resource stats
+ * @param {Number} [protocol] - Specific Stellar protocol version for the executed transaction
  * @return {ParsedTxOperationsMetadata}
  */
-function parseTxOperationsMeta({network, tx, result, meta, mapSac = false, processSystemEvents = false}) {
+function parseTxOperationsMeta({network, tx, result, meta, mapSac = false, processSystemEvents = false, protocol}) {
     if (!network)
         throw new TypeError(`Network passphrase argument is required.`)
     if (typeof network !== 'string')
@@ -113,7 +114,7 @@ function parseTxOperationsMeta({network, tx, result, meta, mapSac = false, proce
             effect.source = (before || after).address
             res.effects.push(effect)
         }
-        if (isFeeBump && before.balance !== after.balance) { //fee bump fee calculation bug
+        if (isFeeBump && protocol === 20 && before.balance !== after.balance) { //bump fee calculation bug in protocol v20
             const currentFee = BigInt(feeEffect.charged)
             const diff = BigInt(after.balance) - BigInt(before.balance)
             if (diff < currentFee) { // do not allow negative fee
