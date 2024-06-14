@@ -173,11 +173,12 @@ class EffectsAnalyzer {
         }, position)
     }
 
-    addMetric(metric, value) {
+    addMetric(contract, metric, value) {
         let {metrics} = this
         if (!metrics) {
             metrics = this.metrics = {
-                type: effectTypes.contractMetrics
+                type: effectTypes.contractMetrics,
+                contract
             }
             this.addEffect(metrics)
         }

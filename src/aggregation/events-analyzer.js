@@ -70,7 +70,8 @@ class EventsAnalyzer {
                 continue //throw new UnexpectedTxMetaChangeError({type: 'diagnostic_event', action: 'failed'})
             //parse event
             const event = evt.event()
-            const contractId = event.contractId()
+            const contractId = event.contractId() //contract id attached to the event itself
+                || this.effectsAnalyzer.operation.func._value.contractAddress()._value //retrieve from the operation
             this.processDiagnosticEvent(event.body().value(), event.type().value, contractId ? StrKey.encodeContract(contractId) : null)
         }
     }
@@ -78,10 +79,10 @@ class EventsAnalyzer {
     /**
      * @param {xdr.ContractEventV0} body
      * @param {Number} type
-     * @param {String} contractId
+     * @param {String} contract
      * @private
      */
-    processDiagnosticEvent(body, type, contractId) {
+    processDiagnosticEvent(body, type, contract) {
         const topics = body.topics()
         if (!topics?.length)
             return
@@ -119,6 +120,7 @@ class EventsAnalyzer {
                     return // skip non-diagnostic events
                 this.effectsAnalyzer.addEffect({
                     type: effectTypes.contractError,
+                    contract,
                     code: topics[1].value().value(),
                     details: processEventBodyValue(body.data())
                 })
@@ -126,7 +128,7 @@ class EventsAnalyzer {
             case 'core_metrics':
                 if (type !== EVENT_TYPES.DIAGNOSTIC)
                     return // skip non-diagnostic events
-                this.effectsAnalyzer.addMetric(xdrParseScVal(topics[1]), parseInt(processEventBodyValue(body.data())))
+                this.effectsAnalyzer.addMetric(contract, xdrParseScVal(topics[1]), parseInt(processEventBodyValue(body.data())))
                 break
             //handle standard token contract events
             //see https://github.com/stellar/rs-soroban-sdk/blob/main/soroban-sdk/src/token.rs
@@ -146,31 +148,31 @@ class EventsAnalyzer {
                 let classicAsset
                 if (topics.length > 3) {
                     classicAsset = xdrParseAsset(xdrParseScVal(topics[3]))
-                    if (!mapSacContract(this.effectsAnalyzer, contractId, classicAsset)) {
+                    if (!mapSacContract(this.effectsAnalyzer, contract, classicAsset)) {
                         classicAsset = null  //not an SAC event
                     }
                 }
                 if (classicAsset && (classicAsset.includes(from) || classicAsset.includes(to))) { //SAC transfer by asset issuer
                     if (classicAsset.includes(from)) {
-                        this.effectsAnalyzer.mint(contractId, amount)
-                        this.effectsAnalyzer.credit(amount, isContractAddress(to) ? contractId : classicAsset, to)
+                        this.effectsAnalyzer.mint(contract, amount)
+                        this.effectsAnalyzer.credit(amount, isContractAddress(to) ? contract : classicAsset, to)
                     }
                     if (classicAsset.includes(to)) {
-                        this.effectsAnalyzer.debit(amount, isContractAddress(from) ? contractId : classicAsset, from)
-                        this.effectsAnalyzer.burn(contractId, amount)
+                        this.effectsAnalyzer.debit(amount, isContractAddress(from) ? contract : classicAsset, from)
+                        this.effectsAnalyzer.burn(contract, amount)
                     }
                 } else { //other cases
                     if (classicAsset && !isContractAddress(from)) { //classic asset bridged to Soroban
                         this.effectsAnalyzer.burn(classicAsset, amount)
-                        this.effectsAnalyzer.mint(contractId, amount)
+                        this.effectsAnalyzer.mint(contract, amount)
                     } else {
-                        this.effectsAnalyzer.debit(amount, contractId, from)
+                        this.effectsAnalyzer.debit(amount, contract, from)
                     }
                     if (classicAsset && !isContractAddress(to)) { //classic asset bridged from Soroban
-                        this.effectsAnalyzer.burn(contractId, amount)
+                        this.effectsAnalyzer.burn(contract, amount)
                         this.effectsAnalyzer.mint(classicAsset, amount)
                     } else {
-                        this.effectsAnalyzer.credit(amount, contractId, to)
+                        this.effectsAnalyzer.credit(amount, contract, to)
                     }
                 }
 
@@ -185,12 +187,12 @@ class EventsAnalyzer {
                     return
                 this.effectsAnalyzer.addEffect({
                     type: effectTypes.assetMinted,
-                    asset: contractId,
+                    asset: contract,
                     amount
                 })
-                this.effectsAnalyzer.credit(amount, contractId, to)
+                this.effectsAnalyzer.credit(amount, contract, to)
                 if (topics.length > 3) {
-                    mapSacContract(this.effectsAnalyzer, contractId, xdrParseAsset(xdrParseScVal(topics[3])))
+                    mapSacContract(this.effectsAnalyzer, contract, xdrParseAsset(xdrParseScVal(topics[3])))
                 }
             }
                 break
@@ -205,10 +207,10 @@ class EventsAnalyzer {
                 ))
                     return
 
-                this.effectsAnalyzer.debit(amount, contractId, from)
-                this.effectsAnalyzer.burn(contractId, amount)
+                this.effectsAnalyzer.debit(amount, contract, from)
+                this.effectsAnalyzer.burn(contract, amount)
                 if (topics.length > 2) {
-                    mapSacContract(this.effectsAnalyzer, contractId, xdrParseAsset(xdrParseScVal(topics[2])))
+                    mapSacContract(this.effectsAnalyzer, contract, xdrParseAsset(xdrParseScVal(topics[2])))
                 }
             }
                 break
@@ -219,10 +221,10 @@ class EventsAnalyzer {
                 const amount = processEventBodyValue(body.data())
                 if (!this.matchInvocationEffect(e => e.function === 'clawback' && matchArrays([from, amount], e.args)))
                     return
-                this.effectsAnalyzer.debit(amount, contractId, from)
-                this.effectsAnalyzer.burn(contractId, amount)
+                this.effectsAnalyzer.debit(amount, contract, from)
+                this.effectsAnalyzer.burn(contract, amount)
                 if (topics.length > 3) {
-                    mapSacContract(this.effectsAnalyzer, contractId, xdrParseAsset(xdrParseScVal(topics[3])))
+                    mapSacContract(this.effectsAnalyzer, contract, xdrParseAsset(xdrParseScVal(topics[3])))
                 }
             }
                 break
@@ -233,9 +235,9 @@ class EventsAnalyzer {
                 const newAdmin = processEventBodyValue(body.data())
                 if (!this.matchInvocationEffect(e => e.function === 'set_admin' && matchArrays([currentAdmin, newAdmin], [this.effectsAnalyzer.source, e.args])))
                     return
-                this.effectsAnalyzer.setAdmin(contractId, newAdmin)
+                this.effectsAnalyzer.setAdmin(contract, newAdmin)
                 if (topics.length > 2) {
-                    mapSacContract(this.effectsAnalyzer, contractId, xdrParseAsset(xdrParseScVal(topics[2])))
+                    mapSacContract(this.effectsAnalyzer, contract, xdrParseAsset(xdrParseScVal(topics[2])))
                 }
             }
                 break

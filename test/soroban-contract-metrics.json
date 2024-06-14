@@ -8,8 +8,9 @@
       "expected": [
         [
           {
-            "source": "GB6VEGSQX2EHSROHRHXX7XGPI7EOBOHU5FB5AZCGSNSMS3YG76BGUIYN",
             "type": "contractError",
+            "source": "GB6VEGSQX2EHSROHRHXX7XGPI7EOBOHU5FB5AZCGSNSMS3YG76BGUIYN",
+            "contract": "CC5RQJXODHR6OF3OCR23GTWWSL2WSAIFCP4NDXEJOQ5SOMCCXR5EADXJ",
             "code": 13,
             "details": [
               "trustline entry is missing for account",
@@ -19,6 +20,7 @@
           {
             "type": "contractError",
             "source": "GB6VEGSQX2EHSROHRHXX7XGPI7EOBOHU5FB5AZCGSNSMS3YG76BGUIYN",
+            "contract": "CDFEEEZYIG7R7RFMMEPAX5HCPGZLJ3GFUPGHXVP6IE3J2OVWFVUEMCYD",
             "code": 13,
             "details": [
               "contract try_call failed",
@@ -33,6 +35,7 @@
           {
             "type": "contractMetrics",
             "source": "GB6VEGSQX2EHSROHRHXX7XGPI7EOBOHU5FB5AZCGSNSMS3YG76BGUIYN",
+            "contract": "CD73N3TNZEUPBGBAOAKKG57NROGJYXA53A7VVO55KQRRGR5FXJNA77QK",
             "cpu_insn": 25470499,
             "emit_event": 5,
             "emit_event_byte": 1176,
