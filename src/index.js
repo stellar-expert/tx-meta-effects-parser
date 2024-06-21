@@ -134,18 +134,24 @@ function parseTxOperationsMeta({network, tx, result, meta, mapSac = false, proce
                 meta: opMeta[i]?.changes(),
                 result: opResults[i], network
             }
+            const isSorobanInvocation = operation.type === 'invokeHostFunction'
             //only for Soroban contract invocation
-            if (operation.type === 'invokeHostFunction') {
-                const sorobanMeta = metaValue.sorobanMeta()
+            if (isSorobanInvocation) {
+                const sorobanMeta = metaValue._attributes.sorobanMeta
                 params.events = sorobanMeta.events()
                 params.diagnosticEvents = sorobanMeta.diagnosticEvents()
                 params.mapSac = mapSac
                 params.processSystemEvents = processSystemEvents
+                //process fee stats
+
             }
             const analyzer = new EffectsAnalyzer(params)
             operation.effects = analyzer.analyze()
             if (analyzer.sacMap && !isEmptyObject(analyzer.sacMap)) {
                 operation.sacMap = analyzer.sacMap
+            }
+            if (isSorobanInvocation) {
+                analyzer.addFeeMetric(metaValue)
             }
         }
     }

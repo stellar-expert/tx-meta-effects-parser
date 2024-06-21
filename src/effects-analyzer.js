@@ -185,6 +185,20 @@ class EffectsAnalyzer {
         metrics[metric] = value
     }
 
+    addFeeMetric(metaValue) {
+        const sorobanExt = metaValue._attributes.sorobanMeta._attributes.ext._value
+        if (sorobanExt) {
+            const attrs = sorobanExt._attributes
+            const fee = {
+                nonrefundable: parseLargeInt(attrs.totalNonRefundableResourceFeeCharged),
+                refundable: parseLargeInt(attrs.totalRefundableResourceFeeCharged),
+                rent: parseLargeInt(attrs.rentFeeCharged)
+            }
+            const contract = StrKey.encodeContract(this.operation.func._value.contractAddress()._value)
+            this.addMetric(contract, 'fee', fee)
+        }
+    }
+
     setOptions() {
         const sourceAccount = normalizeAddress(this.source)
         const {before, after} = this.changes.find(ch => ch.type === 'account' && ch.before.address === sourceAccount)
@@ -960,6 +974,10 @@ function encodeSponsorshipEffectName(action, type) {
             throw new UnexpectedTxMetaChangeError({action, type})
     }
     return effectTypes[`${type}Sponsorship${actionKey}`]
+}
+
+function parseLargeInt(largeInt) {
+    return largeInt._value.toString()
 }
 
 module.exports = {EffectsAnalyzer, processFeeChargedEffect}
