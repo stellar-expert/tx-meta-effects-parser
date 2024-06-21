@@ -1,7 +1,6 @@
 const {StrKey} = require('@stellar/stellar-base')
 const effectTypes = require('../effect-types')
 const {xdrParseScVal, xdrParseAsset, isContractAddress} = require('../parser/tx-xdr-parser-utils')
-const {contractIdFromPreimage} = require('../parser/contract-preimage-encoder')
 const {mapSacContract} = require('./sac-contract-mapper')
 
 const EVENT_TYPES = {
@@ -65,7 +64,7 @@ class EventsAnalyzer {
         const {diagnosticEvents, processSystemEvents} = this.effectsAnalyzer
         if (!diagnosticEvents)
             return
-        const opContractId = retrieveOpContractId(this.effectsAnalyzer.operation, this.effectsAnalyzer.network)
+        const opContractId = this.effectsAnalyzer.retrieveOpContractId()
         //diagnostic events
         for (const evt of diagnosticEvents) {
             if (!processSystemEvents && !evt.inSuccessfulContractCall())
@@ -303,20 +302,6 @@ function processEventBodyValue(value) {
     if (!innerValue) //scVoid
         return undefined
     return xdrParseScVal(value) //other scValue
-}
-
-function retrieveOpContractId(operation, network) {
-    const funcValue = operation.func._value._attributes
-    if (!funcValue)
-        return null //WASM upload
-    let address = funcValue.contractAddress?._value
-    if (!address) {
-        const preimage = funcValue.contractIdPreimage
-        if (preimage) {
-            address = contractIdFromPreimage(preimage, network)
-        }
-    }
-    return address
 }
 
 module.exports = EventsAnalyzer

@@ -194,8 +194,7 @@ class EffectsAnalyzer {
                 refundable: parseLargeInt(attrs.totalRefundableResourceFeeCharged),
                 rent: parseLargeInt(attrs.rentFeeCharged)
             }
-            const contract = StrKey.encodeContract(this.operation.func._value.contractAddress()._value)
-            this.addMetric(contract, 'fee', fee)
+            this.addMetric(this.retrieveOpContractId(), 'fee', fee)
         }
     }
 
@@ -910,6 +909,18 @@ class EffectsAnalyzer {
                 default:
                     throw new UnexpectedTxMetaChangeError(change)
             }
+    }
+
+    retrieveOpContractId() {
+        const funcValue = this.operation.func._value._attributes
+        if (funcValue) {
+            if (funcValue.contractAddress)
+                return StrKey.encodeContract(funcValue.contractAddress._value)
+            const preimage = funcValue.contractIdPreimage
+            if (preimage)
+                return contractIdFromPreimage(preimage, this.network)
+        }
+        return null
     }
 }
 
