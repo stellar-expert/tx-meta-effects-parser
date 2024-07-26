@@ -7,6 +7,7 @@ const {contractIdFromPreimage} = require('./parser/contract-preimage-encoder')
 const EventsAnalyzer = require('./aggregation/events-analyzer')
 const AssetSupplyAnalyzer = require('./aggregation/asset-supply-analyzer')
 const {UnexpectedTxMetaChangeError, TxMetaEffectParserError} = require('./errors')
+const {mapSacContract} = require('./aggregation/sac-contract-mapper')
 
 class EffectsAnalyzer {
     constructor({operation, meta, result, network, events, diagnosticEvents, mapSac, processSystemEvents}) {
@@ -571,6 +572,9 @@ class EffectsAnalyzer {
     }
 
     processBalanceChange(account, asset, beforeBalance, afterBalance) {
+        if (this.isContractCall) { //map contract=>asset proactively
+            mapSacContract(this, undefined, asset)
+        }
         const balanceChange = BigInt(afterBalance) - BigInt(beforeBalance)
         if (balanceChange < 0n) {
             this.debit((-balanceChange).toString(), asset, account, afterBalance)
@@ -921,6 +925,13 @@ class EffectsAnalyzer {
                 return contractIdFromPreimage(preimage, this.network)
         }
         return null
+    }
+
+    resolveAsset(assetOrContract) {
+        if (!assetOrContract.startsWith('C') || !this.sacMap)
+            return assetOrContract
+        //try to resolve using SAC map
+        return this.sacMap[assetOrContract] || assetOrContract
     }
 }
 

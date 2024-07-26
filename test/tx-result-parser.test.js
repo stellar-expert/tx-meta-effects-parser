@@ -32,7 +32,8 @@ describe('Effects', () => {
             network: resolveNetwork(network),
             tx,
             result,
-            meta
+            meta,
+            mapSac: true
         })
 
         for (let i = 0; i < res.operations.length; i++) {

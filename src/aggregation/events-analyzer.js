@@ -155,30 +155,27 @@ class EventsAnalyzer {
                         classicAsset = null  //not an SAC event
                     }
                 }
-                if (classicAsset && (classicAsset.includes(from) || classicAsset.includes(to))) { //SAC transfer by asset issuer
-                    if (classicAsset.includes(from)) {
-                        this.effectsAnalyzer.mint(contract, amount)
-                        this.effectsAnalyzer.credit(amount, isContractAddress(to) ? contract : classicAsset, to)
+                if (classicAsset) {
+                    if (classicAsset.includes(from)) {  //SAC transfer by asset issuer
+                        this.effectsAnalyzer.mint(classicAsset, amount)
+                        this.effectsAnalyzer.credit(amount, classicAsset, to)
+                        return
                     }
-                    if (classicAsset.includes(to)) {
-                        this.effectsAnalyzer.debit(amount, isContractAddress(from) ? contract : classicAsset, from)
-                        this.effectsAnalyzer.burn(contract, amount)
+                    if (classicAsset.includes(to)) {  //SAC transfer by asset issuer
+                        this.effectsAnalyzer.debit(amount, classicAsset, from)
+                        this.effectsAnalyzer.burn(classicAsset, amount)
+                        return
+                    }
+                    if (isContractAddress(from)) {
+                        this.effectsAnalyzer.debit(amount, classicAsset, from)
+                    }
+                    if (isContractAddress(to)) {
+                        this.effectsAnalyzer.credit(amount, classicAsset, to)
                     }
                 } else { //other cases
-                    if (classicAsset && !isContractAddress(from)) { //classic asset bridged to Soroban
-                        this.effectsAnalyzer.burn(classicAsset, amount)
-                        this.effectsAnalyzer.mint(contract, amount)
-                    } else {
-                        this.effectsAnalyzer.debit(amount, contract, from)
-                    }
-                    if (classicAsset && !isContractAddress(to)) { //classic asset bridged from Soroban
-                        this.effectsAnalyzer.burn(contract, amount)
-                        this.effectsAnalyzer.mint(classicAsset, amount)
-                    } else {
-                        this.effectsAnalyzer.credit(amount, contract, to)
-                    }
+                    this.effectsAnalyzer.debit(amount, this.effectsAnalyzer.resolveAsset(contract), from)
+                    this.effectsAnalyzer.credit(amount, this.effectsAnalyzer.resolveAsset(contract), to)
                 }
-
             }
                 break
             case 'mint': {
@@ -188,14 +185,13 @@ class EventsAnalyzer {
                 const amount = processEventBodyValue(body.data())
                 if (!this.matchInvocationEffect(e => e.function === 'mint' && matchArrays([to, amount], e.args)))
                     return
-                this.effectsAnalyzer.addEffect({
-                    type: effectTypes.assetMinted,
-                    asset: contract,
-                    amount
-                })
-                this.effectsAnalyzer.credit(amount, contract, to)
                 if (topics.length > 3) {
                     mapSacContract(this.effectsAnalyzer, contract, xdrParseAsset(xdrParseScVal(topics[3])))
+                }
+                const asset = this.effectsAnalyzer.resolveAsset(contract)
+                this.effectsAnalyzer.mint(asset, amount)
+                if (isContractAddress(asset)) {
+                    this.effectsAnalyzer.credit(amount, asset, to)
                 }
             }
                 break
@@ -209,12 +205,14 @@ class EventsAnalyzer {
                     (e.function === 'burn_from' && matchArrays([undefined, from, amount], e.args))
                 ))
                     return
-
-                this.effectsAnalyzer.debit(amount, contract, from)
-                this.effectsAnalyzer.burn(contract, amount)
                 if (topics.length > 2) {
                     mapSacContract(this.effectsAnalyzer, contract, xdrParseAsset(xdrParseScVal(topics[2])))
                 }
+                const asset = this.effectsAnalyzer.resolveAsset(contract)
+                if (isContractAddress(asset)) {
+                    this.effectsAnalyzer.debit(amount, asset, from)
+                }
+                this.effectsAnalyzer.burn(asset, amount)
             }
                 break
             case 'clawback': {
@@ -224,11 +222,14 @@ class EventsAnalyzer {
                 const amount = processEventBodyValue(body.data())
                 if (!this.matchInvocationEffect(e => e.function === 'clawback' && matchArrays([from, amount], e.args)))
                     return
-                this.effectsAnalyzer.debit(amount, contract, from)
-                this.effectsAnalyzer.burn(contract, amount)
                 if (topics.length > 3) {
                     mapSacContract(this.effectsAnalyzer, contract, xdrParseAsset(xdrParseScVal(topics[3])))
                 }
+                const asset = this.effectsAnalyzer.resolveAsset(contract)
+                if (isContractAddress(asset)) {
+                    this.effectsAnalyzer.debit(amount, asset, from)
+                }
+                this.effectsAnalyzer.burn(asset, amount)
             }
                 break
             case 'set_admin': {
@@ -238,10 +239,10 @@ class EventsAnalyzer {
                 const newAdmin = processEventBodyValue(body.data())
                 if (!this.matchInvocationEffect(e => e.function === 'set_admin' && matchArrays([currentAdmin, newAdmin], [this.effectsAnalyzer.source, e.args])))
                     return
-                this.effectsAnalyzer.setAdmin(contract, newAdmin)
                 if (topics.length > 2) {
                     mapSacContract(this.effectsAnalyzer, contract, xdrParseAsset(xdrParseScVal(topics[2])))
                 }
+                this.effectsAnalyzer.setAdmin(contract, newAdmin)
             }
                 break
             /*case 'approve': { //TODO: think about processing this effect
