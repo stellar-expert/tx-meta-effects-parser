@@ -190,7 +190,7 @@ class EventsAnalyzer {
                 }
                 const asset = this.effectsAnalyzer.resolveAsset(contract)
                 this.effectsAnalyzer.mint(asset, amount)
-                if (isContractAddress(asset)) {
+                if (isContractAddress(asset) || isContractAddress(to)) {
                     this.effectsAnalyzer.credit(amount, asset, to)
                 }
             }
@@ -209,7 +209,7 @@ class EventsAnalyzer {
                     mapSacContract(this.effectsAnalyzer, contract, xdrParseAsset(xdrParseScVal(topics[2])))
                 }
                 const asset = this.effectsAnalyzer.resolveAsset(contract)
-                if (isContractAddress(asset)) {
+                if (isContractAddress(asset) || isContractAddress(from)) {
                     this.effectsAnalyzer.debit(amount, asset, from)
                 }
                 this.effectsAnalyzer.burn(asset, amount)
