@@ -158,19 +158,15 @@ class EventsAnalyzer {
                 if (classicAsset) {
                     if (classicAsset.includes(from)) {  //SAC transfer by asset issuer
                         this.effectsAnalyzer.mint(classicAsset, amount)
-                        this.effectsAnalyzer.credit(amount, classicAsset, to)
-                        return
-                    }
-                    if (classicAsset.includes(to)) {  //SAC transfer by asset issuer
-                        this.effectsAnalyzer.debit(amount, classicAsset, from)
-                        this.effectsAnalyzer.burn(classicAsset, amount)
-                        return
                     }
                     if (isContractAddress(from)) {
                         this.effectsAnalyzer.debit(amount, classicAsset, from)
                     }
                     if (isContractAddress(to)) {
                         this.effectsAnalyzer.credit(amount, classicAsset, to)
+                    }
+                    if (classicAsset.includes(to)) {  //SAC transfer by asset issuer
+                        this.effectsAnalyzer.burn(classicAsset, amount)
                     }
                 } else { //other cases
                     this.effectsAnalyzer.debit(amount, this.effectsAnalyzer.resolveAsset(contract), from)

@@ -132,7 +132,7 @@ class EffectsAnalyzer {
             type: effectTypes.accountDebited,
             source,
             asset,
-            amount
+            amount: validateAmount(amount)
         }
         if (balance !== undefined) {
             effect.balance = balance
@@ -147,7 +147,7 @@ class EffectsAnalyzer {
             type: effectTypes.accountCredited,
             source,
             asset,
-            amount
+            amount: validateAmount(amount)
         }
         if (balance !== undefined) {
             effect.balance = balance
@@ -162,7 +162,7 @@ class EffectsAnalyzer {
         this.addEffect({
             type: effectTypes.assetMinted,
             asset,
-            amount
+            amount: validateAmount(amount)
         }, position)
     }
 
@@ -170,7 +170,7 @@ class EffectsAnalyzer {
         this.addEffect({
             type: effectTypes.assetBurned,
             asset,
-            amount
+            amount: validateAmount(amount)
         }, position)
     }
 
@@ -996,6 +996,12 @@ function encodeSponsorshipEffectName(action, type) {
             throw new UnexpectedTxMetaChangeError({action, type})
     }
     return effectTypes[`${type}Sponsorship${actionKey}`]
+}
+
+function validateAmount(amount) {
+    if (amount < 0)
+        throw new TxMetaEffectParserError('Negative balance change amount: ' + amount.toString())
+    return amount
 }
 
 function parseLargeInt(largeInt) {

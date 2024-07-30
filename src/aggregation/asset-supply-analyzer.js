@@ -50,9 +50,9 @@ class AssetSupplyAnalyzer {
                 this.supplyChanges |= 1
             }
         }
-        if ((this.supplyChanges & 3) === 3) { //analyze possible collapsible mints only if both mint and burn effects recorded
+        /*if ((this.supplyChanges & 3) === 3) { //analyze possible collapsible mints only if both mint and burn effects recorded
             new CollapsibleMintsAnalyzer(this.effectsAnalyzer).removeCollapsingMints()
-        }
+        }*/
     }
 
     /**
@@ -181,7 +181,7 @@ class CollapsibleMintsAnalyzer {
             if (sum > 0n) { //asset minted
                 this.effectsAnalyzer.mint(asset, sum.toString(), true) //insert mint effect
             } else if (sum < 0n) { //asset burned
-                this.effectsAnalyzer.burn(asset, sum.toString(), position) //insert burn effect at the position of the last removed effect
+                this.effectsAnalyzer.burn(asset, (-sum).toString(), position) //insert burn effect at the position of the last removed effect
             }
             //if sum=0 then both effects were annihilated and removed
         }
