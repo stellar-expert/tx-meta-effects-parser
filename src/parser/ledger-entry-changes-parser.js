@@ -252,7 +252,7 @@ function parseContractData(value) {
                 case 'contractExecutableStellarAsset':
                     entry.kind = 'fromAsset'
                     if (!instance.storage.length)
-                        throw new TxMetaEffectParserError('Unexpected asset initialization metadata')
+                        return undefined //likely the asset has been created "fromAddress" - no metadata in this case
                     const metaArgs = instance.storage[0]._attributes
                     if (metaArgs.key._value.toString() !== 'METADATA')
                         throw new TxMetaEffectParserError('Unexpected asset initialization metadata')
