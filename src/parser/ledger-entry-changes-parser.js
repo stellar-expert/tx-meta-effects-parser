@@ -251,7 +251,7 @@ function parseContractData(value) {
             switch (type) {
                 case 'contractExecutableStellarAsset':
                     entry.kind = 'fromAsset'
-                    if (!instance.storage.length)
+                    if (!instance.storage?.length)
                         return undefined //likely the asset has been created "fromAddress" - no metadata in this case
                     const metaArgs = instance.storage[0]._attributes
                     if (metaArgs.key._value.toString() !== 'METADATA')
