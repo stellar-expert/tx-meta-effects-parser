@@ -782,12 +782,21 @@ class EffectsAnalyzer {
     processContractChanges({action, before, after}) {
         if (action !== 'created' && action !== 'updated')
             throw new UnexpectedTxMetaChangeError({type: 'contract', action})
-        const {kind, contract, hash} = after
+        const {kind, contract} = after
         const effect = {
             type: effectTypes.contractCreated,
             contract,
-            kind,
-            wasmHash: hash
+            kind
+        }
+        switch (kind) {
+            case 'fromAsset':
+                effect.asset = after.asset
+                break
+            case 'wasm':
+                effect.wasmHash = after.hash
+                break
+            default:
+                throw new TxMetaEffectParserError('Unexpected contract type: ' + kind)
         }
         if (action === 'created') {
             if (this.effects.some(e => e.contract === contract))
@@ -798,7 +807,7 @@ class EffectsAnalyzer {
             if (before.storage?.length || after.storage?.length) {
                 this.processInstanceDataChanges(before, after)
             }
-            if (before.hash === hash) //skip if hash unchanged
+            if (before.hash === after.hash) //skip if hash unchanged
                 return
         }
         this.addEffect(effect)

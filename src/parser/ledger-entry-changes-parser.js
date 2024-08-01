@@ -246,52 +246,20 @@ function parseContractData(value) {
                 entry: 'contract',
                 contract: owner
             }
-            const type = valueAttr.instance().executable().switch().name
+            const instance = valueAttr.instance()._attributes
+            const type = instance.executable._switch.name
             switch (type) {
                 case 'contractExecutableStellarAsset':
-                    entry.type = 'token'
-                    /**
-                     * data._attributes.val._value._attributes.storage
-                     *
-                     * ScVal: [scvContractInstance]
-                     * instance
-                     * executable: [contractExecutableStellarAsset]
-                     * storage: Array[3]
-                     * [0]
-                     * key: [scvSymbol]
-                     * sym: METADATA
-                     * val: [scvMap]
-                     * map: Array[3]
-                     * [0]
-                     * key: [scvSymbol]
-                     * sym: decimal
-                     * val: [scvU32]
-                     * u32: 7
-                     * [1]
-                     * key: [scvSymbol]
-                     * sym: name
-                     * val: [scvString]
-                     * str: ICGVCWUQXIHO:GBD2ALDOSNTEW2QWQA6RGQXTZVWGFZYTT5DYZDCPPGNOYTXOAQ6RFUAC
-                     * [2]
-                     * key: [scvSymbol]
-                     * sym: symbol
-                     * val: [scvString]
-                     * str: ICGVCWUQXIHO
-                     * [1]
-                     * key: [scvVec]
-                     * vec: Array[1]
-                     * [0]: [scvSymbol]
-                     * sym: Admin
-                     * val: [scvAddress]
-                     * address: [scAddressTypeAccount]
-                     * accountId: [publicKeyTypeEd25519]
-                     * ed25519: GBD2ALDOSNTEW2QWQA6RGQXTZVWGFZYTT5DYZDCPPGNOYTXOAQ6RFUAC
-                     */
-                    return undefined
+                    entry.kind = 'fromAsset'
+                    if (!instance.storage.length)
+                        throw new TxMetaEffectParserError('Unexpected asset initialization metadata')
+                    const metaArgs = instance.storage[0]._attributes
+                    if (metaArgs.key._value.toString() !== 'METADATA')
+                        throw new TxMetaEffectParserError('Unexpected asset initialization metadata')
+                    entry.asset = xdrParseAsset(metaArgs.val._value[1]._attributes.val._value.toString())
                     break
                 case 'contractExecutableWasm':
                     entry.kind = 'wasm'
-                    const instance = valueAttr.instance()._attributes
                     entry.hash = instance.executable.wasmHash().toString('hex')
                     if (instance.storage?.length) {
                         entry.storage = instance.storage.map(entry => ({
