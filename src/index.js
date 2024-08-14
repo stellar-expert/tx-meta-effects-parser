@@ -18,10 +18,11 @@ const effectTypes = require('./effect-types')
  * @param {String|Buffer|xdr.TransactionMeta} [meta] - Base64-encoded tx envelope meta
  * @param {Boolean} [mapSac] - Whether to create a map SAC->Asset
  * @param {Boolean} [processSystemEvents] - Emit effects for contract errors and resource stats
+ * @param {Boolean} [processFailedOpEffects] - Whether to generate operation effects for failed/rejected transactions
  * @param {Number} [protocol] - Specific Stellar protocol version for the executed transaction
  * @return {ParsedTxOperationsMetadata}
  */
-function parseTxOperationsMeta({network, tx, result, meta, mapSac = false, processSystemEvents = false, protocol}) {
+function parseTxOperationsMeta({network, tx, result, meta, mapSac = false, processSystemEvents = false, processFailedOpEffects = false, protocol}) {
     if (!network)
         throw new TypeError(`Network passphrase argument is required.`)
     if (typeof network !== 'string')
@@ -96,7 +97,8 @@ function parseTxOperationsMeta({network, tx, result, meta, mapSac = false, proce
     const {success, opResults} = parseTxResult(parsedResult)
     if (!success || isFeeBump && !feeBumpSuccess) {
         res.failed = true
-        return res
+        if (!processFailedOpEffects)
+            return res
     }
 
     //retrieve operations result metadata
@@ -128,11 +130,12 @@ function parseTxOperationsMeta({network, tx, result, meta, mapSac = false, proce
     //analyze operation effects for each operation
     for (let i = 0; i < parsedTx.operations.length; i++) {
         const operation = parsedTx.operations[i]
-        if (success) {
+        if (success || processFailedOpEffects) {
             const params = {
                 operation,
-                meta: opMeta[i]?.changes(),
-                result: opResults[i], network
+                meta: opMeta[i]?.changes() || [],
+                result: opResults[i], network,
+                processFailedOpEffects
             }
             const isSorobanInvocation = operation.type === 'invokeHostFunction'
             //only for Soroban contract invocation
@@ -142,8 +145,6 @@ function parseTxOperationsMeta({network, tx, result, meta, mapSac = false, proce
                 params.diagnosticEvents = sorobanMeta.diagnosticEvents()
                 params.mapSac = mapSac
                 params.processSystemEvents = processSystemEvents
-                //process fee stats
-
             }
             const analyzer = new EffectsAnalyzer(params)
             operation.effects = analyzer.analyze()

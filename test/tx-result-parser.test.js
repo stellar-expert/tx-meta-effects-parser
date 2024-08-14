@@ -42,13 +42,15 @@ describe('Effects', () => {
     })
 
     test.each(require('./soroban-contract-metrics.json'))('Analyze contract metrics Soroban effects - %s', (description, params) => {
-        const {tx, result, meta, expected, network} = params
+        const {tx, result, meta, expected, network, processFailedOpEffects} = params
         const res = parseTxOperationsMeta({
             network: resolveNetwork(network),
             tx,
             result,
             meta,
-            processSystemEvents: true
+            processSystemEvents: true,
+            mapSac: true,
+            processFailedOpEffects
         })
         expect(res.operations[0].effects.filter(e => e.type === effectTypes.contractMetrics || e.type === effectTypes.contractError)).toEqual(expected[0])
     })

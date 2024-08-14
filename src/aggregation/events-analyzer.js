@@ -67,7 +67,7 @@ class EventsAnalyzer {
         const opContractId = this.effectsAnalyzer.retrieveOpContractId()
         //diagnostic events
         for (const evt of diagnosticEvents) {
-            if (!processSystemEvents && !evt.inSuccessfulContractCall())
+            if (!processSystemEvents && !(evt.inSuccessfulContractCall() || this.effectsAnalyzer.processFailedOpEffects))
                 continue //throw new UnexpectedTxMetaChangeError({type: 'diagnostic_event', action: 'failed'})
             //parse event
             const event = evt.event()

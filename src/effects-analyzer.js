@@ -6,11 +6,11 @@ const {analyzeSignerChanges} = require('./aggregation/signer-changes-analyzer')
 const {contractIdFromPreimage} = require('./parser/contract-preimage-encoder')
 const EventsAnalyzer = require('./aggregation/events-analyzer')
 const AssetSupplyAnalyzer = require('./aggregation/asset-supply-analyzer')
-const {UnexpectedTxMetaChangeError, TxMetaEffectParserError} = require('./errors')
 const {mapSacContract} = require('./aggregation/sac-contract-mapper')
+const {UnexpectedTxMetaChangeError, TxMetaEffectParserError} = require('./errors')
 
 class EffectsAnalyzer {
-    constructor({operation, meta, result, network, events, diagnosticEvents, mapSac, processSystemEvents}) {
+    constructor({operation, meta, result, network, events, diagnosticEvents, mapSac, processSystemEvents, processFailedOpEffects}) {
         //set execution context
         if (!operation.source)
             throw new TxMetaEffectParserError('Operation source is not explicitly defined')
@@ -20,6 +20,7 @@ class EffectsAnalyzer {
         this.changes = parseLedgerEntryChanges(meta)
         this.source = this.operation.source
         this.events = events
+        this.processFailedOpEffects = processFailedOpEffects
         if (diagnosticEvents?.length) {
             this.diagnosticEvents = diagnosticEvents
             if (processSystemEvents) {
@@ -103,10 +104,7 @@ class EffectsAnalyzer {
         //calculate minted/burned assets
         new AssetSupplyAnalyzer(this).analyze()
         //process state data changes in the end
-        for (const change of this.changes)
-            if (change.type === 'contractData') {
-                this.processContractDataChanges(change)
-            }
+        this.processStateChanges()
         return this.effects
     }
 
@@ -813,7 +811,7 @@ class EffectsAnalyzer {
         this.addEffect(effect)
     }
 
-    processContractDataChanges({action, before, after}) {
+    processContractStateEntryChanges({action, before, after}) {
         const {owner, key, durability} = after || before
         const effect = {
             type: '',
@@ -921,6 +919,13 @@ class EffectsAnalyzer {
                     break
                 default:
                     throw new UnexpectedTxMetaChangeError(change)
+            }
+    }
+
+    processStateChanges() {
+        for (const change of this.changes)
+            if (change.type === 'contractData') {
+                this.processContractStateEntryChanges(change)
             }
     }
 
