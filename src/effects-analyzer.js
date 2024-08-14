@@ -422,6 +422,8 @@ class EffectsAnalyzer {
     }
 
     processDexOperationEffects() {
+        if (!this.result)
+            return
         //process trades first
         for (const claimedOffer of this.result.claimedOffers) {
             const trade = {
