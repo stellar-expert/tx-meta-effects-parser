@@ -81,6 +81,7 @@ const effectTypes = {
     signerSponsorshipRemoved: 'signerSponsorshipRemoved',
 
     contractCodeUploaded: 'contractCodeUploaded',
+    contractCodeRemoved: 'contractCodeRemoved',
 
     contractCreated: 'contractCreated',
     contractUpdated: 'contractUpdated',
@@ -93,7 +94,9 @@ const effectTypes = {
     contractDataRemoved: 'contractDataRemoved',
 
     contractEvent: 'contractEvent',
-    contractMetrics: 'contractMetrics'
+    contractMetrics: 'contractMetrics',
+
+    setTtl: 'setTtl'
 }
 
 module.exports = effectTypes

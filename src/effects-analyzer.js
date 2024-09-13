@@ -8,6 +8,7 @@ const EventsAnalyzer = require('./aggregation/events-analyzer')
 const AssetSupplyAnalyzer = require('./aggregation/asset-supply-analyzer')
 const {mapSacContract} = require('./aggregation/sac-contract-mapper')
 const {UnexpectedTxMetaChangeError, TxMetaEffectParserError} = require('./errors')
+const {generateContractCodeEntryHash} = require('./parser/ledger-key')
 
 class EffectsAnalyzer {
     constructor({operation, meta, result, network, events, diagnosticEvents, mapSac, processSystemEvents, processFailedOpEffects}) {
@@ -95,16 +96,16 @@ class EffectsAnalyzer {
         if (parse) {
             parse.call(this)
         }
+        //process Soroban events
+        new EventsAnalyzer(this).analyze()
+        //process state data changes in the end
+        this.processStateChanges()
         //process ledger entry changes
         this.processChanges()
         //handle effects that are processed indirectly
         this.processSponsorshipEffects()
-        //process Soroban events
-        new EventsAnalyzer(this).analyze()
         //calculate minted/burned assets
         new AssetSupplyAnalyzer(this).analyze()
-        //process state data changes in the end
-        this.processStateChanges()
         return this.effects
     }
 
@@ -358,13 +359,16 @@ class EffectsAnalyzer {
                     this.addEffect(effect)
                 }
                 break
-            case 'wasm':
+            case 'wasm': {
+                const codeHash = hash(value)
                 this.addEffect({
                     type: effectTypes.contractCodeUploaded,
                     wasm: value.toString('base64'),
-                    wasmHash: hash(value).toString('hex')
+                    wasmHash: codeHash.toString('hex'),
+                    keyHash: generateContractCodeEntryHash(codeHash)
                 })
                 break
+            }
             case 'createContract':
                 const preimage = value.contractIdPreimage()
                 const executable = value.executable()
@@ -398,7 +402,7 @@ class EffectsAnalyzer {
                     default:
                         throw new TxMetaEffectParserError('Unknown contract type: ' + executableType)
                 }
-                this.addEffect(effect)
+                this.addEffect(effect, 0)
                 break
             default:
                 throw new TxMetaEffectParserError('Unknown host function call type: ' + func.arm())
@@ -765,7 +769,7 @@ class EffectsAnalyzer {
         const balanceEffects = this.effects.filter(e => (e.type === effectTypes.accountCredited || e.type === effectTypes.accountDebited) && e.source === account && e.asset === effect.owner)
         if (balanceEffects.length !== 1) //we can set balance only when we found 1-1 mapping, if there are several balance changes, we can't establish balance relation
             return
-        if (effect.type === effectTypes.contractDataRemoved) { //balance completely removed
+        if (effect.type === effectTypes.contractDataRemoved) { //balance completely removed - this may be a reversible operation if the balance simply expired
             balanceEffects[0].balance = '0'
             return
         }
@@ -782,8 +786,8 @@ class EffectsAnalyzer {
     processContractChanges({action, before, after}) {
         if (action !== 'created' && action !== 'updated')
             throw new UnexpectedTxMetaChangeError({type: 'contract', action})
-        const {kind, contract} = after
-        const effect = {
+        const {kind, owner: contract, keyHash} = after
+        let effect = {
             type: effectTypes.contractCreated,
             contract,
             kind
@@ -793,33 +797,38 @@ class EffectsAnalyzer {
                 effect.asset = after.asset
                 break
             case 'wasm':
-                effect.wasmHash = after.hash
+                effect.wasmHash = after.wasmHash
                 break
             default:
                 throw new TxMetaEffectParserError('Unexpected contract type: ' + kind)
         }
         if (action === 'created') {
-            if (this.effects.some(e => e.contract === contract))
-                return //skip contract creation effects processed by top-level createContract operation call
+            if (this.effects.some(e => e.type === effectTypes.contractCreated && e.contract === contract)) {
+                effect = undefined //skip contract creation effects processed by top-level createContract operation call
+            }
         } else if (action === 'updated') {
             effect.type = effectTypes.contractUpdated
-            effect.prevWasmHash = before.hash
-            if (before.storage?.length || after.storage?.length) {
-                this.processInstanceDataChanges(before, after)
+            effect.prevWasmHash = before.wasmHash
+            if (before.wasmHash === after.wasmHash) {//skip if hash unchanged
+                effect = undefined
             }
-            if (before.hash === after.hash) //skip if hash unchanged
-                return
         }
-        this.addEffect(effect)
+        if (effect) {
+            this.addEffect(effect, effect.type === effectTypes.contractCreated ? 0 : undefined)
+        }
+        if (before?.storage?.length || after?.storage?.length) {
+            this.processInstanceDataChanges(before, after)
+        }
     }
 
     processContractStateEntryChanges({action, before, after}) {
-        const {owner, key, durability} = after || before
+        const {owner, key, durability, keyHash} = after || before
         const effect = {
             type: '',
             owner,
+            key,
             durability,
-            key
+            keyHash
         }
         switch (action) {
             case 'created':
@@ -842,9 +851,27 @@ class EffectsAnalyzer {
         this.processContractBalance(effect)
     }
 
+    processContractCodeChanges({type, action, before, after}) {
+        const {hash, keyHash} = after || before
+        switch (action) {
+            case 'created':
+                break //processed separately
+            case 'updated':
+                break //it doesn't change the state
+            case 'removed':
+                const effect = {
+                    type: effectTypes.contractCodeRemoved,
+                    wasmHash: hash,
+                    keyHash
+                }
+                this.addEffect(effect)
+                break
+        }
+    }
+
     processInstanceDataChanges(before, after) {
-        const storageBefore = before.storage || []
-        const storageAfter = [...(after.storage || [])]
+        const storageBefore = before?.storage || []
+        const storageAfter = [...(after?.storage || [])]
         for (const {key, val} of storageBefore) {
             let newVal
             for (let i = 0; i < storageAfter.length; i++) {
@@ -858,7 +885,7 @@ class EffectsAnalyzer {
             if (newVal === undefined) { //removed
                 const effect = {
                     type: effectTypes.contractDataRemoved,
-                    owner: after.contract || before.contract,
+                    owner: after?.owner || before.owner,
                     key,
                     prevValue: val,
                     durability: 'instance'
@@ -871,7 +898,7 @@ class EffectsAnalyzer {
 
             const effect = {
                 type: effectTypes.contractDataUpdated,
-                owner: after.contract || before.contract,
+                owner: after?.owner || before.owner,
                 key,
                 value: newVal,
                 prevValue: val,
@@ -883,13 +910,34 @@ class EffectsAnalyzer {
         for (const {key, val} of storageAfter) {
             const effect = {
                 type: effectTypes.contractDataCreated,
-                owner: after.contract || before.contract,
+                owner: after?.owner || before.owner,
                 key,
                 value: val,
                 durability: 'instance'
             }
             this.addEffect(effect)
         }
+    }
+
+    processTtlChanges({action, before, after}) {
+        /*if (action === 'removed')
+            throw new UnexpectedTxMetaChangeError({type: 'ttl', action})*/
+        const {keyHash, ttl} = after || before
+        const stateEffect = this.effects.find(e => e.keyHash === keyHash && e.type !== effectTypes.setTtl)
+        const effect = {
+            type: effectTypes.setTtl,
+            keyHash,
+            ttl
+        }
+        if (stateEffect) {
+            if (stateEffect.type.includes('contractCode')) {
+                effect.kind = 'contractCode'
+            } else if (stateEffect.type.includes('contractData')) {
+                effect.kind = 'contractData'
+                effect.owner = stateEffect.owner
+            }
+        }
+        this.addEffect(effect)
     }
 
     processChanges() {
@@ -914,10 +962,15 @@ class EffectsAnalyzer {
                     this.processDataEntryChanges(change)
                     break
                 case 'contractData':
-                    //this.processContractDataChanges(change)
+                    if (change.before?.kind || change.after?.kind) {
+                        this.processContractChanges(change)
+                    }
                     break
-                case 'contract':
-                    this.processContractChanges(change)
+                case 'contractCode':
+                    this.processContractCodeChanges(change)
+                    break
+                case 'ttl':
+                    this.processTtlChanges(change)
                     break
                 default:
                     throw new UnexpectedTxMetaChangeError(change)

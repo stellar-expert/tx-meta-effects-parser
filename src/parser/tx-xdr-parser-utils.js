@@ -234,7 +234,6 @@ function xdrParseAsset(src) {
         return `${src.code}-${src.issuer}-${src.type || (src.code.length > 4 ? 2 : 1)}`
 }
 
-
 function xdrParseScVal(value, treatBytesAsContractId = false) {
     if (typeof value === 'string') {
         value = xdr.ScVal.fromXDR(value, 'base64')

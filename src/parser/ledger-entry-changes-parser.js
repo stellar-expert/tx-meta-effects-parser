@@ -1,10 +1,11 @@
 const {StrKey} = require('@stellar/stellar-base')
-const {TxMetaEffectParserError} = require('../errors')
+const {TxMetaEffectParserError, UnexpectedTxMetaChangeError} = require('../errors')
 const {xdrParseAsset, xdrParseAccountAddress, xdrParseClaimant, xdrParsePrice, xdrParseSignerKey} = require('./tx-xdr-parser-utils')
+const {generateContractStateEntryHash, generateContractCodeEntryHash} = require('./ledger-key')
 
 /**
  * @typedef {{}} ParsedLedgerEntryMeta
- * @property {'account'|'trustline'|'offer'|'data'|'liquidityPool'|'claimableBalance'|'contractData'|'contractCode'} type - Ledger entry type
+ * @property {'account'|'trustline'|'offer'|'data'|'liquidityPool'|'claimableBalance'|'contractData'|'contractCode'|'ttl'} type - Ledger entry type
  * @property {'created'|'updated'|'removed'} action - Ledger modification action
  * @property {{}} before - Ledger entry state before changes applied
  * @property {{}} after - Ledger entry state after changes application
@@ -19,35 +20,39 @@ function parseLedgerEntryChanges(ledgerEntryChanges) {
     let state
     for (let i = 0; i < ledgerEntryChanges.length; i++) {
         const entry = ledgerEntryChanges[i]
-        const actionType = entry.arm()
-
-        const stateData = parseEntry(entry.value(), actionType)
+        const action = entry._arm
+        const stateData = parseEntry(entry, action)
         if (stateData === undefined)
             continue
-        const change = {action: actionType}
-        switch (actionType) {
+        const change = {action}
+        const type = entry._value._arm
+        switch (action) {
             case 'state':
                 state = stateData
                 continue
             case 'created':
+                if (type === 'contractCode')
+                    continue //processed in operation handler
                 change.before = null
                 change.after = stateData
                 change.type = stateData.entry
                 break
             case 'updated':
+                if (type === 'contractCode')
+                    throw new UnexpectedTxMetaChangeError({type, action})
                 change.before = state
                 change.after = stateData
                 change.type = stateData.entry
                 break
             case 'removed':
-                if (!state && entry._value._arm === 'ttl')
+                if (!state && type === 'ttl')
                     continue //skip expiration processing for now
                 change.before = state
                 change.after = null
                 change.type = state.entry
                 break
             default:
-                throw new TxMetaEffectParserError(`Unknown change entry type: ${actionType}`)
+                throw new TxMetaEffectParserError(`Unknown change entry type: ${action}`)
         }
         changes.push(change)
         state = null
@@ -57,12 +62,13 @@ function parseLedgerEntryChanges(ledgerEntryChanges) {
 
 function parseEntry(entry, actionType) {
     if (actionType === 'removed')
-        return null //parseEntryData(entry)
-    const parsed = parseEntryData(entry.data())
+        return null
+    const value = entry.value()
+    const parsed = parseEntryData(value.data())
     if (parsed === null)
         return null
     //parsed.modified = entry.lastModifiedLedgerSeq()
-    return parseLedgerEntryExt(parsed, entry)
+    return parseLedgerEntryExt(parsed, value)
 }
 
 function parseEntryData(data) {
@@ -85,9 +91,9 @@ function parseEntryData(data) {
         case 'contractData':
             return parseContractData(data)
         case 'contractCode':
-            return undefined
+            return parseContractCode(data)
         case 'ttl':
-            return undefined
+            return parseTtl(data)
         default:
             throw new TxMetaEffectParserError(`Unknown meta entry type: ${updatedEntryType}`)
     }
@@ -240,46 +246,51 @@ function parseContractData(value) {
     const owner = parseStateOwnerDataAddress(data.contract())
 
     const valueAttr = data.val()
-    switch (data.key().switch()?.name) {
-        case 'scvLedgerKeyContractInstance':
-            const entry = {
-                entry: 'contract',
-                contract: owner
-            }
-            const instance = valueAttr.instance()._attributes
-            const type = instance.executable._switch.name
-            switch (type) {
-                case 'contractExecutableStellarAsset':
-                    entry.kind = 'fromAsset'
-                    if (!instance.storage?.length)
-                        return undefined //likely the asset has been created "fromAddress" - no metadata in this case
-                    const metaArgs = instance.storage[0]._attributes
-                    if (metaArgs.key._value.toString() !== 'METADATA')
-                        throw new TxMetaEffectParserError('Unexpected asset initialization metadata')
-                    entry.asset = xdrParseAsset(metaArgs.val._value[1]._attributes.val._value.toString())
-                    break
-                case 'contractExecutableWasm':
-                    entry.kind = 'wasm'
-                    entry.hash = instance.executable.wasmHash().toString('hex')
-                    if (instance.storage?.length) {
-                        entry.storage = instance.storage.map(entry => ({
-                            key: entry.key().toXDR('base64'),
-                            val: entry.val().toXDR('base64')
-                        }))
-                    }
-                    break
-                default:
-                    throw new TxMetaEffectParserError('Unsupported executable type: ' + type)
-            }
-            return entry
-    }
-
-    return {
+    const entry = {
         entry: 'contractData',
         owner,
         key: data.key().toXDR('base64'),
         value: valueAttr.toXDR('base64'),
-        durability: data.durability().name
+        durability: data.durability().name,
+        keyHash: generateContractStateEntryHash(data)
+    }
+    if (data.key().switch()?.name === 'scvLedgerKeyContractInstance' && entry.durability === 'persistent') {
+        entry.durability = 'instance'
+        const instance = valueAttr.instance()._attributes
+        const type = instance.executable._switch.name
+        switch (type) {
+            case 'contractExecutableStellarAsset':
+                entry.kind = 'fromAsset'
+                if (instance.storage?.length) { //if not -- the asset has been created "fromAddress" - no metadata in this case
+                    const metaArgs = instance.storage[0]._attributes
+                    if (metaArgs.key._value.toString() !== 'METADATA')
+                        throw new TxMetaEffectParserError('Unexpected asset initialization metadata')
+                    entry.asset = xdrParseAsset(metaArgs.val._value[1]._attributes.val._value.toString())
+                }
+                break
+            case 'contractExecutableWasm':
+                entry.kind = 'wasm'
+                entry.wasmHash = instance.executable.wasmHash().toString('hex')
+                break
+            default:
+                throw new TxMetaEffectParserError('Unsupported executable type: ' + type)
+        }
+        if (instance.storage?.length) {
+            entry.storage = instance.storage.map(entry => ({
+                key: entry.key().toXDR('base64'),
+                val: entry.val().toXDR('base64')
+            }))
+        }
+    }
+    return entry
+}
+
+function parseTtl(data) {
+    const attrs = data._value._attributes
+    return {
+        entry: 'ttl',
+        keyHash: attrs.keyHash.toString('hex'),
+        ttl: attrs.liveUntilLedgerSeq
     }
 }
 
@@ -289,13 +300,14 @@ function parseStateOwnerDataAddress(contract) {
     return xdrParseAccountAddress(contract.accountId())
 }
 
-/*function parseContractCode(value) {
+function parseContractCode(value) {
     const contract = value.value()
+    const hash = contract.hash()
     return {
         entry: 'contractCode',
-        hash: contract.hash().toString('hex'),
-        code: contract.body().code().toString('base64')
+        hash: hash.toString('hex'),
+        keyHash: generateContractCodeEntryHash(hash)
     }
-}*/
+}
 
 module.exports = {parseLedgerEntryChanges}
