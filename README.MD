@@ -172,7 +172,8 @@ ClawbackClaimableBalance, InflationOp</td>
 {
   type: 'accountFlagsUpdated',
   source: 'GBWC…DXHN',
-  flags: 2
+  flags: 2,
+  prevFlags: 0
 }
 ```
 </td>
@@ -275,6 +276,7 @@ ClawbackClaimableBalance, InflationOp</td>
   type: 'trustlineCreated',
   source: 'GBWC…DXHN',
   asset: 'USD-GBKP…YDLI-1',
+  kind: 'asset',
   limit: '100',
   flags: 1
 }
@@ -295,6 +297,7 @@ ClawbackClaimableBalance, InflationOp</td>
   type: 'trustlineUpdated',
   source: 'GBWC…DXHN',
   asset: 'USD-GBKP…YDLI-1',
+  kind: 'asset',
   limit: '200',
   flags: 5
 }
@@ -314,7 +317,9 @@ ClawbackClaimableBalance, InflationOp</td>
 {
   type: 'trustlineRemoved',
   source: 'GBWC…DXHN',
-  asset: 'USD-GBKP…YDLI-1'
+  asset: 'USD-GBKP…YDLI-1',
+  kind: 'asset',
+  flags: 4,
 }
 ```
 
@@ -336,6 +341,47 @@ ClawbackClaimableBalance, InflationOp</td>
   asset: 'USD-GBWC…DXHN-1',
   flags: 5,
   prevFlags: 2
+}
+```
+
+</td>
+</tr>
+
+<tr>
+<td>
+<code>assetMinted</code>
+</td>
+<td>PaymentOp, PathPaymentStrictReceiveOp, PathPaymentStrictSendOp, CreateClaimableBalanceOp,
+ManageBuyOfferOp, ManageSellOfferOp, CreatePassiveOfferOp, DepositLiquidityOp</td>
+<td>
+
+```js
+{
+  type: 'assetMinted',
+  source: 'GBWC…DXHN',
+  asset: 'USD-GBWC…DXHN-1',
+  amount: 100,
+}
+```
+
+</td>
+</tr>
+
+<tr>
+<td>
+<code>assetBurned</code>
+</td>
+<td>PaymentOp, PathPaymentStrictReceiveOp, PathPaymentStrictSendOp, CreateClaimableBalanceOp, ManageBuyOfferOp, ManageSellOfferOp,
+CreatePassiveOfferOp, WithdrawLiquidityOp, ClawbackOp,
+ClaimClaimableBalanceOp</td>
+<td>
+
+```js
+{
+  type: 'assetBurned',
+  source: 'GBWC…DXHN',
+  asset: 'USD-GBWC…DXHN-1',
+  amount: 200,
 }
 ```
 
@@ -911,7 +957,7 @@ ClawbackClaimableBalance, InflationOp</td>
 <td>
 <code>dataSponsorshipCreated</code>
 </td>
-<td>CreateDataEntryOp</td>
+<td>ManageDataOp</td>
 <td>
 
 ```js
@@ -1136,6 +1182,291 @@ ClawbackClaimableBalance, InflationOp</td>
   type: 'liquidityPoolSponsorshipRemoved',
   source: 'GBWC…DXHN',
   prevSponsor: 'GBWC…DXHN'
+}
+```
+
+</td>
+</tr>
+
+<tr>
+<td>
+<code>contractCodeUploaded</code>
+</td>
+<td>InvokeHostFunctionOp</td>
+<td>
+
+```js
+{
+  type: 'contractCodeUploaded',
+  source: 'GBWC…DXHN',
+  wasm: 'AGFz…AAAF',
+  wasmHash: '5c55…e46d',
+  keyHash: 'a833…f27f'
+}
+```
+
+</td>
+</tr>
+
+<tr>
+<td>
+<code>contractCodeRemoved</code>
+</td>
+<td>InvokeHostFunctionOp</td>
+<td>
+
+```js
+{
+  type: 'contractCodeRemoved',
+  source: 'GBWC…DXHN',
+  wasmHash: '5c55…e46d',
+  keyHash: 'a833…f27f'
+}
+```
+
+</td>
+</tr>
+
+<tr>
+<td>
+<code>contractCreated</code>
+</td>
+<td>InvokeHostFunctionOp</td>
+<td>
+
+```js
+{
+  type: 'contractCreated',
+  source: 'GBWC…DXHN',
+  contract: 'CBIH…AZAD',
+  kind: 'fromAsset',
+  asset: 'ICGVCWUQXIHO-GBD2…FUAC-2'
+}
+```
+
+</td>
+</tr>
+
+<tr>
+<td>
+<code>contractUpdated</code>
+</td>
+<td>InvokeHostFunctionOp</td>
+<td>
+
+```js
+{
+  type: 'contractUpdated',
+  source: 'GBWC…DXHN',
+  contract: 'CBIH…AZAD',
+  kind: 'wasm',
+  wasmHash: '5c55…e46d',
+  prevWasmHash: 'eb94…19ae'
+
+}
+```
+
+</td>
+</tr>
+
+<tr>
+<td>
+<code>contractInvoked</code>
+</td>
+<td>InvokeHostFunctionOp</td>
+<td>
+
+```js
+{
+  type: 'contractInvoked',
+  source: 'GBWC…DXHN',
+  contract: 'CBIH…AZAD',
+  function: 'mint',
+  rawArgs: 'AAAA…Ag==',
+  depth: 1,
+  args: [
+    'CDFD…ITT3',
+    '1000'
+  ]
+}
+```
+
+</td>
+</tr>
+
+<tr>
+<td>
+<code>contractError</code>
+</td>
+<td>InvokeHostFunctionOp</td>
+<td>
+
+```js
+{
+  type: 'contractError',
+  source: 'GB6V…UIYN',
+  contract: 'CBIH…AZAD',
+  code: 13,
+  details: [
+    'trustline entry is missing for account',
+    'GB6V…UIYN'
+  ]
+}
+```
+
+</td>
+</tr>
+
+<tr>
+<td>
+<code>contractDataCreated</code>
+</td>
+<td>InvokeHostFunctionOp</td>
+<td>
+
+```js
+{
+  type: 'contractDataCreated',
+  source: 'GC3E…XMJY',
+  owner: 'CCM3…OFJX',
+  key: 'AAAA…0SQ=',
+  value: 'AAAA…AA==',
+  durability: 'persistent',
+  keyHash: '2177…a56a'
+}
+```
+
+</td>
+</tr>
+
+<tr>
+<td>
+<code>contractDataUpdated</code>
+</td>
+<td>InvokeHostFunctionOp</td>
+<td>
+
+```js
+{
+  type: 'contractDataUpdated',
+  source: 'GC3E…XMJY',
+  owner: 'CCM3…OFJX',
+  key: 'AAAAFA==',
+  value: 'AAAA…AA==',
+  prevValue: 'AAAA…AAA=',
+  durability: 'persistent',
+  keyHash: '2177…a56a'
+}
+```
+
+</td>
+</tr>
+
+<tr>
+<td>
+<code>contractDataRemoved</code>
+</td>
+<td>InvokeHostFunctionOp</td>
+<td>
+
+```js
+{
+  type: 'contractDataRemoved',
+  source: 'GC3E…XMJY',
+  owner: 'CCM3…OFJX',
+  key: 'AAAAFA==',
+  prevValue: 'AAAA…AAA=',
+  durability: 'instance'
+}
+```
+
+</td>
+</tr>
+
+<tr>
+<td>
+<code>contractEvent</code>
+</td>
+<td>InvokeHostFunctionOp</td>
+<td>
+
+```js
+{
+  type: 'contractEvent',
+  source: 'GC3E…XMJY',
+  contract: 'CCM3…OFJX',
+  topics: [
+    'mint',
+    'GC3E…XMJY',
+    'CDFD…ITT3',
+    'AMDL:GC3E…XMJY'
+  ],
+  rawTopics: [
+    'AAAA…aW50',
+    'AAAA…gLs=',
+    'AAAA…JA==',
+    'AAAA…AAAA'
+  ],
+  data: '1000',
+  rawData: 'AAAA…A+g='
+}
+```
+
+</td>
+</tr>
+
+<tr>
+<td>
+<code>contractMetrics</code>
+</td>
+<td>InvokeHostFunctionOp</td>
+<td>
+
+```js
+{
+  type: 'contractMetrics',
+  source: 'GC3E…XMJY',
+  contract: 'CCM3…OFJX',
+  cpu_insn: 25470499,
+  emit_event: 5,
+  emit_event_byte: 1176,
+  invoke_time_nsecs: 2013675,
+  ledger_read_byte: 36624,
+  ledger_write_byte: 1028,
+  max_emit_event_byte: 328,
+  max_rw_code_byte: 16352,
+  max_rw_data_byte: 924,
+  max_rw_key_byte: 160,
+  mem_byte: 10204502,
+  read_code_byte: 33508,
+  read_data_byte: 3116,
+  read_entry: 16,
+  read_key_byte: 1244,
+  write_code_byte: 0,
+  write_data_byte: 1028,
+  write_entry: 5,
+  write_key_byte: 0
+}
+```
+
+</td>
+</tr>
+
+<tr>
+<td>
+<code>setTtl</code>
+</td>
+<td>ExtendFootprintTTLOp, RestoreFootprintOp</td>
+<td>
+
+```js
+{
+  type: 'setTtl',
+  source: 'GC3E…XMJY',
+  owner: 'CDAE…EH7T',
+  kind: 'contractData',
+  keyHash: '7594…b429',
+  ttl: 2873856
 }
 ```
 
