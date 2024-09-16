@@ -26,7 +26,7 @@ function parseTxOperationsMeta({network, tx, result, meta, mapSac = false, proce
     if (!network)
         throw new TypeError(`Network passphrase argument is required.`)
     if (typeof network !== 'string')
-        throw new TypeError(`Invalid network passphrase or identifier: "${network}".`)
+        throw new TypeError(`Invalid network passphrase: "${network}".`)
     if (!tx)
         throw new TypeError(`Transaction envelope argument is required.`)
     const isEphemeral = !meta

@@ -19,28 +19,86 @@ npm i @stellar-expert/tx-meta-effects-parser
 const {parseTxOperationsMeta} = require('@stellar-expert/tx-meta-effects-parser')
 
 const res = parseTxOperationsMeta({
-  network: 'Public Global Stellar Network ; September 2015',
-  tx: '_base64-encoded_transaction_envelope_XDR_',
-  result: '_base64-encoded_transaction_result_XDR_',
-  meta: '_base64-encoded_transaction_result_meta_XDR_'
+    network: 'Public Global Stellar Network ; September 2015',
+    tx: '_base64-encoded_transaction_envelope_XDR_', // trasnaction envelope XDR
+    result: '_base64-encoded_transaction_result_XDR_', // trasnaction result XDR
+    meta: '_base64-encoded_transaction_result_meta_XDR_', // trasnaction meta XDR
+    processSystemEvents: false, // whether to analyze system Soroban diagnostic events
+    mapSac: false, // whether to map Classic assets to Soroban contracts automatically
+    processFailedOpEffects: false, // whether to analyze effects in failed transactions
+    protocol: 21 // different versions of Stelalr protocol may yield uninform effects  
 })
 
 console.log(res.effects)
 console.log(res.operations[0].effects)
 ```
 
+Example:
+
+```js
+parseTxOperationsMeta({
+    network: 'Public Global Stellar Network ; September 2015',
+    tx: 'AAAAAgAAAABU95GyQJbC5BUk8MOfuB2kGJMPNikp/uVdnGQ9ALDarAAAJxAAAJvZAAAAAQAAAAEAAAAAAAAAAAAAAABjnO8XAAAAAAAAAAEAAAABAAAAAGwpaFzT4YYOFQorR1hvkzU9himxtEbBMKbb/qeCkpPhAAAACAAAAABU95GyQJbC5BUk8MOfuB2kGJMPNikp/uVdnGQ9ALDarAAAAAAAAAACALDarAAAAED9Omj2K+pvRUV6jGicOlyZ7F5Jg82yj6rK0VKPSo8eOlfAkJt2AfcSYhB1HUODhbgpwHryTNjJZr8HLy3H/8wFgpKT4QAAAEAqlaQs1KKyIp5/aGFg+KRyIwR2wB+UE+PoEJC7EkyK3DNET09EDWqRCTZjZlNnvAPtw+R0ZXndNsPxZtqKjnsF',
+    result: 'AAAAAAAAAGQAAAAAAAAAAQAAAAAAAAAIAAAAAAAAABdIdugAAAAAAA==',
+    meta: 'AAAAAgAAAAIAAAADAACb3QAAAAAAAAAAVPeRskCWwuQVJPDDn7gdpBiTDzYpKf7lXZxkPQCw2qwAAAAXSHbnnAAAm9kAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAABAACb3QAAAAAAAAAAVPeRskCWwuQVJPDDn7gdpBiTDzYpKf7lXZxkPQCw2qwAAAAXSHbnnAAAm9kAAAABAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAwAAAAAAAJvdAAAAAGOcyAwAAAAAAAAAAQAAAAQAAAADAACb2gAAAAAAAAAAbCloXNPhhg4VCitHWG+TNT2GKbG0RsEwptv+p4KSk+EAAAAXSHboAAAAm9oAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAACAAAAAAAAAABsKWhc0+GGDhUKK0dYb5M1PYYpsbRGwTCm2/6ngpKT4QAAAAMAAJvdAAAAAAAAAABU95GyQJbC5BUk8MOfuB2kGJMPNikp/uVdnGQ9ALDarAAAABdIduecAACb2QAAAAEAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAIAAAAAAAAAAAAAAAAAAAADAAAAAAAAm90AAAAAY5zIDAAAAAAAAAABAACb3QAAAAAAAAAAVPeRskCWwuQVJPDDn7gdpBiTDzYpKf7lXZxkPQCw2qwAAAAukO3PnAAAm9kAAAABAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAwAAAAAAAJvdAAAAAGOcyAwAAAAAAAAAAA=='
+})
+
+/*json
+{
+  effects: [
+    {
+      "type": "feeCharged",
+      "source": "GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI",
+      "asset": "XLM",
+      "bid": "10000",
+      "charged": "100"
+    }
+  ],
+  operations: [
+    {
+      "source": "GBWCS2C42PQYMDQVBIVUOWDPSM2T3BRJWG2ENQJQU3N75J4CSKJ6DXHN",
+      "type": "accountMerge",
+      "destination": "GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI",
+      "effects": [
+        {
+          "type": "accountDebited",
+          "source": "GBWCS2C42PQYMDQVBIVUOWDPSM2T3BRJWG2ENQJQU3N75J4CSKJ6DXHN",
+          "asset": "XLM",
+          "amount": "100000000000",
+          "balance": "0"
+        },
+        {
+          "type": "accountRemoved",
+          "source": "GBWCS2C42PQYMDQVBIVUOWDPSM2T3BRJWG2ENQJQU3N75J4CSKJ6DXHN"
+        },
+        {
+          "type": "accountCredited",
+          "source": "GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI",
+          "asset": "XLM",
+          "amount": "100000000000",
+          "balance": "199999999900"
+        }
+      ]
+    }
+  ],
+  "isEphemeral": false,
+  "tx": {}
+}
+ */
+```
+
 ## All effects
 
 <table>
 <tr>
-<th>Effect</th> <th>Yielded by</th> <th>Example</th>
+<th>Effect</th> <th>Operations</th> <th>Example</th>
 </tr>
 
 <tr>
 <td>
-<code>feeCharged</code>
+<sub><code>feeCharged</code></sub>
 </td>
-<td>Transaction, FeeBumpTransaction</td>
+<td><sub>Transaction, FeeBumpTransaction</sub></td>
 <td>
 
 ```js
@@ -48,8 +106,8 @@ console.log(res.operations[0].effects)
   type: 'feeCharged',
   source: 'GBKP…YDLI',
   asset: 'XLM',
-  bid: '0.001',
-  charged: '0.00001'
+  bid: '10000',
+  charged: '100'
 }
 ```
 </td>
@@ -57,9 +115,9 @@ console.log(res.operations[0].effects)
 
 <tr>
 <td>
-<code>accountCreated</code>
+<sub><code>accountCreated</code></sub>
 </td>
-<td>CreateAccountOp</td>
+<td><sub>CreateAccountOp</sub></td>
 <td>
 
 ```js
@@ -74,9 +132,9 @@ console.log(res.operations[0].effects)
 
 <tr>
 <td>
-<code>accountRemoved</code>
+<sub><code>accountRemoved</code></sub>
 </td>
-<td>AccountMergeOp</td>
+<td><sub>AccountMergeOp</sub></td>
 <td>
 
 ```js
@@ -90,10 +148,10 @@ console.log(res.operations[0].effects)
 
 <tr>
 <td>
-<code>accountDebited</code>
+<sub><code>accountDebited</code></sub>
 </td>
-<td>CreateAccountOp, AccountMergeOp, PaymentOp, PathPaymentStrictReceiveOp,
-PathPaymentStrictSendOp, CreateClaimableBalanceOp, ClawbackOp</td>
+<td><sub>CreateAccountOp, AccountMergeOp, PaymentOp, PathPaymentStrictReceiveOp,
+PathPaymentStrictSendOp, CreateClaimableBalanceOp, ClawbackOp</sub></td>
 <td>
 
 ```js
@@ -101,7 +159,7 @@ PathPaymentStrictSendOp, CreateClaimableBalanceOp, ClawbackOp</td>
   type: 'accountDebited',
   source: 'GBKP…YDLI',
   asset: 'XLM',
-  amount: '100'
+  amount: '1000000000'
 }
 ```
 </td>
@@ -109,11 +167,11 @@ PathPaymentStrictSendOp, CreateClaimableBalanceOp, ClawbackOp</td>
 
 <tr>
 <td>
-<code>accountCredited</code>
+<sub><code>accountCredited</code></sub>
 </td>
-<td>CreateAccountOp, AccountMergeOp, PaymentOp, PathPaymentStrictReceiveOp,
+<td><sub>CreateAccountOp, AccountMergeOp, PaymentOp, PathPaymentStrictReceiveOp,
 PathPaymentStrictSendOp, ClaimClaimableBalanceOp, ClawbackOp, 
-ClawbackClaimableBalance, InflationOp</td>
+ClawbackClaimableBalance, InflationOp</sub></td>
 <td>
 
 ```js
@@ -121,7 +179,7 @@ ClawbackClaimableBalance, InflationOp</td>
   type: 'accountCredited',
   source: 'GBWC…DXHN',
   asset: 'XLM',
-  amount: '100'
+  amount: '1000000000'
 }
 ```
 </td>
@@ -129,9 +187,9 @@ ClawbackClaimableBalance, InflationOp</td>
 
 <tr>
 <td>
-<code>accountHomeDomainUpdated</code>
+<sub><code>accountHomeDomainUpdated</code></sub>
 </td>
-<td>SetOptionsOp</td>
+<td><sub>SetOptionsOp</sub></td>
 <td>
 
 ```js
@@ -146,9 +204,9 @@ ClawbackClaimableBalance, InflationOp</td>
 
 <tr>
 <td>
-<code>accountThresholdsUpdated</code>
+<sub><code>accountThresholdsUpdated</code></sub>
 </td>
-<td>SetOptionsOp</td>
+<td><sub>SetOptionsOp</sub></td>
 <td>
 
 ```js
@@ -163,9 +221,9 @@ ClawbackClaimableBalance, InflationOp</td>
 
 <tr>
 <td>
-<code>accountFlagsUpdated</code>
+<sub><code>accountFlagsUpdated</code></sub>
 </td>
-<td>SetOptionsOp</td>
+<td><sub>SetOptionsOp</sub></td>
 <td>
 
 ```js
@@ -181,9 +239,9 @@ ClawbackClaimableBalance, InflationOp</td>
 
 <tr>
 <td>
-<code>accountInflationDestinationUpdated</code>
+<sub><code>accountInflationDestinationUpdated</code></sub>
 </td>
-<td>SetOptionsOp</td>
+<td><sub>SetOptionsOp</sub></td>
 <td>
 
 ```js
@@ -198,9 +256,9 @@ ClawbackClaimableBalance, InflationOp</td>
 
 <tr>
 <td>
-<code>accountSignerCreated</code>
+<sub><code>accountSignerCreated</code></sub>
 </td>
-<td>SetOptionsOp</td>
+<td><sub>SetOptionsOp</sub></td>
 <td>
 
 ```js 
@@ -221,9 +279,9 @@ ClawbackClaimableBalance, InflationOp</td>
 
 <tr>
 <td>
-<code>accountSignerUpdated</code>
+<sub><code>accountSignerUpdated</code></sub>
 </td>
-<td>SetOptionsOp</td>
+<td><sub>SetOptionsOp</sub></td>
 <td>
 
 ```js 
@@ -244,9 +302,9 @@ ClawbackClaimableBalance, InflationOp</td>
 
 <tr>
 <td>
-<code>accountSignerRemoved</code>
+<sub><code>accountSignerRemoved</code></sub>
 </td>
-<td>SetOptionsOp</td>
+<td><sub>SetOptionsOp</sub></td>
 <td>
 
 ```js
@@ -266,9 +324,9 @@ ClawbackClaimableBalance, InflationOp</td>
 
 <tr>
 <td>
-<code>trustlineCreated</code>
+<sub><code>trustlineCreated</code></sub>
 </td>
-<td>ChangeTrustOp</td>
+<td><sub>ChangeTrustOp</sub></td>
 <td>
 
 ```js
@@ -277,7 +335,7 @@ ClawbackClaimableBalance, InflationOp</td>
   source: 'GBWC…DXHN',
   asset: 'USD-GBKP…YDLI-1',
   kind: 'asset',
-  limit: '100',
+  limit: '1000000000',
   flags: 1
 }
 ```
@@ -287,9 +345,9 @@ ClawbackClaimableBalance, InflationOp</td>
 
 <tr>
 <td>
-<code>trustlineUpdated</code>
+<sub><code>trustlineUpdated</code></sub>
 </td>
-<td>ChangeTrustOp, AllowTrustOp, SetTrustLineFlagsOp</td>
+<td><sub>ChangeTrustOp, AllowTrustOp, SetTrustLineFlagsOp</sub></td>
 <td>
 
 ```js
@@ -298,7 +356,7 @@ ClawbackClaimableBalance, InflationOp</td>
   source: 'GBWC…DXHN',
   asset: 'USD-GBKP…YDLI-1',
   kind: 'asset',
-  limit: '200',
+  limit: '2000000000',
   flags: 5
 }
 ```
@@ -308,9 +366,9 @@ ClawbackClaimableBalance, InflationOp</td>
 
 <tr>
 <td>
-<code>trustlineRemoved</code>
+<sub><code>trustlineRemoved</code></sub>
 </td>
-<td>ChangeTrustOp</td>
+<td><sub>ChangeTrustOp</sub></td>
 <td>
 
 ```js
@@ -328,9 +386,9 @@ ClawbackClaimableBalance, InflationOp</td>
 
 <tr>
 <td>
-<code>trustlineAuthorizationUpdated</code>
+<sub><code>trustlineAuthorizationUpdated</code></sub>
 </td>
-<td>AllowTrustOp, SetTrustLineFlagsOp</td>
+<td><sub>AllowTrustOp, SetTrustLineFlagsOp</sub></td>
 <td>
 
 ```js
@@ -349,10 +407,10 @@ ClawbackClaimableBalance, InflationOp</td>
 
 <tr>
 <td>
-<code>assetMinted</code>
+<sub><code>assetMinted</code></sub>
 </td>
-<td>PaymentOp, PathPaymentStrictReceiveOp, PathPaymentStrictSendOp, CreateClaimableBalanceOp,
-ManageBuyOfferOp, ManageSellOfferOp, CreatePassiveOfferOp, DepositLiquidityOp</td>
+<td><sub>PaymentOp, PathPaymentStrictReceiveOp, PathPaymentStrictSendOp, CreateClaimableBalanceOp,
+ManageBuyOfferOp, ManageSellOfferOp, CreatePassiveOfferOp, DepositLiquidityOp</sub></td>
 <td>
 
 ```js
@@ -360,7 +418,7 @@ ManageBuyOfferOp, ManageSellOfferOp, CreatePassiveOfferOp, DepositLiquidityOp</t
   type: 'assetMinted',
   source: 'GBWC…DXHN',
   asset: 'USD-GBWC…DXHN-1',
-  amount: 100,
+  amount: '1000000000'
 }
 ```
 
@@ -369,11 +427,11 @@ ManageBuyOfferOp, ManageSellOfferOp, CreatePassiveOfferOp, DepositLiquidityOp</t
 
 <tr>
 <td>
-<code>assetBurned</code>
+<sub><code>assetBurned</code></sub>
 </td>
-<td>PaymentOp, PathPaymentStrictReceiveOp, PathPaymentStrictSendOp, CreateClaimableBalanceOp, ManageBuyOfferOp, ManageSellOfferOp,
+<td><sub>PaymentOp, PathPaymentStrictReceiveOp, PathPaymentStrictSendOp, CreateClaimableBalanceOp, ManageBuyOfferOp, ManageSellOfferOp,
 CreatePassiveOfferOp, WithdrawLiquidityOp, ClawbackOp,
-ClaimClaimableBalanceOp</td>
+ClaimClaimableBalanceOp</sub></td>
 <td>
 
 ```js
@@ -381,7 +439,7 @@ ClaimClaimableBalanceOp</td>
   type: 'assetBurned',
   source: 'GBWC…DXHN',
   asset: 'USD-GBWC…DXHN-1',
-  amount: 200,
+  amount: '2000000000'
 }
 ```
 
@@ -390,9 +448,9 @@ ClaimClaimableBalanceOp</td>
 
 <tr>
 <td>
-<code>offerCreated</code>
+<sub><code>offerCreated</code></sub>
 </td>
-<td>CreatePassiveOfferOp, ManageBuyOfferOp, ManageSellOfferOp</td>
+<td><sub>CreatePassiveOfferOp, ManageBuyOfferOp, ManageSellOfferOp</sub></td>
 <td>
 
 ```js
@@ -401,7 +459,7 @@ ClaimClaimableBalanceOp</td>
   source: 'GBWC…DXHN',
   offer: '90427',
   owner: 'GBWC…DXHN',
-  amount: '100',
+  amount: '1000000000',
   asset: [
     'USD-GBKP…YDLI-1',
     'XLM'
@@ -416,9 +474,9 @@ ClaimClaimableBalanceOp</td>
 
 <tr>
 <td>
-<code>offerUpdated</code>
+<sub><code>offerUpdated</code></sub>
 </td>
-<td>CreatePassiveOfferOp, ManageBuyOfferOp, ManageSellOfferOp, PathPaymentOp</td>
+<td><sub>CreatePassiveOfferOp, ManageBuyOfferOp, ManageSellOfferOp, PathPaymentOp</sub></td>
 <td>
 
 ```js
@@ -427,7 +485,7 @@ ClaimClaimableBalanceOp</td>
   source: 'GBWC…DXHN',
   offer: '90427',
   owner: 'GBWC…DXHN',
-  amount: '90',
+  amount: '900000000',
   asset: [
     'USD-GBKP…YDLI-1',
     'XLM'
@@ -442,9 +500,9 @@ ClaimClaimableBalanceOp</td>
 
 <tr>
 <td>
-<code>offerRemoved</code>
+<sub><code>offerRemoved</code></sub>
 </td>
-<td>CreatePassiveOfferOp, ManageBuyOfferOp, ManageSellOfferOp, PathPaymentOp, AllowTrustOp, SetTrustLineFlagsOp</td>
+<td><sub>CreatePassiveOfferOp, ManageBuyOfferOp, ManageSellOfferOp, PathPaymentOp, AllowTrustOp, SetTrustLineFlagsOp</sub></td>
 <td>
 
 ```js
@@ -466,9 +524,9 @@ ClaimClaimableBalanceOp</td>
 
 <tr>
 <td>
-<code>liquidityPoolCreated</code>
+<sub><code>liquidityPoolCreated</code></sub>
 </td>
-<td>ChangeTrustOp</td>
+<td><sub>ChangeTrustOp</sub></td>
 <td>
 
 ```js
@@ -496,9 +554,9 @@ ClaimClaimableBalanceOp</td>
 
 <tr>
 <td>
-<code>liquidityPoolUpdated</code>
+<sub><code>liquidityPoolUpdated</code></sub>
 </td>
-<td>DepositLiquidityOp, WithdrawLiquidityOp, AllowTrustOp, SetTrustLineFlagsOp</td>
+<td><sub>DepositLiquidityOp, WithdrawLiquidityOp, AllowTrustOp, SetTrustLineFlagsOp</sub></td>
 <td>
 
 ```js
@@ -509,11 +567,11 @@ ClaimClaimableBalanceOp</td>
   reserves: [
     {
       asset: 'XLM',
-      amount: '1000'
+      amount: '10000000000'
     },
     {
       asset: 'USD-GBKP…YDLI-1',
-      amount: '1000'
+      amount: '10000000000'
     }
   ],
   shares: '10000000000',
@@ -526,9 +584,9 @@ ClaimClaimableBalanceOp</td>
 
 <tr>
 <td>
-<code>liquidityPoolDeposited</code>
+<sub><code>liquidityPoolDeposited</code></sub>
 </td>
-<td>DepositLiquidityOp</td>
+<td><sub>DepositLiquidityOp</sub></td>
 <td>
 
 ```js
@@ -539,11 +597,11 @@ ClaimClaimableBalanceOp</td>
   assets: [
     {
       asset: 'XLM',
-      amount: '1000'
+      amount: '10000000000'
     },
     {
       asset: 'USD-GBKP…YDLI-1',
-      amount: '1000'
+      amount: '10000000000'
     }
   ],
   shares: '10000000000'
@@ -555,9 +613,9 @@ ClaimClaimableBalanceOp</td>
 
 <tr>
 <td>
-<code>liquidityPoolWithdrew</code>
+<sub><code>liquidityPoolWithdrew</code></sub>
 </td>
-<td>WithdrawLiquidityOp</td>
+<td><sub>WithdrawLiquidityOp</sub></td>
 <td>
 
 ```js
@@ -568,11 +626,11 @@ ClaimClaimableBalanceOp</td>
   assets: [
     {
       asset: 'XLM',
-      amount: '500'
+      amount: '5000000000'
     },
     {
       asset: 'USD-GBKP…YDLI-1',
-      amount: '500'
+      amount: '5000000000'
     }
   ],
   shares: '5000000000'
@@ -584,9 +642,9 @@ ClaimClaimableBalanceOp</td>
 
 <tr>
 <td>
-<code>liquidityPoolRemoved</code>
+<sub><code>liquidityPoolRemoved</code></sub>
 </td>
-<td>ChangeTrustOp, AllowTrustOp, SetTrustLineFlagsOp</td>
+<td><sub>ChangeTrustOp, AllowTrustOp, SetTrustLineFlagsOp</sub></td>
 <td>
 
 ```js
@@ -602,17 +660,20 @@ ClaimClaimableBalanceOp</td>
 
 <tr>
 <td>
-<code>trade</code>
+<sub><code>trade</code></sub>
 </td>
-<td>CreatePassiveOfferOp, ManageBuyOfferOp, ManageSellOfferOp, PathPaymentOp</td>
+<td><sub>CreatePassiveOfferOp, ManageBuyOfferOp, ManageSellOfferOp, PathPaymentOp</sub></td>
 <td>
 
 ```js
 {
   type: 'trade',
   source: 'GBWC…DXHN',
-  offer: '1',
-  amount: ['10', '10'],
+  offer: '14834',
+  amount: [
+    '100000000', 
+    '200000000'
+  ],
   asset: [
     'USD-GBKP…YDLI-1',
     'XLM'
@@ -626,9 +687,9 @@ ClaimClaimableBalanceOp</td>
 
 <tr>
 <td>
-<code>dataEntryCreated</code>
+<sub><code>dataEntryCreated</code></sub>
 </td>
-<td>ManageDataOp</td>
+<td><sub>ManageDataOp</sub></td>
 <td>
 
 ```js
@@ -645,9 +706,9 @@ ClaimClaimableBalanceOp</td>
 
 <tr>
 <td>
-<code>dataEntryUpdated</code>
+<sub><code>dataEntryUpdated</code></sub>
 </td>
-<td>ManageDataOp</td>
+<td><sub>ManageDataOp</sub></td>
 <td>
 
 ```js
@@ -664,9 +725,9 @@ ClaimClaimableBalanceOp</td>
 
 <tr>
 <td>
-<code>dataEntryRemoved</code>
+<sub><code>dataEntryRemoved</code></sub>
 </td>
-<td>ManageDataOp</td>
+<td><sub>ManageDataOp</sub></td>
 <td>
 
 ```js
@@ -682,16 +743,16 @@ ClaimClaimableBalanceOp</td>
 
 <tr>
 <td>
-<code>sequenceBumped</code>
+<sub><code>sequenceBumped</code></sub>
 </td>
-<td>BumpSequenceOp</td>
+<td><sub>BumpSequenceOp</sub></td>
 <td>
 
 ```js
 {
   type: 'sequenceBumped',
   source: 'GBWC…DXHN',
-  sequence: '100'
+  sequence: '9223372036854775707'
 }
 ```
 
@@ -700,9 +761,9 @@ ClaimClaimableBalanceOp</td>
 
 <tr>
 <td>
-<code>inflation</code>
+<sub><code>inflation</code></sub>
 </td>
-<td>InflationOp</td>
+<td><sub>InflationOp</sub></td>
 <td>
 
 ```js
@@ -717,9 +778,9 @@ ClaimClaimableBalanceOp</td>
 
 <tr>
 <td>
-<code>claimableBalanceCreated</code>
+<sub><code>claimableBalanceCreated</code></sub>
 </td>
-<td>CreateClaimableBalanceOp, AllowTrustOp, SetTrustLineFlagsOp</td>
+<td><sub>CreateClaimableBalanceOp, AllowTrustOp, SetTrustLineFlagsOp</sub></td>
 <td>
 
 ```js
@@ -729,7 +790,7 @@ ClaimClaimableBalanceOp</td>
   sponsor: 'GBWC…DXHN',
   balance: '7aba…6f9d',
   asset: 'XLM',
-  amount: '100',
+  amount: '1000000000',
   claimants: [
     {
       destination: 'GBKP…YDLI',
@@ -746,9 +807,9 @@ ClaimClaimableBalanceOp</td>
 
 <tr>
 <td>
-<code>claimableBalanceRemoved</code>
+<sub><code>claimableBalanceRemoved</code></sub>
 </td>
-<td>ClaimClaimableBalanceOp, ClawbackClaimableBalanceOp</td>
+<td><sub>ClaimClaimableBalanceOp, ClawbackClaimableBalanceOp</sub></td>
 <td>
 
 ```js
@@ -758,7 +819,7 @@ ClaimClaimableBalanceOp</td>
   sponsor: 'GBWC…DXHN',
   balance: '7aba…6f9d',
   asset: 'XLM',
-  amount: '100',
+  amount: '1000000000',
   claimants: [
     {
       destination: 'GBKP…YDLI',
@@ -775,9 +836,9 @@ ClaimClaimableBalanceOp</td>
 
 <tr>
 <td>
-<code>accountSponsorshipCreated</code>
+<sub><code>accountSponsorshipCreated</code></sub>
 </td>
-<td>CreateAccountOp</td>
+<td><sub>CreateAccountOp</sub></td>
 <td>
 
 ```js
@@ -794,9 +855,9 @@ ClaimClaimableBalanceOp</td>
 
 <tr>
 <td>
-<code>accountSponsorshipUpdated</code>
+<sub><code>accountSponsorshipUpdated</code></sub>
 </td>
-<td>RevokeSponsorshipOp</td>
+<td><sub>RevokeSponsorshipOp</sub></td>
 <td>
 
 ```js
@@ -814,9 +875,9 @@ ClaimClaimableBalanceOp</td>
 
 <tr>
 <td>
-<code>accountSponsorshipRemoved</code>
+<sub><code>accountSponsorshipRemoved</code></sub>
 </td>
-<td>RevokeSponsorshipOp</td>
+<td><sub>RevokeSponsorshipOp</sub></td>
 <td>
 
 ```js
@@ -833,9 +894,9 @@ ClaimClaimableBalanceOp</td>
 
 <tr>
 <td>
-<code>trustlineSponsorshipCreated</code>
+<sub><code>trustlineSponsorshipCreated</code></sub>
 </td>
-<td>ChangeThrustOp</td>
+<td><sub>ChangeThrustOp</sub></td>
 <td>
 
 ```js
@@ -853,9 +914,9 @@ ClaimClaimableBalanceOp</td>
 
 <tr>
 <td>
-<code>trustlineSponsorshipUpdated</code>
+<sub><code>trustlineSponsorshipUpdated</code></sub>
 </td>
-<td>RevokeSponsorshipOp</td>
+<td><sub>RevokeSponsorshipOp</sub></td>
 <td>
 
 ```js
@@ -874,9 +935,9 @@ ClaimClaimableBalanceOp</td>
 
 <tr>
 <td>
-<code>trustlineSponsorshipRemoved</code>
+<sub><code>trustlineSponsorshipRemoved</code></sub>
 </td>
-<td>RevokeSponsorshipOp</td>
+<td><sub>RevokeSponsorshipOp</sub></td>
 <td>
 
 ```js
@@ -894,9 +955,9 @@ ClaimClaimableBalanceOp</td>
 
 <tr>
 <td>
-<code>offerSponsorshipCreated</code>
+<sub><code>offerSponsorshipCreated</code></sub>
 </td>
-<td>CreatePassiveOfferOp, ManageBuyOfferOp, ManageSellOfferOp</td>
+<td><sub>CreatePassiveOfferOp, ManageBuyOfferOp, ManageSellOfferOp</sub></td>
 <td>
 
 ```js
@@ -905,7 +966,7 @@ ClaimClaimableBalanceOp</td>
   source: 'GBWC…DXHN',
   sponsor: 'GBWC…DXHN',
   account: 'GBKP…YDLI',
-  offer: '100'
+  offer: '4523452'
 }
 ```
 
@@ -914,9 +975,9 @@ ClaimClaimableBalanceOp</td>
 
 <tr>
 <td>
-<code>offerSponsorshipUpdated</code>
+<sub><code>offerSponsorshipUpdated</code></sub>
 </td>
-<td>RevokeSponsorshipOp</td>
+<td><sub>RevokeSponsorshipOp</sub></td>
 <td>
 
 ```js
@@ -926,7 +987,7 @@ ClaimClaimableBalanceOp</td>
   sponsor: 'GDNP…CMXH',
   prevSponsor: 'GBWC…DXHN',
   account: 'GBKP…YDLI',
-  offer: '100'
+  offer: '4523452'
 }
 ```
 
@@ -935,9 +996,9 @@ ClaimClaimableBalanceOp</td>
 
 <tr>
 <td>
-<code>offerSponsorshipRemoved</code>
+<sub><code>offerSponsorshipRemoved</code></sub>
 </td>
-<td>RevokeSponsorshipOp</td>
+<td><sub>RevokeSponsorshipOp</sub></td>
 <td>
 
 ```js
@@ -946,7 +1007,7 @@ ClaimClaimableBalanceOp</td>
   source: 'GBWC…DXHN',
   prevSponsor: 'GBWC…DXHN',
   account: 'GBKP…YDLI',
-  offer: '100'
+  offer: '4523452'
 }
 ```
 
@@ -955,9 +1016,9 @@ ClaimClaimableBalanceOp</td>
 
 <tr>
 <td>
-<code>dataSponsorshipCreated</code>
+<sub><code>dataSponsorshipCreated</code></sub>
 </td>
-<td>ManageDataOp</td>
+<td><sub>ManageDataOp</sub></td>
 <td>
 
 ```js
@@ -975,9 +1036,9 @@ ClaimClaimableBalanceOp</td>
 
 <tr>
 <td>
-<code>dataSponsorshipUpdated</code> 
+<sub><code>dataSponsorshipUpdated</code></sub> 
 </td>
-<td>RevokeSponsorshipOp</td>
+<td><sub>RevokeSponsorshipOp</sub></td>
 <td>
 
 ```js
@@ -996,9 +1057,9 @@ ClaimClaimableBalanceOp</td>
 
 <tr>
 <td>
-<code>dataSponsorshipRemoved</code>
+<sub><code>dataSponsorshipRemoved</code></sub>
 </td>
-<td>RevokeSponsorshipOp</td>
+<td><sub>RevokeSponsorshipOp</sub></td>
 <td>
 
 ```js
@@ -1016,9 +1077,9 @@ ClaimClaimableBalanceOp</td>
 
 <tr>
 <td>
-<code>claimableBalanceSponsorshipCreated</code>
+<sub><code>claimableBalanceSponsorshipCreated</code></sub>
 </td>
-<td>CreateClaimableBalanceOp</td>
+<td><sub>CreateClaimableBalanceOp</sub></td>
 <td>
 
 ```js
@@ -1035,9 +1096,9 @@ ClaimClaimableBalanceOp</td>
 
 <tr>
 <td>
-<code>claimableBalanceSponsorshipUpdated</code>
+<sub><code>claimableBalanceSponsorshipUpdated</code></sub>
 </td>
-<td>RevokeSponsorshipOp</td>
+<td><sub>RevokeSponsorshipOp</sub></td>
 <td>
 
 ```js
@@ -1055,9 +1116,9 @@ ClaimClaimableBalanceOp</td>
 
 <tr>
 <td>
-<code>claimableBalanceSponsorshipRemoved</code>
+<sub><code>claimableBalanceSponsorshipRemoved</code></sub>
 </td>
-<td>RevokeSponsorshipOp</td>
+<td><sub>RevokeSponsorshipOp</sub></td>
 <td>
 
 ```js
@@ -1074,9 +1135,9 @@ ClaimClaimableBalanceOp</td>
 
 <tr>
 <td>
-<code>signerSponsorshipCreated</code>
+<sub><code>signerSponsorshipCreated</code></sub>
 </td>
-<td>SetOptionsOp</td>
+<td><sub>SetOptionsOp</sub></td>
 <td>
 
 ```js
@@ -1094,9 +1155,9 @@ ClaimClaimableBalanceOp</td>
 
 <tr>
 <td>
-<code>signerSponsorshipUpdated</code>
+<sub><code>signerSponsorshipUpdated</code></sub>
 </td>
-<td>RevokeSponsorshipOp</td>
+<td><sub>RevokeSponsorshipOp</sub></td>
 <td>
 
 ```js 
@@ -1115,9 +1176,9 @@ ClaimClaimableBalanceOp</td>
 
 <tr>
 <td>
-<code>signerSponsorshipRemoved</code>
+<sub><code>signerSponsorshipRemoved</code></sub>
 </td>
-<td>RevokeSponsorshipOp</td>
+<td><sub>RevokeSponsorshipOp</sub></td>
 <td>
 
 ```js
@@ -1135,9 +1196,9 @@ ClaimClaimableBalanceOp</td>
 
 <tr>
 <td>
-<code>liquidityPoolSponsorshipCreated</code>
+<sub><code>liquidityPoolSponsorshipCreated</code></sub>
 </td>
-<td>ChangeThrustOp</td>
+<td><sub>ChangeThrustOp</sub></td>
 <td>
 
 ```js
@@ -1153,9 +1214,9 @@ ClaimClaimableBalanceOp</td>
 
 <tr>
 <td>
-<code>liquidityPoolSponsorshipUpdated</code>
+<sub><code>liquidityPoolSponsorshipUpdated</code></sub>
 </td>
-<td>RevokeSponsorshipOp</td>
+<td><sub>RevokeSponsorshipOp</sub></td>
 <td>
 
 ```js
@@ -1172,9 +1233,9 @@ ClaimClaimableBalanceOp</td>
 
 <tr>
 <td>
-<code>liquidityPoolSponsorshipRemoved</code>
+<sub><code>liquidityPoolSponsorshipRemoved</code></sub>
 </td>
-<td>RevokeSponsorshipOp</td>
+<td><sub>RevokeSponsorshipOp</sub></td>
 <td>
 
 ```js
@@ -1190,9 +1251,9 @@ ClaimClaimableBalanceOp</td>
 
 <tr>
 <td>
-<code>contractCodeUploaded</code>
+<sub><code>contractCodeUploaded</code></sub>
 </td>
-<td>InvokeHostFunctionOp</td>
+<td><sub>InvokeHostFunctionOp</sub></td>
 <td>
 
 ```js
@@ -1210,9 +1271,9 @@ ClaimClaimableBalanceOp</td>
 
 <tr>
 <td>
-<code>contractCodeRemoved</code>
+<sub><code>contractCodeRemoved</code></sub>
 </td>
-<td>InvokeHostFunctionOp</td>
+<td><sub>InvokeHostFunctionOp</sub></td>
 <td>
 
 ```js
@@ -1229,9 +1290,9 @@ ClaimClaimableBalanceOp</td>
 
 <tr>
 <td>
-<code>contractCreated</code>
+<sub><code>contractCreated</code></sub>
 </td>
-<td>InvokeHostFunctionOp</td>
+<td><sub>InvokeHostFunctionOp</sub></td>
 <td>
 
 ```js
@@ -1249,9 +1310,9 @@ ClaimClaimableBalanceOp</td>
 
 <tr>
 <td>
-<code>contractUpdated</code>
+<sub><code>contractUpdated</code></sub>
 </td>
-<td>InvokeHostFunctionOp</td>
+<td><sub>InvokeHostFunctionOp</sub></td>
 <td>
 
 ```js
@@ -1271,9 +1332,9 @@ ClaimClaimableBalanceOp</td>
 
 <tr>
 <td>
-<code>contractInvoked</code>
+<sub><code>contractInvoked</code></sub>
 </td>
-<td>InvokeHostFunctionOp</td>
+<td><sub>InvokeHostFunctionOp</sub></td>
 <td>
 
 ```js
@@ -1296,9 +1357,9 @@ ClaimClaimableBalanceOp</td>
 
 <tr>
 <td>
-<code>contractError</code>
+<sub><code>contractError</code></sub>
 </td>
-<td>InvokeHostFunctionOp</td>
+<td><sub>InvokeHostFunctionOp</sub></td>
 <td>
 
 ```js
@@ -1319,9 +1380,9 @@ ClaimClaimableBalanceOp</td>
 
 <tr>
 <td>
-<code>contractDataCreated</code>
+<sub><code>contractDataCreated</code></sub>
 </td>
-<td>InvokeHostFunctionOp</td>
+<td><sub>InvokeHostFunctionOp</sub></td>
 <td>
 
 ```js
@@ -1341,9 +1402,9 @@ ClaimClaimableBalanceOp</td>
 
 <tr>
 <td>
-<code>contractDataUpdated</code>
+<sub><code>contractDataUpdated</code></sub>
 </td>
-<td>InvokeHostFunctionOp</td>
+<td><sub>InvokeHostFunctionOp</sub></td>
 <td>
 
 ```js
@@ -1364,9 +1425,9 @@ ClaimClaimableBalanceOp</td>
 
 <tr>
 <td>
-<code>contractDataRemoved</code>
+<sub><code>contractDataRemoved</code></sub>
 </td>
-<td>InvokeHostFunctionOp</td>
+<td><sub>InvokeHostFunctionOp</sub></td>
 <td>
 
 ```js
@@ -1385,9 +1446,9 @@ ClaimClaimableBalanceOp</td>
 
 <tr>
 <td>
-<code>contractEvent</code>
+<sub><code>contractEvent</code></sub>
 </td>
-<td>InvokeHostFunctionOp</td>
+<td><sub>InvokeHostFunctionOp</sub></td>
 <td>
 
 ```js
@@ -1417,9 +1478,9 @@ ClaimClaimableBalanceOp</td>
 
 <tr>
 <td>
-<code>contractMetrics</code>
+<sub><code>contractMetrics</code></sub>
 </td>
-<td>InvokeHostFunctionOp</td>
+<td><sub>InvokeHostFunctionOp</sub></td>
 <td>
 
 ```js
@@ -1454,9 +1515,9 @@ ClaimClaimableBalanceOp</td>
 
 <tr>
 <td>
-<code>setTtl</code>
+<sub><code>setTtl</code></sub>
 </td>
-<td>ExtendFootprintTTLOp, RestoreFootprintOp</td>
+<td><sub>ExtendFootprintTTLOp, RestoreFootprintOp</sub></td>
 <td>
 
 ```js
