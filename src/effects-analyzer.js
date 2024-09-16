@@ -200,7 +200,10 @@ class EffectsAnalyzer {
 
     setOptions() {
         const sourceAccount = normalizeAddress(this.source)
-        const {before, after} = this.changes.find(ch => ch.type === 'account' && ch.before.address === sourceAccount)
+        const change = this.changes.find(ch => ch.type === 'account' && ch.before.address === sourceAccount)
+        if (!change)
+            return // failed tx or no changes
+        const {before, after} = change
         if (before.homeDomain !== after.homeDomain) {
             this.addEffect({
                 type: effectTypes.accountHomeDomainUpdated,
@@ -236,34 +239,34 @@ class EffectsAnalyzer {
         if (!this.changes.length)
             return
         const trustAsset = xdrParseAsset(this.operation.asset || {code: this.operation.assetCode, issuer: normalizeAddress(this.source)})
-        const trustlineChange = this.changes.find(ch => ch.type === 'trustline' && ch.before.asset === trustAsset)
-        if (trustlineChange) {
-            if (trustlineChange.action !== 'updated')
-                throw new UnexpectedTxMetaChangeError(trustlineChange)
-            const {before, after} = trustlineChange
-            if (before.flags !== after.flags) {
+        const change = this.changes.find(ch => ch.type === 'trustline' && ch.before.asset === trustAsset)
+        if (!change)
+            return
+        if (change.action !== 'updated')
+            throw new UnexpectedTxMetaChangeError(change)
+        const {before, after} = change
+        if (before.flags !== after.flags) {
+            this.addEffect({
+                type: effectTypes.trustlineAuthorizationUpdated,
+                trustor: this.operation.trustor,
+                asset: after.asset,
+                flags: after.flags,
+                prevFlags: before.flags
+            })
+            for (const change of this.changes) {
+                if (change.type !== 'liquidityPool')
+                    continue
+                const {before, after} = change
                 this.addEffect({
-                    type: effectTypes.trustlineAuthorizationUpdated,
-                    trustor: this.operation.trustor,
-                    asset: after.asset,
-                    flags: after.flags,
-                    prevFlags: before.flags
+                    type: effectTypes.liquidityPoolWithdrew,
+                    source: this.operation.trustor,
+                    pool: before.pool,
+                    assets: before.asset.map((asset, i) => ({
+                        asset,
+                        amount: (BigInt(before.amount[i]) - (after ? BigInt(after.amount[i]) : 0n)).toString()
+                    })),
+                    shares: (BigInt(before.shares) - (after ? BigInt(after.shares) : 0n)).toString()
                 })
-                for (const change of this.changes) {
-                    if (change.type !== 'liquidityPool')
-                        continue
-                    const {before, after} = change
-                    this.addEffect({
-                        type: effectTypes.liquidityPoolWithdrew,
-                        source: this.operation.trustor,
-                        pool: before.pool,
-                        assets: before.asset.map((asset, i) => ({
-                            asset,
-                            amount: (BigInt(before.amount[i]) - (after ? BigInt(after.amount[i]) : 0n)).toString()
-                        })),
-                        shares: (BigInt(before.shares) - (after ? BigInt(after.shares) : 0n)).toString()
-                    })
-                }
             }
         }
     }
@@ -281,7 +284,10 @@ class EffectsAnalyzer {
     bumpSequence() {
         if (!this.changes.length)
             return
-        const {before, after} = this.changes.find(ch => ch.type === 'account')
+        const change = this.changes.find(ch => ch.type === 'account')
+        if (!change)
+            return //failed tx or no changes
+        const {before, after} = change
         if (before.sequence !== after.sequence) {
             this.addEffect({
                 type: effectTypes.sequenceBumped,
@@ -312,10 +318,10 @@ class EffectsAnalyzer {
 
     liquidityPoolDeposit() {
         const {liquidityPoolId} = this.operation
-        const poolUpdatedChanges = this.changes.find(ch => ch.type === 'liquidityPool' && ch.action === 'updated' && ch.after.pool === liquidityPoolId)
-        if (!poolUpdatedChanges) //tx failed
+        const change = this.changes.find(ch => ch.type === 'liquidityPool' && ch.action === 'updated' && ch.after.pool === liquidityPoolId)
+        if (!change) //tx failed
             return
-        const {before, after} = poolUpdatedChanges
+        const {before, after} = change
         this.addEffect({
             type: effectTypes.liquidityPoolDeposited,
             pool: this.operation.liquidityPoolId,
@@ -329,7 +335,10 @@ class EffectsAnalyzer {
 
     liquidityPoolWithdraw() {
         const pool = this.operation.liquidityPoolId
-        const {before, after} = this.changes.find(ch => ch.type === 'liquidityPool' && ch.action === 'updated' && ch.before.pool === pool)
+        const change = this.changes.find(ch => ch.type === 'liquidityPool' && ch.action === 'updated' && ch.before.pool === pool)
+        if (!change) //tx failed
+            return
+        const {before, after} = change
         this.addEffect({
             type: effectTypes.liquidityPoolWithdrew,
             pool,
