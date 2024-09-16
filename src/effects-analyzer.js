@@ -312,10 +312,10 @@ class EffectsAnalyzer {
 
     liquidityPoolDeposit() {
         const {liquidityPoolId} = this.operation
-        const {
-            before,
-            after
-        } = this.changes.find(ch => ch.type === 'liquidityPool' && ch.action === 'updated' && ch.after.pool === liquidityPoolId)
+        const poolUpdatedChanges = this.changes.find(ch => ch.type === 'liquidityPool' && ch.action === 'updated' && ch.after.pool === liquidityPoolId)
+        if (!poolUpdatedChanges) //tx failed
+            return
+        const {before, after} = poolUpdatedChanges
         this.addEffect({
             type: effectTypes.liquidityPoolDeposited,
             pool: this.operation.liquidityPoolId,

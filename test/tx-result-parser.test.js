@@ -18,7 +18,8 @@ describe('Effects', () => {
             network: resolveNetwork(network),
             tx,
             result,
-            meta
+            meta,
+            processFailedOpEffects: true
         })
 
         for (let i = 0; i < res.operations.length; i++) {
