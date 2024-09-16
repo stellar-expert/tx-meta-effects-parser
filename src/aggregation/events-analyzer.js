@@ -61,13 +61,13 @@ class EventsAnalyzer {
      * @private
      */
     analyzeDiagnosticEvents() {
-        const {diagnosticEvents, processSystemEvents} = this.effectsAnalyzer
+        const {diagnosticEvents, processSystemEvents, processMetrics, processFailedOpEffects} = this.effectsAnalyzer
         if (!diagnosticEvents)
             return
         const opContractId = this.effectsAnalyzer.retrieveOpContractId()
         //diagnostic events
         for (const evt of diagnosticEvents) {
-            if (!processSystemEvents && !(evt.inSuccessfulContractCall() || this.effectsAnalyzer.processFailedOpEffects))
+            if (!processSystemEvents && !(processFailedOpEffects || evt.inSuccessfulContractCall()))
                 continue //throw new UnexpectedTxMetaChangeError({type: 'diagnostic_event', action: 'failed'})
             //parse event
             const event = evt.event()
@@ -75,7 +75,7 @@ class EventsAnalyzer {
             if (contractId && typeof contractId !== 'string') {
                 contractId = StrKey.encodeContract(contractId)
             }
-            this.processDiagnosticEvent(event.body().value(), event.type().value, contractId)
+            this.processDiagnosticEvent(event._attributes.body._value, event._attributes.type.value, contractId, processMetrics)
         }
     }
 
@@ -83,9 +83,10 @@ class EventsAnalyzer {
      * @param {xdr.ContractEventV0} body
      * @param {Number} type
      * @param {String} contract
+     * @param {Boolean} processMetrics
      * @private
      */
-    processDiagnosticEvent(body, type, contract) {
+    processDiagnosticEvent(body, type, contract, processMetrics) {
         const topics = body.topics()
         if (!topics?.length)
             return
@@ -121,16 +122,22 @@ class EventsAnalyzer {
             case 'error':
                 if (type !== EVENT_TYPES.DIAGNOSTIC)
                     return // skip non-diagnostic events
+                let code = topics[1].value().value()
+                if (code.name) {
+                    code = code.name
+                }
                 this.effectsAnalyzer.addEffect({
                     type: effectTypes.contractError,
                     contract,
-                    code: topics[1].value().value(),
+                    code,
                     details: processEventBodyValue(body.data())
                 })
                 break
             case 'core_metrics':
                 if (type !== EVENT_TYPES.DIAGNOSTIC)
                     return // skip non-diagnostic events
+                if (!processMetrics)
+                    return
                 this.effectsAnalyzer.addMetric(contract, xdrParseScVal(topics[1]), parseInt(processEventBodyValue(body.data())))
                 break
             //handle standard token contract events

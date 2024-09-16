@@ -11,7 +11,18 @@ const {UnexpectedTxMetaChangeError, TxMetaEffectParserError} = require('./errors
 const {generateContractCodeEntryHash} = require('./parser/ledger-key')
 
 class EffectsAnalyzer {
-    constructor({operation, meta, result, network, events, diagnosticEvents, mapSac, processSystemEvents, processFailedOpEffects}) {
+    constructor({
+                    operation,
+                    meta,
+                    result,
+                    network,
+                    events,
+                    diagnosticEvents,
+                    mapSac,
+                    processSystemEvents,
+                    processFailedOpEffects,
+                    processMetrics
+                }) {
         //set execution context
         if (!operation.source)
             throw new TxMetaEffectParserError('Operation source is not explicitly defined')
@@ -22,6 +33,7 @@ class EffectsAnalyzer {
         this.source = this.operation.source
         this.events = events
         this.processFailedOpEffects = processFailedOpEffects
+        this.processMetrics = processMetrics
         if (diagnosticEvents?.length) {
             this.diagnosticEvents = diagnosticEvents
             if (processSystemEvents) {
@@ -85,6 +97,11 @@ class EffectsAnalyzer {
      */
     processSystemEvents = false
     /**
+     * @type {Boolean}
+     * @readonly
+     */
+    processMetrics = true
+    /**
      * @type {{}}
      * @private
      */
@@ -106,6 +123,10 @@ class EffectsAnalyzer {
         this.processSponsorshipEffects()
         //calculate minted/burned assets
         new AssetSupplyAnalyzer(this).analyze()
+        //add Soroban op metrics if available
+        if (this.metrics) {
+            this.addEffect(this.metrics)
+        }
         return this.effects
     }
 
@@ -180,7 +201,6 @@ class EffectsAnalyzer {
                 type: effectTypes.contractMetrics,
                 contract
             }
-            this.addEffect(metrics)
         }
         metrics[metric] = value
     }

@@ -115,10 +115,7 @@
             "type": "contractError",
             "source": "GDQ47JRRX2SQ7YHM6FAMMDC4K5EXFZOYPWZCFAILKEE3IYTZAQEFGR3M",
             "contract": "CDWCIQMI3EHKGK32SVICLUBFVBT5VKNG72O3G7KNJOLSIVA4WDVQ2IYX",
-            "code": {
-              "name": "scecExceededLimit",
-              "value": 5
-            },
+            "code": "scecExceededLimit",
             "details": [
               "trying to access contract instance outside of the footprint",
               "CAJ5NCLL3SN75VYIUZPKTCMBAPL2USDOGR3NFFQ3IEX4WLZE3PB5O4PS"
@@ -128,10 +125,7 @@
             "type": "contractError",
             "source": "GDQ47JRRX2SQ7YHM6FAMMDC4K5EXFZOYPWZCFAILKEE3IYTZAQEFGR3M",
             "contract": "CDWCIQMI3EHKGK32SVICLUBFVBT5VKNG72O3G7KNJOLSIVA4WDVQ2IYX",
-            "code": {
-              "name": "scecExceededLimit",
-              "value": 5
-            },
+            "code": "scecExceededLimit",
             "details": "escalating error to VM trap from failed host function call: require_auth"
           },
           {

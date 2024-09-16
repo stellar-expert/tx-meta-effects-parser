@@ -280,8 +280,16 @@ function xdrParseScVal(value, treatBytesAsContractId = false) {
         case 'contractId':
             return xdrParseContractAddress(value._value)
         default:
-            if (value.switch().name === 'scvVoid') //scVoid
-                return undefined
+            switch (value._switch.name) {
+                case 'scvVoid':
+                    return undefined
+                case 'scvContractInstance':
+                    return '<ContractInstance>'
+                case 'scvLedgerKeyContractInstance':
+                    return '<LedgerKeyContractInstance>'
+                case 'scvLedgerKeyNonce':
+                    return '<LedgerKeyNonce>'
+            }
             throw new TxMetaEffectParserError('Not supported XDR primitive type: ' + value.toXDR ? value.toXDR() : value.toString())
     }
 }

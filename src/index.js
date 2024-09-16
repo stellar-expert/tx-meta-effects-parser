@@ -19,16 +19,29 @@ const effectTypes = require('./effect-types')
  * @param {Boolean} [mapSac] - Whether to create a map SAC->Asset
  * @param {Boolean} [processSystemEvents] - Emit effects for contract errors and resource stats
  * @param {Boolean} [processFailedOpEffects] - Whether to generate operation effects for failed/rejected transactions
+ * @param {Boolean} [processMetrics] - Process invocation metrics emitted by Soroban
  * @param {Number} [protocol] - Specific Stellar protocol version for the executed transaction
  * @return {ParsedTxOperationsMetadata}
  */
-function parseTxOperationsMeta({network, tx, result, meta, mapSac = false, processSystemEvents = false, processFailedOpEffects = false, protocol}) {
+function parseTxOperationsMeta({
+                                   network,
+                                   tx,
+                                   result,
+                                   meta,
+                                   mapSac = false,
+                                   processSystemEvents = false,
+                                   processFailedOpEffects = false,
+                                   processMetrics,
+                                   protocol
+                               }) {
     if (!network)
         throw new TypeError(`Network passphrase argument is required.`)
     if (typeof network !== 'string')
         throw new TypeError(`Invalid network passphrase: "${network}".`)
     if (!tx)
         throw new TypeError(`Transaction envelope argument is required.`)
+    if (processMetrics !== false)
+        processMetrics = true
     const isEphemeral = !meta
     //parse tx, result, and meta xdr
     try {
@@ -132,10 +145,12 @@ function parseTxOperationsMeta({network, tx, result, meta, mapSac = false, proce
         const operation = parsedTx.operations[i]
         if (success || processFailedOpEffects) {
             const params = {
+                network,
                 operation,
                 meta: opMeta[i]?.changes() || [],
-                result: opResults[i], network,
-                processFailedOpEffects
+                result: opResults[i],
+                processFailedOpEffects,
+                processMetrics
             }
             const isSorobanInvocation = operation.type === 'invokeHostFunction'
             //only for Soroban contract invocation

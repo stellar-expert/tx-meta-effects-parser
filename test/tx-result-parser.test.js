@@ -34,7 +34,9 @@ describe('Effects', () => {
             tx,
             result,
             meta,
-            mapSac: true
+            mapSac: true,
+            processFailedOpEffects: true,
+            processMetrics: false
         })
 
         for (let i = 0; i < res.operations.length; i++) {
