@@ -3,4 +3,6 @@ node_modules/
 .idea
 test/
 pnpm-lock.yaml
-!.npmignore
+.eslintrc.js
+babel.config.js
+jest.config.js
