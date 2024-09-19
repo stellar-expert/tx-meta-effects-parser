@@ -92,9 +92,9 @@
             "write_entry": 8,
             "write_key_byte": 0,
             "fee": {
-              "nonrefundable": "284210",
-              "refundable": "100521",
-              "rent": "100481"
+              "nonrefundable": 284210,
+              "refundable": 100521,
+              "rent": 100481
             }
           }
         ]
@@ -133,9 +133,9 @@
             "source": "GDQ47JRRX2SQ7YHM6FAMMDC4K5EXFZOYPWZCFAILKEE3IYTZAQEFGR3M",
             "contract": "CDWCIQMI3EHKGK32SVICLUBFVBT5VKNG72O3G7KNJOLSIVA4WDVQ2IYX",
             "fee": {
-              "nonrefundable": "319769",
-              "refundable": "0",
-              "rent": "0"
+              "nonrefundable": 319769,
+              "refundable": 0,
+              "rent": 0
             },
             "cpu_insn": 7835754,
             "emit_event": 0,

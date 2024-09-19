@@ -213,9 +213,9 @@ class EffectsAnalyzer {
         if (sorobanExt) {
             const attrs = sorobanExt._attributes
             const fee = {
-                nonrefundable: parseLargeInt(attrs.totalNonRefundableResourceFeeCharged),
-                refundable: parseLargeInt(attrs.totalRefundableResourceFeeCharged),
-                rent: parseLargeInt(attrs.rentFeeCharged)
+                nonrefundable: parseInt(parseLargeInt(attrs.totalNonRefundableResourceFeeCharged)),
+                refundable: parseInt(parseLargeInt(attrs.totalRefundableResourceFeeCharged)),
+                rent: parseInt(parseLargeInt(attrs.rentFeeCharged))
             }
             this.addMetric(this.retrieveOpContractId(), 'fee', fee)
         }
@@ -1105,6 +1105,10 @@ function validateAmount(amount) {
     return amount
 }
 
+/**
+ * @param largeInt
+ * @return {String}
+ */
 function parseLargeInt(largeInt) {
     return largeInt._value.toString()
 }
