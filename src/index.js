@@ -156,10 +156,12 @@ function parseTxOperationsMeta({
             //only for Soroban contract invocation
             if (isSorobanInvocation) {
                 const sorobanMeta = metaValue._attributes.sorobanMeta
-                params.events = sorobanMeta.events()
-                params.diagnosticEvents = sorobanMeta.diagnosticEvents()
+                if (sorobanMeta) {
+                    params.events = sorobanMeta.events()
+                    params.diagnosticEvents = sorobanMeta.diagnosticEvents()
+                    params.processSystemEvents = processSystemEvents
+                }
                 params.mapSac = mapSac
-                params.processSystemEvents = processSystemEvents
             }
             const analyzer = new EffectsAnalyzer(params)
             operation.effects = analyzer.analyze()

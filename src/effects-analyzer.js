@@ -206,7 +206,10 @@ class EffectsAnalyzer {
     }
 
     addFeeMetric(metaValue) {
-        const sorobanExt = metaValue._attributes.sorobanMeta._attributes.ext._value
+        const {sorobanMeta} = metaValue._attributes
+        if (!sorobanMeta)
+            return
+        const sorobanExt = sorobanMeta._attributes.ext._value
         if (sorobanExt) {
             const attrs = sorobanExt._attributes
             const fee = {
