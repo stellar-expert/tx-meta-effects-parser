@@ -1506,7 +1506,12 @@ ClaimClaimableBalanceOp</sub></td>
   write_code_byte: 0,
   write_data_byte: 1028,
   write_entry: 5,
-  write_key_byte: 0
+  write_key_byte: 0,
+  fee: {
+    nonrefundable: 284210,
+    refundable: 100521,
+    rent: 100481
+  }
 }
 ```
 
