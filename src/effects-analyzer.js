@@ -402,6 +402,7 @@ class EffectsAnalyzer {
                 break
             }
             case 'createContract':
+            case 'createContractV2':
                 const preimage = value.contractIdPreimage()
                 const executable = value.executable()
                 const executableType = executable.switch().name
@@ -433,6 +434,12 @@ class EffectsAnalyzer {
                         break
                     default:
                         throw new TxMetaEffectParserError('Unknown contract type: ' + executableType)
+                }
+                if (func.arm() === 'createContractV2') {
+                    const args = value.constructorArgs() //array
+                    if (args.length > 0) {
+                        effect.constructorArgs = args.map(arg => arg.toXDR('base64'))
+                    }
                 }
                 this.addEffect(effect, 0)
                 break
