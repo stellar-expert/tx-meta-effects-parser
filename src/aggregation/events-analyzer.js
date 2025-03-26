@@ -203,6 +203,8 @@ class EventsAnalyzer {
                     return //throw new Error('Non-standard event')
                 const from = xdrParseScVal(topics[1])
                 const amount = processEventBodyValue(body.data())
+                if (!amount)
+                    return
                 if (!this.matchInvocationEffect(e =>
                     (e.function === 'burn' && matchArrays([from, amount], e.args)) ||
                     (e.function === 'burn_from' && matchArrays([undefined, from, amount], e.args))
