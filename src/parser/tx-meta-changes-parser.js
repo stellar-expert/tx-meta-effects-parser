@@ -16,6 +16,7 @@ function parseTxMetaChanges(meta) {
             break
         case 'v2':
         case 'v3':
+        case 'v4':
             retrieveTopLevelChanges(transactionMeta.txChangesBefore(), txMetaChanges)
             retrieveTopLevelChanges(transactionMeta.txChangesAfter(), txMetaChanges)
             break

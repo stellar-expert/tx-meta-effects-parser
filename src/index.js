@@ -139,6 +139,9 @@ function parseTxOperationsMeta({
     }
     const metaValue = meta.value()
     const opMeta = metaValue.operations()
+    const isV4Meta = meta.arm() === 'v4'
+    let txEvents = isV4Meta ? metaValue.events() : undefined
+    let diagnosticEvents = isV4Meta ? metaValue.diagnosticEvents() : undefined
 
     //analyze operation effects for each operation
     for (let i = 0; i < parsedTx.operations.length; i++) {
@@ -150,15 +153,21 @@ function parseTxOperationsMeta({
                 meta: opMeta[i]?.changes() || [],
                 result: opResults[i],
                 processFailedOpEffects,
-                processMetrics
+                processMetrics,
+                events: txEvents,
+                diagnosticEvents
             }
             const isSorobanInvocation = operation.type === 'invokeHostFunction'
             //only for Soroban contract invocation
             if (isSorobanInvocation) {
                 const sorobanMeta = metaValue._attributes.sorobanMeta
                 if (sorobanMeta) {
-                    params.events = sorobanMeta.events()
-                    params.diagnosticEvents = sorobanMeta.diagnosticEvents()
+                    if (sorobanMeta.events) {
+                        params.events = sorobanMeta.events()
+                    }
+                    if (sorobanMeta.diagnosticEvents) {
+                        params.diagnosticEvents = sorobanMeta.diagnosticEvents()
+                    }
                     params.processSystemEvents = processSystemEvents
                 }
                 params.mapSac = mapSac
