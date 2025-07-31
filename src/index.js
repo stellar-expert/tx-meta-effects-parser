@@ -9,6 +9,7 @@ const {analyzeSignerChanges} = require('./aggregation/signer-changes-analyzer')
 const contractPreimageEncoder = require('./parser/contract-preimage-encoder')
 const xdrParserUtils = require('./parser/tx-xdr-parser-utils')
 const effectTypes = require('./effect-types')
+const events = require('node:events')
 
 /**
  * Retrieve effects from transaction execution result metadata
@@ -141,7 +142,6 @@ function parseTxOperationsMeta({
     const opMeta = metaValue.operations()
     const isV4Meta = meta.arm() === 'v4'
     let txEvents = isV4Meta ? metaValue.events() : undefined
-    let diagnosticEvents = isV4Meta ? metaValue.diagnosticEvents() : undefined
 
     //analyze operation effects for each operation
     for (let i = 0; i < parsedTx.operations.length; i++) {
@@ -153,14 +153,12 @@ function parseTxOperationsMeta({
                 meta: opMeta[i]?.changes() || [],
                 result: opResults[i],
                 processFailedOpEffects,
-                processMetrics,
-                events: txEvents,
-                diagnosticEvents
+                processMetrics
             }
             const isSorobanInvocation = operation.type === 'invokeHostFunction'
             //only for Soroban contract invocation
             if (isSorobanInvocation) {
-                const sorobanMeta = metaValue._attributes.sorobanMeta
+                const {sorobanMeta} = metaValue._attributes
                 if (sorobanMeta) {
                     if (sorobanMeta.events) {
                         params.events = sorobanMeta.events()
@@ -169,6 +167,10 @@ function parseTxOperationsMeta({
                         params.diagnosticEvents = sorobanMeta.diagnosticEvents()
                     }
                     params.processSystemEvents = processSystemEvents
+                }
+                if (isV4Meta) {
+                    params.diagnosticEvents = metaValue.diagnosticEvents()
+                    params.events = metaValue.operations()[0].events()
                 }
                 params.mapSac = mapSac
             }

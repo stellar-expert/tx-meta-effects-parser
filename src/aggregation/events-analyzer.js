@@ -304,7 +304,7 @@ function processEventBodyValue(value) {
     /*if (innerValue instanceof Array) //handle simple JS arrays
         return innerValue.map(xdrParseScVal)*/
     if (!innerValue) //scVoid
-        return undefined
+        return null
     return xdrParseScVal(value) //other scValue
 }
 
