@@ -9,7 +9,6 @@ const {analyzeSignerChanges} = require('./aggregation/signer-changes-analyzer')
 const contractPreimageEncoder = require('./parser/contract-preimage-encoder')
 const xdrParserUtils = require('./parser/tx-xdr-parser-utils')
 const effectTypes = require('./effect-types')
-const events = require('node:events')
 
 /**
  * Retrieve effects from transaction execution result metadata
