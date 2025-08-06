@@ -169,7 +169,10 @@ function parseTxOperationsMeta({
                 }
                 if (isV4Meta) {
                     params.diagnosticEvents = metaValue.diagnosticEvents()
-                    params.events = metaValue.operations()[0].events()
+                    const invocationOp = metaValue.operations()[0]
+                    if (invocationOp) {
+                        params.events = invocationOp.events()
+                    }
                 }
                 params.mapSac = mapSac
             }
