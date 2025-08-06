@@ -12,7 +12,7 @@ function resolveNetwork(network) {
 }
 
 describe('Effects', () => {
-    test.each(require('./op-effects-data.json'))('Analyze classic operation effects - %s', (description, params) => {
+    test.each(require('./classic-op-effects-data.json'))('Analyze classic operation effects - %s', (description, params) => {
         const {tx, result, meta, expected, network} = params
         const res = parseTxOperationsMeta({
             network: resolveNetwork(network),
