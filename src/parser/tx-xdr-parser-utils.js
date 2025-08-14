@@ -1,4 +1,4 @@
-const {StrKey, LiquidityPoolId, scValToBigInt, xdr, Asset} = require('@stellar/stellar-base')
+const {xdr, StrKey, LiquidityPoolId, Asset, scValToBigInt, encodeMuxedAccount, encodeMuxedAccountToAddress} = require('@stellar/stellar-base')
 const {TxMetaEffectParserError} = require('../errors')
 
 /**
@@ -26,10 +26,9 @@ function toStellarAsset(assetDescriptor) {
 /**
  * Parse account address from XDR representation
  * @param accountId
- * @param muxedAccountsSupported
- * @return {String|{muxedId: String, primary: String}}
+ * @return {String}
  */
-function xdrParseAccountAddress(accountId, muxedAccountsSupported = false) {
+function xdrParseAccountAddress(accountId) {
     if (!accountId)
         return undefined
     if (accountId.arm) {
@@ -37,8 +36,6 @@ function xdrParseAccountAddress(accountId, muxedAccountsSupported = false) {
             case 'ed25519':
                 return StrKey.encodeEd25519PublicKey(accountId.ed25519())
             case 'med25519':
-                if (!muxedAccountsSupported)
-                    throw new TxMetaEffectParserError(`Muxed accounts not supported here`)
                 return {
                     primary: StrKey.encodeEd25519PublicKey(accountId.value().ed25519()),
                     muxedId: accountId.value().id().toString()
@@ -51,6 +48,17 @@ function xdrParseAccountAddress(accountId, muxedAccountsSupported = false) {
         return StrKey.encodeEd25519PublicKey(accountId)
     }
     throw new TypeError(`Failed to identify and parse account address: ${accountId}`)
+}
+
+/**
+ * Parse muxed account address from ScAddress XDR representation
+ * @param {{}} value
+ * @return {string}
+ */
+function xdrParseMuxedScAddress(value) {
+    const {ed25519, id} = value._attributes
+    const muxed = encodeMuxedAccount(StrKey.encodeEd25519PublicKey(ed25519), id._value.toString())
+    return encodeMuxedAccountToAddress(muxed)
 }
 
 /**
@@ -257,11 +265,15 @@ function xdrParseScVal(value, treatBytesAsContractId = false) {
         case 'duration':
             return scValToBigInt(value).toString()
         case 'address':
-            if (value._value._arm === 'accountId')
-                return xdrParseAccountAddress(value._value.value())
-            if (value._value._arm === 'contractId')
-                return xdrParseContractAddress(value._value.value())
-            throw new TxMetaEffectParserError('Not supported XDR primitive type: ' + value.toString())
+            switch (value._value._arm) {
+                case 'accountId':
+                    return xdrParseAccountAddress(value._value.value())
+                case 'contractId':
+                    return xdrParseContractAddress(value._value.value())
+                case 'muxedAccount':
+                    return xdrParseMuxedScAddress(value._value.value())
+            }
+            throw new TxMetaEffectParserError('Not supported XDR primitive type: ' + value._value._arm.toString())
         case 'bytes':
             return treatBytesAsContractId ? xdrParseContractAddress(value.value()) : value._value.toString('base64')
         case 'i32':
