@@ -310,6 +310,7 @@ module.exports = {
     xdrParseAsset,
     xdrParseAccountAddress,
     xdrParseContractAddress,
+    xdrParseMuxedScAddress,
     xdrParseClaimant,
     xdrParseClaimedOffer,
     xdrParseTradeAtom,
