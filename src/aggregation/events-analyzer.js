@@ -1,4 +1,4 @@
-const {StrKey} = require('@stellar/stellar-base')
+const {StrKey, encodeMuxedAccount, encodeMuxedAccountToAddress} = require('@stellar/stellar-base')
 const effectTypes = require('../effect-types')
 const {xdrParseScVal, xdrParseAsset, isContractAddress} = require('../parser/tx-xdr-parser-utils')
 const {mapSacContract} = require('./sac-contract-mapper')
@@ -146,15 +146,17 @@ class EventsAnalyzer {
                 if (!matchEventTopicsShape(topics, ['address', 'address', 'str?']))
                     return
                 const from = xdrParseScVal(topics[1])
-                const to = xdrParseScVal(topics[2])
+                const receiver = xdrParseScVal(topics[2])
+                let to = receiver
+                let amount = processEventBodyValue(body.data())
+                if (amount.amount !== undefined) {
+                    if (amount.to_muxed_id && !to.startsWith('M')) {
+                        to = encodeMuxedAccountToAddress(encodeMuxedAccount(to, amount.to_muxed_id))
+                        amount = amount.amount
+                    }
+                }
                 if (to === from) //self transfer - nothing happens
                     return // TODO: need additional checks
-                const amount = processEventBodyValue(body.data())
-                if (!this.matchInvocationEffect(e =>
-                    (e.function === 'transfer' && matchArrays([from, to, amount], e.args)) ||
-                    (e.function === 'transfer_from' && matchArrays([undefined, from, to, amount], e.args))
-                ))
-                    return
                 let classicAsset
                 if (topics.length > 3) {
                     classicAsset = xdrParseAsset(xdrParseScVal(topics[3]))
@@ -172,7 +174,7 @@ class EventsAnalyzer {
                     if (isContractAddress(to)) {
                         this.effectsAnalyzer.credit(amount, classicAsset, to)
                     }
-                    if (classicAsset.includes(to)) {  //SAC transfer by asset issuer
+                    if (classicAsset.includes(receiver)) {  //SAC transfer by asset issuer
                         this.effectsAnalyzer.burn(classicAsset, amount)
                     }
                 } else { //other cases
@@ -182,14 +184,19 @@ class EventsAnalyzer {
             }
                 break
             case 'mint': {
-                if (!matchEventTopicsShape(topics, ['address', 'address', 'str?']))
+                if (!matchEventTopicsShape(topics, ['address', 'address', 'str?']) && !matchEventTopicsShape(topics, ['address', 'str?']))
                     return //throw new Error('Non-standard event')
-                const to = xdrParseScVal(topics[2])
-                const amount = processEventBodyValue(body.data())
-                if (!this.matchInvocationEffect(e => e.function === 'mint' && matchArrays([to, amount], e.args)))
-                    return
-                if (topics.length > 3) {
-                    mapSacContract(this.effectsAnalyzer, contract, xdrParseAsset(xdrParseScVal(topics[3])))
+                let to = xdrParseScVal(topics[topics[2]?._arm === 'address' ? 2 : 1])
+                let amount = processEventBodyValue(body.data())
+                if (amount.amount !== undefined) {
+                    if (amount.to_muxed_id && !to.startsWith('M')) {
+                        to = encodeMuxedAccountToAddress(encodeMuxedAccount(to, amount.to_muxed_id))
+                        amount = amount.amount
+                    }
+                }
+                const last = topics[topics.length - 1]
+                if (last._arm === 'str') {
+                    mapSacContract(this.effectsAnalyzer, contract, xdrParseAsset(xdrParseScVal(last)))
                 }
                 const asset = this.effectsAnalyzer.resolveAsset(contract)
                 this.effectsAnalyzer.mint(asset, amount)
@@ -205,11 +212,6 @@ class EventsAnalyzer {
                 const amount = processEventBodyValue(body.data())
                 if (!amount)
                     return
-                if (!this.matchInvocationEffect(e =>
-                    (e.function === 'burn' && matchArrays([from, amount], e.args)) ||
-                    (e.function === 'burn_from' && matchArrays([undefined, from, amount], e.args))
-                ))
-                    return
                 if (topics.length > 2) {
                     mapSacContract(this.effectsAnalyzer, contract, xdrParseAsset(xdrParseScVal(topics[2])))
                 }
@@ -221,12 +223,10 @@ class EventsAnalyzer {
             }
                 break
             case 'clawback': {
-                if (!matchEventTopicsShape(topics, ['address', 'address', 'str?']))
+                if (!matchEventTopicsShape(topics, ['address', 'address', 'str?']) && !matchEventTopicsShape(topics, ['address', 'str?']))
                     return //throw new Error('Non-standard event')
-                const from = xdrParseScVal(topics[2])
+                const from = xdrParseScVal(topics[topics[2]?._arm === 'address' ? 2 : 1])
                 const amount = processEventBodyValue(body.data())
-                if (!this.matchInvocationEffect(e => e.function === 'clawback' && matchArrays([from, amount], e.args)))
-                    return
                 if (topics.length > 3) {
                     mapSacContract(this.effectsAnalyzer, contract, xdrParseAsset(xdrParseScVal(topics[3])))
                 }
@@ -240,15 +240,14 @@ class EventsAnalyzer {
                     return //throw new Error('Non-standard event')
                 const currentAdmin = xdrParseScVal(topics[1])
                 const newAdmin = processEventBodyValue(body.data())
-                if (!this.matchInvocationEffect(e => e.function === 'set_admin' && matchArrays([currentAdmin, newAdmin], [this.effectsAnalyzer.source, e.args])))
-                    return
                 if (topics.length > 2) {
                     mapSacContract(this.effectsAnalyzer, contract, xdrParseAsset(xdrParseScVal(topics[2])))
                 }
                 this.effectsAnalyzer.setAdmin(contract, newAdmin)
             }
                 break
-            /*case 'approve': { //TODO: think about processing this effect
+            /*case 'set_authorized':*/ //TODO: think about processing this effects
+            /*case 'approve': {
                 if (!matchEventTopicsShape(topics, ['address', 'address', 'str?']))
                     throw new Error('Non-standard event')
                 const from = xdrParseScVal(topics[1])
@@ -260,12 +259,14 @@ class EventsAnalyzer {
                 break*/
         }
     }
-
-    matchInvocationEffect(cb) {
-        return this.effectsAnalyzer.effects.find(e => e.type === effectTypes.contractInvoked && cb(e))
-    }
 }
 
+/**
+ * Compare types in the topics array with expected values
+ * @param {ScVal[]} topics
+ * @param {string[]} shape
+ * @return {boolean}
+ */
 function matchEventTopicsShape(topics, shape) {
     if (topics.length > shape.length + 1)
         return false
@@ -287,22 +288,12 @@ function matchEventTopicsShape(topics, shape) {
     return true
 }
 
-function matchArrays(a, b) {
-    if (!a || !b)
-        return false
-    if (a.length !== b.length)
-        return false
-    for (let i = a.length; i--;) {
-        if (a[i] !== undefined && a[i] !== b[i]) //undefined serves as * substitution
-            return false
-    }
-    return true
-}
-
+/**
+ * Retrieve event body value
+ * @param value
+ */
 function processEventBodyValue(value) {
     const innerValue = value.value()
-    /*if (innerValue instanceof Array) //handle simple JS arrays
-        return innerValue.map(xdrParseScVal)*/
     if (!innerValue) //scVoid
         return null
     return xdrParseScVal(value) //other scValue

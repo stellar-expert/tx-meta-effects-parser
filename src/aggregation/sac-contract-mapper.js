@@ -24,12 +24,16 @@ function mapSacContract(effectsAnalyzer, contractAddress, classicAsset) {
     //try to load from cache first
     const fromCache = sacCache.get(classicAsset + network)
     if (!fromCache) {
-        const encodedContract = contractIdFromAsset(toStellarAsset(classicAsset), network)
-        sacCache.set(classicAsset + network, contractAddress)
-        if (contractAddress === undefined) {
-            contractAddress = encodedContract
-        } else if (encodedContract !== contractAddress)
+        try {
+            const encodedContract = contractIdFromAsset(toStellarAsset(classicAsset), network)
+            sacCache.set(classicAsset + network, contractAddress)
+            if (contractAddress === undefined) {
+                contractAddress = encodedContract
+            } else if (encodedContract !== contractAddress)
+                return false
+        } catch (e) {
             return false
+        }
     } else if (contractAddress !== fromCache)
         return false //check whether validated contract from cache matches the asset
     if (sacMap) {
