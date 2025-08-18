@@ -149,12 +149,14 @@ class EventsAnalyzer {
                 const receiver = xdrParseScVal(topics[2])
                 let to = receiver
                 let amount = processEventBodyValue(body.data())
-                if (amount.amount !== undefined) {
+                if (amount?.amount !== undefined) {
                     if (amount.to_muxed_id && !to.startsWith('M')) {
                         to = encodeMuxedAccountToAddress(encodeMuxedAccount(to, amount.to_muxed_id))
                         amount = amount.amount
                     }
                 }
+                if (typeof amount!=='string')
+                    return null
                 if (to === from) //self transfer - nothing happens
                     return // TODO: need additional checks
                 let classicAsset
@@ -188,12 +190,14 @@ class EventsAnalyzer {
                     return //throw new Error('Non-standard event')
                 let to = xdrParseScVal(topics[topics[2]?._arm === 'address' ? 2 : 1])
                 let amount = processEventBodyValue(body.data())
-                if (amount.amount !== undefined) {
+                if (amount?.amount !== undefined) {
                     if (amount.to_muxed_id && !to.startsWith('M')) {
                         to = encodeMuxedAccountToAddress(encodeMuxedAccount(to, amount.to_muxed_id))
                         amount = amount.amount
                     }
                 }
+                if (typeof amount !== 'string')
+                    return null
                 const last = topics[topics.length - 1]
                 if (last._arm === 'str') {
                     mapSacContract(this.effectsAnalyzer, contract, xdrParseAsset(xdrParseScVal(last)))
@@ -210,8 +214,8 @@ class EventsAnalyzer {
                     return //throw new Error('Non-standard event')
                 const from = xdrParseScVal(topics[1])
                 const amount = processEventBodyValue(body.data())
-                if (!amount)
-                    return
+                if (typeof amount !== 'string')
+                    return null
                 if (topics.length > 2) {
                     mapSacContract(this.effectsAnalyzer, contract, xdrParseAsset(xdrParseScVal(topics[2])))
                 }
@@ -227,6 +231,8 @@ class EventsAnalyzer {
                     return //throw new Error('Non-standard event')
                 const from = xdrParseScVal(topics[topics[2]?._arm === 'address' ? 2 : 1])
                 const amount = processEventBodyValue(body.data())
+                if (typeof amount !== 'string')
+                    return null
                 if (topics.length > 3) {
                     mapSacContract(this.effectsAnalyzer, contract, xdrParseAsset(xdrParseScVal(topics[3])))
                 }
