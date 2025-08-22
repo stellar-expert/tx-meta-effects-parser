@@ -82,9 +82,11 @@ const effectTypes = {
 
     contractCodeUploaded: 'contractCodeUploaded',
     contractCodeRemoved: 'contractCodeRemoved',
+    contractCodeRestored: 'contractCodeRestored',
 
     contractCreated: 'contractCreated',
     contractUpdated: 'contractUpdated',
+    contractRestored: 'contractRestored',
 
     contractInvoked: 'contractInvoked',
     contractError: 'contractError',
@@ -92,6 +94,7 @@ const effectTypes = {
     contractDataCreated: 'contractDataCreated',
     contractDataUpdated: 'contractDataUpdated',
     contractDataRemoved: 'contractDataRemoved',
+    contractDataRestored: 'contractDataRestored',
 
     contractEvent: 'contractEvent',
     contractMetrics: 'contractMetrics',

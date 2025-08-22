@@ -2,13 +2,13 @@ const {StrKey, hash, xdr, nativeToScVal} = require('@stellar/stellar-base')
 const effectTypes = require('./effect-types')
 const {parseLedgerEntryChanges} = require('./parser/ledger-entry-changes-parser')
 const {xdrParseAsset, xdrParseAccountAddress, xdrParseScVal} = require('./parser/tx-xdr-parser-utils')
-const {analyzeSignerChanges} = require('./aggregation/signer-changes-analyzer')
 const {contractIdFromPreimage} = require('./parser/contract-preimage-encoder')
+const {generateContractCodeEntryHash} = require('./parser/ledger-key')
+const {analyzeSignerChanges} = require('./aggregation/signer-changes-analyzer')
 const EventsAnalyzer = require('./aggregation/events-analyzer')
 const AssetSupplyAnalyzer = require('./aggregation/asset-supply-analyzer')
 const {mapSacContract} = require('./aggregation/sac-contract-mapper')
 const {UnexpectedTxMetaChangeError, TxMetaEffectParserError} = require('./errors')
-const {generateContractCodeEntryHash} = require('./parser/ledger-key')
 
 class EffectsAnalyzer {
     constructor({
@@ -491,6 +491,7 @@ class EffectsAnalyzer {
             const effect = {}
             switch (action) {
                 case 'created':
+                case 'restored':
                     if (!after.sponsor)
                         continue
                     effect.sponsor = after.sponsor
@@ -823,13 +824,12 @@ class EffectsAnalyzer {
     }
 
     processContractChanges({action, before, after}) {
-        if (action !== 'created' && action !== 'updated')
-            throw new UnexpectedTxMetaChangeError({type: 'contract', action})
         const {kind, owner: contract, keyHash} = after
         let effect = {
             type: effectTypes.contractCreated,
             contract,
-            kind
+            kind,
+            keyHash
         }
         switch (kind) {
             case 'fromAsset':
@@ -841,22 +841,30 @@ class EffectsAnalyzer {
             default:
                 throw new TxMetaEffectParserError('Unexpected contract type: ' + kind)
         }
-        if (action === 'created') {
-            if (this.effects.some(e => e.type === effectTypes.contractCreated && e.contract === contract)) {
-                effect = undefined //skip contract creation effects processed by top-level createContract operation call
-            }
-        } else if (action === 'updated') {
-            effect.type = effectTypes.contractUpdated
-            effect.prevWasmHash = before.wasmHash
-            if (before.wasmHash === after.wasmHash) {//skip if hash unchanged
-                effect = undefined
-            }
+        switch (action) {
+            case 'created':
+                if (this.effects.some(e => e.type === effectTypes.contractCreated && e.contract === contract)) {
+                    effect = undefined //skip contract creation effects processed by top-level createContract operation call
+                }
+                break
+            case 'updated':
+                effect.type = effectTypes.contractUpdated
+                effect.prevWasmHash = before.wasmHash
+                if (before.wasmHash === after.wasmHash) {//skip if hash unchanged
+                    effect = undefined
+                }
+                break
+            case 'restored':
+                effect.type = effectTypes.contractRestored
+                break
+            default:
+                throw new UnexpectedTxMetaChangeError({type: 'contract', action})
         }
         if (effect) {
             this.addEffect(effect, effect.type === effectTypes.contractCreated ? 0 : undefined)
         }
         if (before?.storage?.length || after?.storage?.length) {
-            this.processInstanceDataChanges(before, after)
+            this.processInstanceDataChanges(before, after, action === 'restored')
         }
     }
 
@@ -885,6 +893,10 @@ class EffectsAnalyzer {
                 effect.type = effectTypes.contractDataRemoved
                 effect.prevValue = before.value
                 break
+            case 'restored':
+                effect.type = effectTypes.contractDataRestored
+                effect.value = after.value
+                break
         }
         this.addEffect(effect)
         this.processContractBalance(effect)
@@ -898,17 +910,23 @@ class EffectsAnalyzer {
             case 'updated':
                 break //it doesn't change the state
             case 'removed':
-                const effect = {
+                this.addEffect({
                     type: effectTypes.contractCodeRemoved,
                     wasmHash: hash,
                     keyHash
-                }
-                this.addEffect(effect)
+                })
+                break
+            case 'restored':
+                this.addEffect({
+                    type: effectTypes.contractCodeRestored,
+                    wasmHash: hash,
+                    keyHash
+                })
                 break
         }
     }
 
-    processInstanceDataChanges(before, after) {
+    processInstanceDataChanges(before, after, restored) {
         const storageBefore = before?.storage || []
         const storageAfter = [...(after?.storage || [])]
         for (const {key, val} of storageBefore) {
@@ -948,7 +966,7 @@ class EffectsAnalyzer {
         //iterate all storage items left
         for (const {key, val} of storageAfter) {
             const effect = {
-                type: effectTypes.contractDataCreated,
+                type: restored ? effectTypes.contractDataRestored : effectTypes.contractDataCreated,
                 owner: after?.owner || before.owner,
                 key,
                 value: val,
@@ -969,12 +987,17 @@ class EffectsAnalyzer {
             ttl
         }
         if (stateEffect) {
-            if (stateEffect.type.includes('contractCode')) {
+            if (stateEffect.type.startsWith('contractCode')) {
                 effect.kind = 'contractCode'
-            } else if (stateEffect.type.includes('contractData')) {
+            } else if (stateEffect.type.startsWith('contractData')) {
                 effect.kind = 'contractData'
                 effect.owner = stateEffect.owner
-            }
+            } else if (stateEffect.type.startsWith('contract')) {
+                effect.kind = 'contractData'
+                effect.owner = stateEffect.contract
+            } else
+                throw new UnexpectedTxMetaChangeError({type: 'ttl', action: stateEffect.type})
+            stateEffect.ttl = ttl
         }
         this.addEffect(effect)
     }
@@ -1099,6 +1122,9 @@ function encodeSponsorshipEffectName(action, type) {
             break
         case 'removed':
             actionKey = 'Removed'
+            break
+        case 'restored':
+            actionKey = 'Restored'
             break
         default:
             throw new UnexpectedTxMetaChangeError({action, type})

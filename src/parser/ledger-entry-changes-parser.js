@@ -6,7 +6,7 @@ const {generateContractStateEntryHash, generateContractCodeEntryHash} = require(
 /**
  * @typedef {{}} ParsedLedgerEntryMeta
  * @property {'account'|'trustline'|'offer'|'data'|'liquidityPool'|'claimableBalance'|'contractData'|'contractCode'|'ttl'} type - Ledger entry type
- * @property {'created'|'updated'|'removed'} action - Ledger modification action
+ * @property {'created'|'updated'|'removed'|'restored'} action - Ledger modification action
  * @property {{}} before - Ledger entry state before changes applied
  * @property {{}} after - Ledger entry state after changes application
  */
@@ -18,14 +18,15 @@ const {generateContractStateEntryHash, generateContractCodeEntryHash} = require(
 function parseLedgerEntryChanges(ledgerEntryChanges) {
     const changes = []
     let state
+    let containsTtl = false
     for (let i = 0; i < ledgerEntryChanges.length; i++) {
         const entry = ledgerEntryChanges[i]
         const action = entry._arm
         const stateData = parseEntry(entry, action)
         if (stateData === undefined)
             continue
-        const change = {action}
         const type = entry._value._arm
+        const change = {action, type}
         switch (action) {
             case 'state':
                 state = stateData
@@ -44,6 +45,11 @@ function parseLedgerEntryChanges(ledgerEntryChanges) {
                 change.after = stateData
                 change.type = stateData.entry
                 break
+            case 'restored':
+                change.before = state
+                change.after = stateData
+                change.type = stateData.entry
+                break
             case 'removed':
                 if (!state && type === 'ttl')
                     continue //skip expiration processing for now
@@ -54,8 +60,16 @@ function parseLedgerEntryChanges(ledgerEntryChanges) {
             default:
                 throw new TxMetaEffectParserError(`Unknown change entry type: ${action}`)
         }
+        if (change.type === 'ttl') {
+            containsTtl = true
+        }
         changes.push(change)
         state = null
+    }
+    if (containsTtl) { //put ttl entries into the end of array
+        changes.sort((a, b) =>
+            a.type !== 'ttl' && b.type === 'ttl' ?
+                -1 : 0)
     }
     return changes
 }
