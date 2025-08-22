@@ -929,39 +929,41 @@ class EffectsAnalyzer {
     processInstanceDataChanges(before, after, restored) {
         const storageBefore = before?.storage || []
         const storageAfter = [...(after?.storage || [])]
-        for (const {key, val} of storageBefore) {
-            let newVal
-            for (let i = 0; i < storageAfter.length; i++) {
-                const afterValue = storageAfter[i]
-                if (afterValue.key === key) {
-                    newVal = afterValue.val //update new value
-                    storageAfter.splice(i, 1) //remove from array to simplify iteration
-                    break
+        if (!restored) {
+            for (const {key, val} of storageBefore) {
+                let newVal
+                for (let i = 0; i < storageAfter.length; i++) {
+                    const afterValue = storageAfter[i]
+                    if (afterValue.key === key) {
+                        newVal = afterValue.val //update new value
+                        storageAfter.splice(i, 1) //remove from array to simplify iteration
+                        break
+                    }
                 }
-            }
-            if (newVal === undefined) { //removed
+                if (newVal === undefined) { //removed
+                    const effect = {
+                        type: effectTypes.contractDataRemoved,
+                        owner: after?.owner || before.owner,
+                        key,
+                        prevValue: val,
+                        durability: 'instance'
+                    }
+                    this.addEffect(effect)
+                    continue
+                }
+                if (val === newVal) //value has not changed
+                    continue
+
                 const effect = {
-                    type: effectTypes.contractDataRemoved,
+                    type: effectTypes.contractDataUpdated,
                     owner: after?.owner || before.owner,
                     key,
+                    value: newVal,
                     prevValue: val,
                     durability: 'instance'
                 }
                 this.addEffect(effect)
-                continue
             }
-            if (val === newVal) //value has not changed
-                continue
-
-            const effect = {
-                type: effectTypes.contractDataUpdated,
-                owner: after?.owner || before.owner,
-                key,
-                value: newVal,
-                prevValue: val,
-                durability: 'instance'
-            }
-            this.addEffect(effect)
         }
         //iterate all storage items left
         for (const {key, val} of storageAfter) {

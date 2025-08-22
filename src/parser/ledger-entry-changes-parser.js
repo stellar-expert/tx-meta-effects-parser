@@ -41,12 +41,16 @@ function parseLedgerEntryChanges(ledgerEntryChanges) {
             case 'updated':
                 if (type === 'contractCode')
                     throw new UnexpectedTxMetaChangeError({type, action})
+                if (!state && stateData.keyHash) { //likely, restored state
+                    const restored = changes.find(ch => ch.action === 'restored' && ch.type === stateData.entry && ch.after.keyHash === stateData.keyHash)
+                    state = restored?.after
+                }
                 change.before = state
                 change.after = stateData
                 change.type = stateData.entry
                 break
             case 'restored':
-                change.before = state
+                change.before = stateData
                 change.after = stateData
                 change.type = stateData.entry
                 break
