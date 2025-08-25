@@ -155,7 +155,7 @@ class EventsAnalyzer {
                         amount = amount.amount
                     }
                 }
-                if (typeof amount!=='string')
+                if (typeof amount !== 'string')
                     return null
                 if (to === from) //self transfer - nothing happens
                     return // TODO: need additional checks
@@ -252,7 +252,26 @@ class EventsAnalyzer {
                 this.effectsAnalyzer.setAdmin(contract, newAdmin)
             }
                 break
-            /*case 'set_authorized':*/ //TODO: think about processing this effects
+            case 'set_authorized': {
+                if (!matchEventTopicsShape(topics, ['address', 'str?']))
+                    return //throw new Error('Non-standard event')
+                const trustor = xdrParseScVal(topics[1])
+                const encodedAsset = xdrParseScVal(topics[2])
+                if (topics.length > 2) {
+                    mapSacContract(this.effectsAnalyzer, contract, xdrParseAsset(encodedAsset))
+                }
+                const asset = this.effectsAnalyzer.resolveAsset(encodedAsset)
+                const isAuthorized = processEventBodyValue(body.data())
+                this.effectsAnalyzer.addEffect({
+                    type: effectTypes.trustlineAuthorizationUpdated,
+                    trustor,
+                    asset,
+                    flags: isAuthorized ? 1 : 0,
+                    prevFlags: isAuthorized ? 0 : 1
+                })
+            }
+                break
+            //TODO: think about processing these effects
             /*case 'approve': {
                 if (!matchEventTopicsShape(topics, ['address', 'address', 'str?']))
                     throw new Error('Non-standard event')
@@ -300,7 +319,7 @@ function matchEventTopicsShape(topics, shape) {
  */
 function processEventBodyValue(value) {
     const innerValue = value.value()
-    if (!innerValue) //scVoid
+    if (innerValue === undefined) //scVoid
         return null
     return xdrParseScVal(value) //other scValue
 }

@@ -606,6 +606,7 @@ class EffectsAnalyzer {
                     return
                 trustEffect.type = effectTypes.trustlineUpdated
                 trustEffect.limit = snapshot.limit
+                trustEffect.prevFlags = before.flags
                 break
             case 'removed':
                 trustEffect.type = effectTypes.trustlineRemoved

@@ -330,7 +330,8 @@
             "asset": "USD-GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI-1",
             "kind": "asset",
             "limit": "2000000000",
-            "flags": 5
+            "flags": 5,
+            "prevFlags": 5
           }
         ],
         [],
@@ -364,7 +365,8 @@
             "asset": "USD-GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI-1",
             "kind": "asset",
             "limit": "2000000000",
-            "flags": 6
+            "flags": 6,
+            "prevFlags": 5
           }
         ],
         [
@@ -382,7 +384,8 @@
             "asset": "USD-GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI-1",
             "kind": "asset",
             "limit": "2000000000",
-            "flags": 4
+            "flags": 4,
+            "prevFlags": 6
           }
         ],
         [
@@ -1312,7 +1315,8 @@
             "asset": "USD-GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI-1",
             "kind": "asset",
             "limit": "9223372036854775807",
-            "flags": 4
+            "flags": 4,
+            "prevFlags": 5
           },
           {
             "type": "accountDebited",
