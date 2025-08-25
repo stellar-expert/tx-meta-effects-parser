@@ -467,7 +467,8 @@
                 "amount": "10000000000"
               }
             ],
-            "shares": "10000000000"
+            "shares": "10000000000",
+            "accounts": 1
           },
           {
             "type": "liquidityPoolUpdated",
@@ -516,7 +517,8 @@
                 "amount": "5000000000"
               }
             ],
-            "shares": "5000000000"
+            "shares": "5000000000",
+            "accounts": 1
           },
           {
             "type": "liquidityPoolUpdated",
@@ -571,7 +573,8 @@
                 "amount": "5000000000"
               }
             ],
-            "shares": "5000000000"
+            "shares": "5000000000",
+            "accounts": 1
           },
           {
             "type": "liquidityPoolUpdated",
@@ -974,7 +977,8 @@
                 "amount": "1000000000"
               }
             ],
-            "shares": "1000000000"
+            "shares": "1000000000",
+            "accounts": 1
           },
           {
             "type": "liquidityPoolUpdated",
@@ -1216,7 +1220,8 @@
                 "asset": "USD-GBKPPENSICLMFZAVETYMHH5YDWSBREYPGYUST7XFLWOGIPIAWDNKYDLI-1"
               }
             ],
-            "shares": "1000000000"
+            "shares": "1000000000",
+            "accounts": 1
           },
           {
             "type": "accountDebited",
@@ -1563,7 +1568,8 @@
                 "amount": "10000000000"
               }
             ],
-            "shares": "10000000000"
+            "shares": "10000000000",
+            "accounts": 1
           },
           {
             "type": "liquidityPoolUpdated",
@@ -1795,7 +1801,8 @@
                 "amount": "10000000000"
               }
             ],
-            "shares": "10000000000"
+            "shares": "10000000000",
+            "accounts": 1
           },
           {
             "type": "liquidityPoolUpdated",

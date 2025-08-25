@@ -352,7 +352,8 @@ class EffectsAnalyzer {
                 asset,
                 amount: (after.amount[i] - before.amount[i]).toString()
             })),
-            shares: (after.shares - before.shares).toString()
+            shares: (after.shares - before.shares).toString(),
+            accounts: after.accounts
         })
     }
 
@@ -369,7 +370,8 @@ class EffectsAnalyzer {
                 asset,
                 amount: (before.amount[i] - after.amount[i]).toString()
             })),
-            shares: (before.shares - after.shares).toString()
+            shares: (before.shares - after.shares).toString(),
+            accounts: after.accounts
         })
     }
 
