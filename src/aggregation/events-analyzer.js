@@ -260,7 +260,7 @@ class EventsAnalyzer {
                 if (topics.length > 2) {
                     mapSacContract(this.effectsAnalyzer, contract, xdrParseAsset(encodedAsset))
                 }
-                const asset = this.effectsAnalyzer.resolveAsset(encodedAsset)
+                const asset = this.effectsAnalyzer.resolveAsset(contract)
                 const isAuthorized = processEventBodyValue(body.data())
                 this.effectsAnalyzer.addEffect({
                     type: effectTypes.trustlineAuthorizationUpdated,
