@@ -159,29 +159,23 @@ class EventsAnalyzer {
                     return null
                 if (to === from) //self transfer - nothing happens
                     return // TODO: need additional checks
-                let classicAsset
-                if (topics.length > 3) {
-                    classicAsset = xdrParseAsset(xdrParseScVal(topics[3]))
-                    if (!mapSacContract(this.effectsAnalyzer, contract, classicAsset)) {
-                        classicAsset = null  //not an SAC event
-                    }
-                }
-                if (classicAsset) {
-                    if (classicAsset.includes(from)) {  //SAC transfer by asset issuer
-                        this.effectsAnalyzer.mint(classicAsset, amount)
+                const asset = this.getAssetFromEventTopics(topics, contract)
+                if (!StrKey.isValidContract(asset)) {
+                    if (asset.includes(from)) {  //SAC transfer by asset issuer
+                        this.effectsAnalyzer.mint(asset, amount)
                     }
                     if (isContractAddress(from)) {
-                        this.effectsAnalyzer.debit(amount, classicAsset, from)
+                        this.effectsAnalyzer.debit(amount, asset, from)
                     }
                     if (isContractAddress(to)) {
-                        this.effectsAnalyzer.credit(amount, classicAsset, to)
+                        this.effectsAnalyzer.credit(amount, asset, to)
                     }
-                    if (classicAsset.includes(receiver)) {  //SAC transfer by asset issuer
-                        this.effectsAnalyzer.burn(classicAsset, amount)
+                    if (asset.includes(receiver)) {  //SAC transfer by asset issuer
+                        this.effectsAnalyzer.burn(asset, amount)
                     }
                 } else { //other cases
-                    this.effectsAnalyzer.debit(amount, this.effectsAnalyzer.resolveAsset(contract), from)
-                    this.effectsAnalyzer.credit(amount, this.effectsAnalyzer.resolveAsset(contract), to)
+                    this.effectsAnalyzer.debit(amount, asset, from)
+                    this.effectsAnalyzer.credit(amount, asset, to)
                 }
             }
                 break
@@ -198,11 +192,7 @@ class EventsAnalyzer {
                 }
                 if (typeof amount !== 'string')
                     return null
-                const last = topics[topics.length - 1]
-                if (last._arm === 'str') {
-                    mapSacContract(this.effectsAnalyzer, contract, xdrParseAsset(xdrParseScVal(last)))
-                }
-                const asset = this.effectsAnalyzer.resolveAsset(contract)
+                const asset = this.getAssetFromEventTopics(topics, contract)
                 this.effectsAnalyzer.mint(asset, amount)
                 if (isContractAddress(asset) || isContractAddress(to)) {
                     this.effectsAnalyzer.credit(amount, asset, to)
@@ -216,10 +206,7 @@ class EventsAnalyzer {
                 const amount = processEventBodyValue(body.data())
                 if (typeof amount !== 'string')
                     return null
-                if (topics.length > 2) {
-                    mapSacContract(this.effectsAnalyzer, contract, xdrParseAsset(xdrParseScVal(topics[2])))
-                }
-                const asset = this.effectsAnalyzer.resolveAsset(contract)
+                const asset = this.getAssetFromEventTopics(topics, contract)
                 if (isContractAddress(asset) || isContractAddress(from)) {
                     this.effectsAnalyzer.debit(amount, asset, from)
                 }
@@ -233,12 +220,11 @@ class EventsAnalyzer {
                 const amount = processEventBodyValue(body.data())
                 if (typeof amount !== 'string')
                     return null
-                if (topics.length > 3) {
-                    mapSacContract(this.effectsAnalyzer, contract, xdrParseAsset(xdrParseScVal(topics[3])))
+                const asset = this.getAssetFromEventTopics(topics, contract)
+                if (StrKey.isValidContract(from)) { //transfer tokens from account only in case of contract assets to avoid double debits
+                    this.effectsAnalyzer.debit(amount, asset, from)
+                    this.effectsAnalyzer.burn(asset, amount)
                 }
-                const asset = this.effectsAnalyzer.resolveAsset(contract)
-                this.effectsAnalyzer.debit(amount, asset, from)
-                this.effectsAnalyzer.burn(asset, amount)
             }
                 break
             case 'set_admin': {
@@ -246,9 +232,7 @@ class EventsAnalyzer {
                     return //throw new Error('Non-standard event')
                 const currentAdmin = xdrParseScVal(topics[1])
                 const newAdmin = processEventBodyValue(body.data())
-                if (topics.length > 2) {
-                    mapSacContract(this.effectsAnalyzer, contract, xdrParseAsset(xdrParseScVal(topics[2])))
-                }
+                this.getAssetFromEventTopics(topics, contract)
                 this.effectsAnalyzer.setAdmin(contract, newAdmin)
             }
                 break
@@ -256,11 +240,7 @@ class EventsAnalyzer {
                 if (!matchEventTopicsShape(topics, ['address', 'str?']))
                     return //throw new Error('Non-standard event')
                 const trustor = xdrParseScVal(topics[1])
-                const encodedAsset = xdrParseScVal(topics[2])
-                if (topics.length > 2) {
-                    mapSacContract(this.effectsAnalyzer, contract, xdrParseAsset(encodedAsset))
-                }
-                const asset = this.effectsAnalyzer.resolveAsset(contract)
+                const asset = this.getAssetFromEventTopics(topics, contract)
                 const isAuthorized = processEventBodyValue(body.data())
                 this.effectsAnalyzer.addEffect({
                     type: effectTypes.trustlineAuthorizationUpdated,
@@ -283,6 +263,21 @@ class EventsAnalyzer {
             }
                 break*/
         }
+    }
+
+    /**
+     * @param {ScVal[]} topics
+     * @param {string} contract
+     * @return {string|null}
+     * @private
+     */
+    getAssetFromEventTopics(topics, contract) {
+        const last = topics[topics.length - 1]
+        if (last._arm === 'str') {
+            const classicAsset = xdrParseAsset(xdrParseScVal(last))
+            mapSacContract(this.effectsAnalyzer, contract, classicAsset)
+        }
+        return this.effectsAnalyzer.resolveAsset(contract)
     }
 }
 
