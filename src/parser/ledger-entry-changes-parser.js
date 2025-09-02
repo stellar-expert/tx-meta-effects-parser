@@ -234,13 +234,15 @@ function parseLiquidityPoolEntry(value) {
 
 function parseOfferEntry(value) {
     const offerEntryXdr = value.value()
+    const rprice = offerEntryXdr.price()
     const data = {
         entry: 'offer',
         id: offerEntryXdr.offerId().toString(),
         account: xdrParseAccountAddress(offerEntryXdr.sellerId()),
         asset: [xdrParseAsset(offerEntryXdr.selling()), xdrParseAsset(offerEntryXdr.buying())],
         amount: offerEntryXdr.amount().toString(),
-        price: xdrParsePrice(offerEntryXdr.price()),
+        price: xdrParsePrice(rprice),
+        rprice,
         flags: offerEntryXdr.flags()
     }
     return data
