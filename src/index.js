@@ -140,7 +140,6 @@ function parseTxOperationsMeta({
     const metaValue = meta.value()
     const opMeta = metaValue.operations()
     const isV4Meta = meta.arm() === 'v4'
-    let txEvents = isV4Meta ? metaValue.events() : undefined
 
     //analyze operation effects for each operation
     for (let i = 0; i < parsedTx.operations.length; i++) {

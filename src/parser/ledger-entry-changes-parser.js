@@ -13,19 +13,22 @@ const {generateContractStateEntryHash, generateContractCodeEntryHash} = require(
 
 /**
  * @param {LedgerEntryChange[]} ledgerEntryChanges
+ * @param {Set<string>} [filter]
  * @return {ParsedLedgerEntryMeta[]}
  */
-function parseLedgerEntryChanges(ledgerEntryChanges) {
+function parseLedgerEntryChanges(ledgerEntryChanges, filter = undefined) {
     const changes = []
     let state
     let containsTtl = false
     for (let i = 0; i < ledgerEntryChanges.length; i++) {
         const entry = ledgerEntryChanges[i]
+        const type = entry._value._arm
+        if (filter && !filter.has(type)) //skip filtered ledger entry types
+            continue
         const action = entry._arm
         const stateData = parseEntry(entry, action)
         if (stateData === undefined)
             continue
-        const type = entry._value._arm
         const change = {action, type}
         switch (action) {
             case 'state':
