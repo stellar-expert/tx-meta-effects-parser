@@ -22,7 +22,7 @@ function parseLedgerEntryChanges(ledgerEntryChanges, filter = undefined) {
     let containsTtl = false
     for (let i = 0; i < ledgerEntryChanges.length; i++) {
         const entry = ledgerEntryChanges[i]
-        const type = entry._value._arm
+        const type = entry._value._arm || entry._value._attributes.data._arm
         if (filter && !filter.has(type)) //skip filtered ledger entry types
             continue
         const action = entry._arm
@@ -43,7 +43,7 @@ function parseLedgerEntryChanges(ledgerEntryChanges, filter = undefined) {
                 break
             case 'updated':
                 if (type === 'contractCode')
-                    throw new UnexpectedTxMetaChangeError({type, action})
+                    console.error(new UnexpectedTxMetaChangeError({type, action})) //happens only in protocol 20
                 if (!state && stateData.keyHash) { //likely, restored state
                     const restored = changes.find(ch => ch.action === 'restored' && ch.type === stateData.entry && ch.after.keyHash === stateData.keyHash)
                     state = restored?.after
