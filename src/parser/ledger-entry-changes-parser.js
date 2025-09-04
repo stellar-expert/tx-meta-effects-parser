@@ -242,7 +242,7 @@ function parseOfferEntry(value) {
         asset: [xdrParseAsset(offerEntryXdr.selling()), xdrParseAsset(offerEntryXdr.buying())],
         amount: offerEntryXdr.amount().toString(),
         price: xdrParsePrice(rprice),
-        rprice,
+        rprice: rprice._attributes,
         flags: offerEntryXdr.flags()
     }
     return data
