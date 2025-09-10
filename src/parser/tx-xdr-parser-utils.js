@@ -261,9 +261,10 @@ function xdrParseScVal(value, treatBytesAsContractId = false) {
         case 'u128':
         case 'i64':
         case 'u64':
+            return scValToBigInt(value).toString()
         case 'timepoint':
         case 'duration':
-            return scValToBigInt(value).toString()
+            return value._value._value.toString()
         case 'address':
             switch (value._value._arm) {
                 case 'accountId':
