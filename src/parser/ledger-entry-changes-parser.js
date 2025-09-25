@@ -43,11 +43,7 @@ function parseLedgerEntryChanges(ledgerEntryChanges, filter = undefined) {
                 break
             case 'updated':
                 if (type === 'contractCode')
-                    console.error(new UnexpectedTxMetaChangeError({type, action})) //happens only in protocol 20
-                if (!state && stateData.keyHash) { //likely, restored state
-                    const restored = changes.find(ch => ch.action === 'restored' && ch.type === stateData.entry && ch.after.keyHash === stateData.keyHash)
-                    state = restored?.after
-                }
+                    console.warn(new UnexpectedTxMetaChangeError({type, action})) //happens only in protocol 20
                 change.before = state
                 change.after = stateData
                 change.type = stateData.entry
@@ -56,6 +52,7 @@ function parseLedgerEntryChanges(ledgerEntryChanges, filter = undefined) {
                 change.before = stateData
                 change.after = stateData
                 change.type = stateData.entry
+                state = change.after
                 break
             case 'removed':
                 if (!state && type === 'ttl')
@@ -71,7 +68,6 @@ function parseLedgerEntryChanges(ledgerEntryChanges, filter = undefined) {
             containsTtl = true
         }
         changes.push(change)
-        state = null
     }
     if (containsTtl) { //put ttl entries into the end of array
         changes.sort((a, b) =>
