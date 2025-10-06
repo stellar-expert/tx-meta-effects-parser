@@ -26,6 +26,7 @@ const res = parseTxOperationsMeta({
     processSystemEvents: false, // whether to analyze system Soroban diagnostic events
     mapSac: false, // whether to map Classic assets to Soroban contracts automatically
     processFailedOpEffects: false, // whether to analyze effects in failed transactions
+    processMetrics: false, // whether to emit contractMetrics events (if metadata contains metrics)
     protocol: 21 // different versions of Stelalr protocol may yield uninform effects  
 })
 
@@ -357,7 +358,8 @@ ClawbackClaimableBalance, InflationOp</sub></td>
   asset: 'USD-GBKP…YDLI-1',
   kind: 'asset',
   limit: '2000000000',
-  flags: 5
+  flags: 5,
+  prevFlags: 5
 }
 ```
 
@@ -604,7 +606,8 @@ ClaimClaimableBalanceOp</sub></td>
       amount: '10000000000'
     }
   ],
-  shares: '10000000000'
+  shares: '10000000000',
+  accounts: 2
 }
 ```
 
@@ -633,7 +636,8 @@ ClaimClaimableBalanceOp</sub></td>
       amount: '5000000000'
     }
   ],
-  shares: '5000000000'
+  shares: '5000000000',
+  accounts: 1
 }
 ```
 
@@ -1262,7 +1266,8 @@ ClaimClaimableBalanceOp</sub></td>
   source: 'GBWC…DXHN',
   wasm: 'AGFz…AAAF',
   wasmHash: '5c55…e46d',
-  keyHash: 'a833…f27f'
+  keyHash: 'a833…f27f',
+  ttl: 2282323
 }
 ```
 
@@ -1301,7 +1306,9 @@ ClaimClaimableBalanceOp</sub></td>
   source: 'GBWC…DXHN',
   contract: 'CBIH…AZAD',
   kind: 'fromAsset',
-  asset: 'ICGVCWUQXIHO-GBD2…FUAC-2'
+  asset: 'ICGVCWUQXIHO-GBD2…FUAC-2',
+  keyHash: '6922ce15707976b856b398fc345c5f926c3d6f8f83d8e0d5a32ebed3af4867a4',
+  ttl: 2908049
 }
 ```
 
@@ -1322,8 +1329,9 @@ ClaimClaimableBalanceOp</sub></td>
   contract: 'CBIH…AZAD',
   kind: 'wasm',
   wasmHash: '5c55…e46d',
-  prevWasmHash: 'eb94…19ae'
-
+  prevWasmHash: 'eb94…19ae',
+  keyHash: '6922ce15707976b856b398fc345c5f926c3d6f8f83d8e0d5a32ebed3af4867a4',
+  ttl: 2908049
 }
 ```
 
@@ -1343,8 +1351,8 @@ ClaimClaimableBalanceOp</sub></td>
   source: 'GBWC…DXHN',
   contract: 'CBIH…AZAD',
   function: 'mint',
-  rawArgs: 'AAAA…Ag==',
-  depth: 1,
+  depth: 1,,
+  rawArgs: 'AAAA…Ag=='
   args: [
     'CDFD…ITT3',
     '1000'
@@ -1367,10 +1375,14 @@ ClaimClaimableBalanceOp</sub></td>
   type: 'contractError',
   source: 'GB6V…UIYN',
   contract: 'CBIH…AZAD',
-  code: 13,
+  code: 'scecExceededLimit',
   details: [
-    'trustline entry is missing for account',
-    'GB6V…UIYN'
+    'trying to access contract data key outside of the footprint',
+    'CCML…V66N',
+    [
+      'Secp256r1',
+      'CA3Z…EQTC'
+    ]
   ]
 }
 ```
@@ -1393,7 +1405,8 @@ ClaimClaimableBalanceOp</sub></td>
   key: 'AAAA…0SQ=',
   value: 'AAAA…AA==',
   durability: 'persistent',
-  keyHash: '2177…a56a'
+  keyHash: '2177…a56a',
+  ttl: 2282323
 }
 ```
 
@@ -1416,7 +1429,8 @@ ClaimClaimableBalanceOp</sub></td>
   value: 'AAAA…AA==',
   prevValue: 'AAAA…AAA=',
   durability: 'persistent',
-  keyHash: '2177…a56a'
+  keyHash: '2177…a56a',
+  ttl: 2282323
 }
 ```
 
@@ -1533,6 +1547,70 @@ ClaimClaimableBalanceOp</sub></td>
   kind: 'contractData',
   keyHash: '7594…b429',
   ttl: 2873856
+}
+```
+
+</td>
+</tr>
+
+<tr>
+<td>
+<sub><code>contractDataRestored</code></sub>
+</td>
+<td><sub>InvokeHostFunctionOp, RestoreFootprintOp</sub></td>
+<td>
+
+```js
+{
+  type: 'contractDataRestored',
+  source: 'GALD…S7SA',
+  owner: 'CAVL…6HLP',
+  key: 'AAAAFA==',
+  keyHash: '42f3…1b7c',
+  value: 'AAA…AAAE=',
+  durability: 'instance',
+  ttl: 244540
+}
+```
+
+</td>
+</tr>
+
+<tr>
+<td>
+<sub><code>contractRestored</code></sub>
+</td>
+<td><sub>InvokeHostFunctionOp, RestoreFootprintOp</sub></td>
+<td>
+
+```js
+{
+  type: 'contractRestored',
+  source: 'GALD…S7SA',
+  contract: 'CAVL…6HLP',
+  kind: 'wasm',
+  wasmHash: 'df88…8608',
+  keyHash: '42f3…1b7c'
+}
+```
+
+</td>
+</tr>
+
+<tr>
+<td>
+<sub><code>contractCodeRestored</code></sub>
+</td>
+<td><sub>InvokeHostFunctionOp, RestoreFootprintOp</sub></td>
+<td>
+
+```js
+{
+  type: 'contractCodeRestored',
+  source: 'GALD…S7SA',
+  wasmHash: 'df88…8608',
+  keyHash: '638b…a5b6',
+  ttl: 244540
 }
 ```
 
