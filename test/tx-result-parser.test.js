@@ -67,7 +67,8 @@ describe('Effects', () => {
             meta,
             mapSac: true
         })
-        expect(res.operations[0].sacMap).toEqual(expected || undefined)
+        const {sacMap} = res.operations[0]
+        expect(sacMap ? Object.fromEntries(sacMap) : undefined).toEqual(expected || undefined)
     })
 
     test.each(require('./tx-effects-data.json'))('Analyze transaction effects - %s', (description, params) => {

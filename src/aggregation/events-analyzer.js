@@ -1,6 +1,7 @@
 const {StrKey, encodeMuxedAccount, encodeMuxedAccountToAddress} = require('@stellar/stellar-base')
 const effectTypes = require('../effect-types')
-const {xdrParseScVal, xdrParseAsset, isContractAddress} = require('../parser/tx-xdr-parser-utils')
+const {xdrParseScVal, xdrParseAsset} = require('../parser/tx-xdr-parser-utils')
+const {isContractAddress, validateAmount} = require('../parser/normalization')
 const {mapSacContract} = require('./sac-contract-mapper')
 
 const EVENT_TYPES = {
@@ -155,7 +156,7 @@ class EventsAnalyzer {
                         amount = amount.amount
                     }
                 }
-                if (typeof amount !== 'string')
+                if (validateAmount(amount, false) === null)
                     return null
                 if (to === from) //self transfer - nothing happens
                     return // TODO: need additional checks
@@ -190,8 +191,9 @@ class EventsAnalyzer {
                         amount = amount.amount
                     }
                 }
-                if (typeof amount !== 'string')
+                if (validateAmount(amount, false) === null)
                     return null
+                validateAmount(amount)
                 const asset = this.getAssetFromEventTopics(topics, contract)
                 this.effectsAnalyzer.mint(asset, amount)
                 if (isContractAddress(asset) || isContractAddress(to)) {
@@ -204,7 +206,7 @@ class EventsAnalyzer {
                     return //throw new Error('Non-standard event')
                 const from = xdrParseScVal(topics[1])
                 const amount = processEventBodyValue(body.data())
-                if (typeof amount !== 'string')
+                if (validateAmount(amount, false) === null)
                     return null
                 const asset = this.getAssetFromEventTopics(topics, contract)
                 if (isContractAddress(asset) || isContractAddress(from)) {
@@ -218,7 +220,7 @@ class EventsAnalyzer {
                     return //throw new Error('Non-standard event')
                 const from = xdrParseScVal(topics[topics[2]?._arm === 'address' ? 2 : 1])
                 const amount = processEventBodyValue(body.data())
-                if (typeof amount !== 'string')
+                if (validateAmount(amount, false) === null)
                     return null
                 const asset = this.getAssetFromEventTopics(topics, contract)
                 if (StrKey.isValidContract(from)) { //transfer tokens from account only in case of contract assets to avoid double debits

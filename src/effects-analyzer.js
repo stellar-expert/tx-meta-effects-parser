@@ -1,5 +1,6 @@
 const {StrKey, hash, xdr, nativeToScVal} = require('@stellar/stellar-base')
 const effectTypes = require('./effect-types')
+const {validateAmount, normalizeAddress, parseLargeInt} = require('./parser/normalization')
 const {parseLedgerEntryChanges} = require('./parser/ledger-entry-changes-parser')
 const {xdrParseAsset, xdrParseAccountAddress, xdrParseScVal} = require('./parser/tx-xdr-parser-utils')
 const {contractIdFromPreimage} = require('./parser/contract-preimage-encoder')
@@ -42,7 +43,7 @@ class EffectsAnalyzer {
         }
         this.network = network
         if (mapSac) {
-            this.sacMap = {}
+            this.sacMap = new Map()
         }
     }
 
@@ -64,7 +65,7 @@ class EffectsAnalyzer {
      */
     network
     /**
-     * @type {{}}
+     * @type {Map<string,string>}
      * @readonly
      */
     sacMap
@@ -261,7 +262,10 @@ class EffectsAnalyzer {
     setTrustLineFlags() {
         if (!this.changes.length)
             return
-        const trustAsset = xdrParseAsset(this.operation.asset || {code: this.operation.assetCode, issuer: normalizeAddress(this.source)})
+        const trustAsset = xdrParseAsset(this.operation.asset || {
+            code: this.operation.assetCode,
+            issuer: normalizeAddress(this.source)
+        })
         const change = this.changes.find(ch => ch.type === 'trustline' && ch.before.asset === trustAsset)
         if (!change)
             return
@@ -1051,6 +1055,10 @@ class EffectsAnalyzer {
             }
     }
 
+    /**
+     * @return {String|null}
+     * @private
+     */
     retrieveOpContractId() {
         const funcValue = this.operation.func._value._attributes
         if (funcValue) {
@@ -1063,11 +1071,16 @@ class EffectsAnalyzer {
         return null
     }
 
+    /**
+     *
+     * @param assetOrContract
+     * @return {*}
+     */
     resolveAsset(assetOrContract) {
         if (!assetOrContract.startsWith('C') || !this.sacMap)
             return assetOrContract
         //try to resolve using SAC map
-        return this.sacMap[assetOrContract] || assetOrContract
+        return this.sacMap.get(assetOrContract) || assetOrContract
     }
 }
 
@@ -1100,17 +1113,6 @@ function processFeeChargedEffect(tx, source, chargedAmount, feeBump = false) {
     return res
 }
 
-function normalizeAddress(address) {
-    const prefix = address[0]
-    if (prefix === 'G')
-        return address
-    if (prefix !== 'M')
-        throw new TypeError('Expected ED25519 or Muxed address')
-    const rawBytes = StrKey.decodeMed25519PublicKey(address)
-    return StrKey.encodeEd25519PublicKey(rawBytes.subarray(0, 32))
-}
-
-
 /**
  * @param {String} action
  * @param {String} type
@@ -1135,20 +1137,6 @@ function encodeSponsorshipEffectName(action, type) {
             throw new UnexpectedTxMetaChangeError({action, type})
     }
     return effectTypes[`${type}Sponsorship${actionKey}`]
-}
-
-function validateAmount(amount) {
-    if (amount < 0)
-        throw new TxMetaEffectParserError('Negative balance change amount: ' + amount.toString())
-    return amount
-}
-
-/**
- * @param largeInt
- * @return {String}
- */
-function parseLargeInt(largeInt) {
-    return largeInt._value.toString()
 }
 
 module.exports = {EffectsAnalyzer, processFeeChargedEffect}

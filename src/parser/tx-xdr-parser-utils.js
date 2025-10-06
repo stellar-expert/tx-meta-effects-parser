@@ -1,27 +1,5 @@
-const {xdr, StrKey, LiquidityPoolId, Asset, scValToBigInt, encodeMuxedAccount, encodeMuxedAccountToAddress} = require('@stellar/stellar-base')
+const {xdr, StrKey, LiquidityPoolId, scValToBigInt, encodeMuxedAccount, encodeMuxedAccountToAddress} = require('@stellar/stellar-base')
 const {TxMetaEffectParserError} = require('../errors')
-
-/**
- * @param {String} address
- * @return {Boolean}
- */
-function isContractAddress(address) {
-    return address.length === 56 && address[0] === 'C'
-}
-
-/**
- * @param {String} assetDescriptor
- * @return {Asset}
- */
-function toStellarAsset(assetDescriptor) {
-    if (assetDescriptor === 'XLM')
-        return Asset.native()
-    if (assetDescriptor.includes('-')) {
-        const [code, issuer] = assetDescriptor.split('-')
-        return new Asset(code, issuer)
-    }
-    throw new TypeError('Unsupported asset format ' + assetDescriptor)
-}
 
 /**
  * Parse account address from XDR representation
@@ -317,7 +295,5 @@ module.exports = {
     xdrParseTradeAtom,
     xdrParseSignerKey,
     xdrParsePrice,
-    xdrParseScVal,
-    isContractAddress,
-    toStellarAsset
+    xdrParseScVal
 }

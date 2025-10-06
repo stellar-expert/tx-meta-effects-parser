@@ -177,7 +177,7 @@ function parseTxOperationsMeta({
             }
             const analyzer = new EffectsAnalyzer(params)
             operation.effects = analyzer.analyze()
-            if (analyzer.sacMap && !isEmptyObject(analyzer.sacMap)) {
+            if (analyzer.sacMap && analyzer.sacMap.size > 0) {
                 operation.sacMap = analyzer.sacMap
             }
             if (isSorobanInvocation) {
@@ -202,12 +202,6 @@ function ensureXdrInputType(value, xdrType) {
     if (!value || (typeof value !== 'string' && !(value instanceof Uint8Array)))
         throw new TypeError(`Invalid input format. Expected xdr.${xdrType.name} (raw, buffer, or bas64-encoded).`)
     return xdrType.fromXDR(value, typeof value === 'string' ? 'base64' : 'raw')
-}
-
-function isEmptyObject(obj) {
-    for (const key in obj)
-        return false
-    return true
 }
 
 /**

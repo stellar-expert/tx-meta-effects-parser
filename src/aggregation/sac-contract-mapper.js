@@ -1,6 +1,6 @@
 const TtlCache = require('../cache/ttl-cache')
-const {toStellarAsset} = require('../parser/tx-xdr-parser-utils')
 const {contractIdFromAsset} = require('../parser/contract-preimage-encoder')
+const {toStellarAsset} = require('../parser/normalization')
 
 const sacCache = new TtlCache()
 
@@ -17,7 +17,7 @@ function mapSacContract(effectsAnalyzer, contractAddress, classicAsset) {
     const {network, sacMap} = effectsAnalyzer
     if (!sacMap)
         return false
-    const prevMapping = sacMap[contractAddress]
+    const prevMapping = sacMap.get(contractAddress)
     if (prevMapping) {
         return prevMapping === classicAsset
     }
@@ -37,7 +37,7 @@ function mapSacContract(effectsAnalyzer, contractAddress, classicAsset) {
     } else if (contractAddress !== fromCache)
         return false //check whether validated contract from cache matches the asset
     if (sacMap) {
-        sacMap[contractAddress] = classicAsset
+        sacMap.set(contractAddress, classicAsset)
     }
     return true
 }
