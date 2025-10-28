@@ -152,7 +152,7 @@ parseTxOperationsMeta({
 <sub><code>accountDebited</code></sub>
 </td>
 <td><sub>CreateAccountOp, AccountMergeOp, PaymentOp, PathPaymentStrictReceiveOp,
-PathPaymentStrictSendOp, CreateClaimableBalanceOp, ClawbackOp</sub></td>
+PathPaymentStrictSendOp, CreateClaimableBalanceOp, ClawbackOp, InvokeHostFunctionOp</sub></td>
 <td>
 
 ```js
@@ -172,7 +172,7 @@ PathPaymentStrictSendOp, CreateClaimableBalanceOp, ClawbackOp</sub></td>
 </td>
 <td><sub>CreateAccountOp, AccountMergeOp, PaymentOp, PathPaymentStrictReceiveOp,
 PathPaymentStrictSendOp, ClaimClaimableBalanceOp, ClawbackOp, 
-ClawbackClaimableBalance, InflationOp</sub></td>
+ClawbackClaimableBalance, InflationOp, InvokeHostFunctionOp</sub></td>
 <td>
 
 ```js
@@ -412,7 +412,7 @@ ClawbackClaimableBalance, InflationOp</sub></td>
 <sub><code>assetMinted</code></sub>
 </td>
 <td><sub>PaymentOp, PathPaymentStrictReceiveOp, PathPaymentStrictSendOp, CreateClaimableBalanceOp,
-ManageBuyOfferOp, ManageSellOfferOp, CreatePassiveOfferOp, DepositLiquidityOp</sub></td>
+ManageBuyOfferOp, ManageSellOfferOp, CreatePassiveOfferOp, DepositLiquidityOp, InvokeHostFunctionOp</sub></td>
 <td>
 
 ```js
@@ -432,8 +432,7 @@ ManageBuyOfferOp, ManageSellOfferOp, CreatePassiveOfferOp, DepositLiquidityOp</s
 <sub><code>assetBurned</code></sub>
 </td>
 <td><sub>PaymentOp, PathPaymentStrictReceiveOp, PathPaymentStrictSendOp, CreateClaimableBalanceOp, ManageBuyOfferOp, ManageSellOfferOp,
-CreatePassiveOfferOp, WithdrawLiquidityOp, ClawbackOp,
-ClaimClaimableBalanceOp</sub></td>
+CreatePassiveOfferOp, WithdrawLiquidityOp, ClawbackOp, ClaimClaimableBalanceOp, InvokeHostFunctionOp</sub></td>
 <td>
 
 ```js
