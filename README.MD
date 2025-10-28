@@ -535,7 +535,7 @@ ClaimClaimableBalanceOp</sub></td>
 {
   type: 'liquidityPoolCreated',
   source: 'GBWC…DXHN',
-  pool: '52a8…76f8',
+  pool: 'LA7F…HJLT',
   reserves: [
     {
       asset: 'XLM',
@@ -565,7 +565,7 @@ ClaimClaimableBalanceOp</sub></td>
 {
   type: 'liquidityPoolUpdated',
   source: 'GBWC…DXHN',
-  pool: '52a8…76f8',
+  pool: 'LA7F…HJLT',
   reserves: [
     {
       asset: 'XLM',
@@ -595,7 +595,7 @@ ClaimClaimableBalanceOp</sub></td>
 {
   type: 'liquidityPoolDeposited',
   source: 'GBWC…DXHN',
-  pool: '52a8…76f8',
+  pool: 'LA7F…HJLT',
   assets: [
     {
       asset: 'XLM',
@@ -625,7 +625,7 @@ ClaimClaimableBalanceOp</sub></td>
 {
   type: 'liquidityPoolWithdrew',
   source: 'GBWC…DXHN',
-  pool: '52a8…76f8',
+  pool: 'LA7F…HJLT',
   assets: [
     {
       asset: 'XLM',
@@ -655,7 +655,7 @@ ClaimClaimableBalanceOp</sub></td>
 {
   type: 'liquidityPoolRemoved',
   source: 'GBWC…DXHN',
-  pool: '52a8…76f8'
+  pool: 'LA7F…HJLT'
 }
 ```
 
@@ -792,7 +792,7 @@ ClaimClaimableBalanceOp</sub></td>
   type: 'claimableBalanceCreated',
   source: 'GBWC…DXHN',
   sponsor: 'GBWC…DXHN',
-  balance: '7aba…6f9d',
+  balance: 'BDKD…F75Y',
   asset: 'XLM',
   amount: '1000000000',
   claimants: [
@@ -821,7 +821,7 @@ ClaimClaimableBalanceOp</sub></td>
   type: 'claimableBalanceRemoved',
   source: 'GBKP…YDLI',
   sponsor: 'GBWC…DXHN',
-  balance: '7aba…6f9d',
+  balance: 'BDKD…F75Y',
   asset: 'XLM',
   amount: '1000000000',
   claimants: [
@@ -1192,61 +1192,6 @@ ClaimClaimableBalanceOp</sub></td>
   prevSponsor: 'GBWC…DXHN',
   signer: 'GALF…CR2V',
   account: 'GBKP…YDLI'
-}
-```
-
-</td>
-</tr>
-
-<tr>
-<td>
-<sub><code>liquidityPoolSponsorshipCreated</code></sub>
-</td>
-<td><sub>ChangeThrustOp</sub></td>
-<td>
-
-```js
-{
-  type: 'liquidityPoolSponsorshipCreated',
-  source: 'GBWC…DXHN',
-  sponsor: 'GBWC…DXHN'
-}
-```
-
-</td>
-</tr>
-
-<tr>
-<td>
-<sub><code>liquidityPoolSponsorshipUpdated</code></sub>
-</td>
-<td><sub>RevokeSponsorshipOp</sub></td>
-<td>
-
-```js
-{
-  type: 'liquidityPoolSponsorshipUpdated',
-  source: 'GBWC…DXHN',
-  sponsor: 'GDNP…CMXH',
-  prevSponsor: 'GBWC…DXHN'
-}
-```
-
-</td>
-</tr>
-
-<tr>
-<td>
-<sub><code>liquidityPoolSponsorshipRemoved</code></sub>
-</td>
-<td><sub>RevokeSponsorshipOp</sub></td>
-<td>
-
-```js
-{
-  type: 'liquidityPoolSponsorshipRemoved',
-  source: 'GBWC…DXHN',
-  prevSponsor: 'GBWC…DXHN'
 }
 ```
 

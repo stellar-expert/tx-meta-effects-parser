@@ -1,6 +1,12 @@
 const {StrKey} = require('@stellar/stellar-base')
 const {TxMetaEffectParserError, UnexpectedTxMetaChangeError} = require('../errors')
-const {xdrParseAsset, xdrParseAccountAddress, xdrParseClaimant, xdrParsePrice, xdrParseSignerKey} = require('./tx-xdr-parser-utils')
+const {
+    xdrParseAsset,
+    xdrParseAccountAddress,
+    xdrParseClaimant,
+    xdrParsePrice,
+    xdrParseSignerKey
+} = require('./tx-xdr-parser-utils')
 const {generateContractStateEntryHash, generateContractCodeEntryHash} = require('./ledger-key')
 
 /**
@@ -176,8 +182,7 @@ function parseTrustlineEntry(value) {
             asset = xdrParseAsset(trustlineAsset)
             break
         case 3:
-            asset = trustlineEntryXdr.asset().liquidityPoolId().toString('hex')
-            //data.liquidityPoolUseCount = trustlineEntryXdr.liquidityPoolUseCount()
+            asset = StrKey.encodeLiquidityPool(trustlineEntryXdr.asset().liquidityPoolId())
             break
         default:
             throw new TxMetaEffectParserError(`Unsupported trustline type ` + trustlineType)
@@ -219,7 +224,7 @@ function parseLiquidityPoolEntry(value) {
     const params = body.params()
     return {
         entry: 'liquidityPool',
-        pool: liquidityPoolEntryXdr.liquidityPoolId().toString('hex'),
+        pool: StrKey.encodeLiquidityPool(liquidityPoolEntryXdr.liquidityPoolId()),
         asset: [xdrParseAsset(params.assetA()), xdrParseAsset(params.assetB())],
         fee: params.fee(),
         amount: [body.reserveA().toString(), body.reserveB().toString()],
@@ -247,7 +252,7 @@ function parseOfferEntry(value) {
 function parseClaimableBalanceEntry(value) {
     const claimableBalanceXdr = value.value()
     const data = {
-        balanceId: Buffer.from(claimableBalanceXdr.balanceId().value()).toString('hex'),
+        balanceId: StrKey.encodeClaimableBalance(claimableBalanceXdr.balanceId().value()),
         entry: 'claimableBalance',
         asset: xdrParseAsset(claimableBalanceXdr.asset()),
         amount: claimableBalanceXdr.amount().toString(),

@@ -344,14 +344,14 @@ class EffectsAnalyzer {
     }
 
     liquidityPoolDeposit() {
-        const {liquidityPoolId} = this.operation
-        const change = this.changes.find(ch => ch.type === 'liquidityPool' && ch.action === 'updated' && ch.after.pool === liquidityPoolId)
+        const pool = StrKey.encodeLiquidityPool(Buffer.from(this.operation.liquidityPoolId, 'hex'))
+        const change = this.changes.find(ch => ch.type === 'liquidityPool' && ch.action === 'updated' && ch.after.pool === pool)
         if (!change) //tx failed
             return
         const {before, after} = change
         this.addEffect({
             type: effectTypes.liquidityPoolDeposited,
-            pool: this.operation.liquidityPoolId,
+            pool,
             assets: after.asset.map((asset, i) => ({
                 asset,
                 amount: (after.amount[i] - before.amount[i]).toString()
@@ -362,7 +362,7 @@ class EffectsAnalyzer {
     }
 
     liquidityPoolWithdraw() {
-        const pool = this.operation.liquidityPoolId
+        const pool = StrKey.encodeLiquidityPool(Buffer.from(this.operation.liquidityPoolId, 'hex'))
         const change = this.changes.find(ch => ch.type === 'liquidityPool' && ch.action === 'updated' && ch.before.pool === pool)
         if (!change) //tx failed
             return
@@ -481,7 +481,7 @@ class EffectsAnalyzer {
                 asset: claimedOffer.asset
             }
             if (claimedOffer.poolId) {
-                trade.pool = claimedOffer.poolId.toString('hex')
+                trade.pool = StrKey.encodeLiquidityPool(claimedOffer.poolId)
             } else {
                 trade.offer = claimedOffer.offerId
                 trade.seller = claimedOffer.account
