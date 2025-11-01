@@ -120,7 +120,10 @@ function parseTxOperationsMeta({
     } catch (e) {
         throw new TxMetaEffectParserError('Invalid transaction metadata XDR. ' + e.message)
     }
-
+    let feeSource = feeEffect.source
+    if (feeSource.startsWith('M')) {
+        feeSource = xdrParserUtils.retrieveBaseMuxedAddress(feeSource)
+    }
     //add tx-level effects
     for (const {before, after} of parseTxMetaChanges(meta)) {
         if (before.entry !== 'account')
@@ -129,7 +132,7 @@ function parseTxOperationsMeta({
             effect.source = (before || after).address
             res.effects.push(effect)
         }
-        if (feeEffect.source === after.address) {
+        if (feeSource === after.address) {
             feeEffect.balance = after.balance
         }
         if (isFeeBump && protocol === 20 && before.balance !== after.balance) { //bump fee calculation bug in protocol v20

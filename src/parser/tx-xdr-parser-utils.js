@@ -66,6 +66,15 @@ function xdrParsePrice(price) {
 }
 
 /**
+ * @param {string} address
+ * @return {string}
+ */
+function retrieveBaseMuxedAddress(address) {
+    const rawBytes = StrKey.decodeMed25519PublicKey(address)
+    return StrKey.encodeEd25519PublicKey(rawBytes.subarray(0, 32))
+}
+
+/**
  * Parse account signer key XDR
  * @param {xdr.SignerKey} signer
  * @return {String}
@@ -334,5 +343,6 @@ module.exports = {
     xdrParseSignerKey,
     xdrParsePrice,
     xdrParseScVal,
-    xdrParseSacBalanceChange
+    xdrParseSacBalanceChange,
+    retrieveBaseMuxedAddress
 }
