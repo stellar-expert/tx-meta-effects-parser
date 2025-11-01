@@ -889,6 +889,8 @@ class EffectsAnalyzer {
             const balanceEffects = this.effects.filter(e => e.source === tokenBalance.address &&
                 (e.type === effectTypes.accountCredited || e.type === effectTypes.accountDebited) &&
                 (e.asset === effect.owner || e.asset === this.sacMap?.get(effect.owner)))
+            if (!balanceEffects.length)
+                return
             balanceEffects[balanceEffects.length - 1].balance = tokenBalance.balance //set latest transfer effect balance
         }
     }
