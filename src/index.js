@@ -129,6 +129,9 @@ function parseTxOperationsMeta({
             effect.source = (before || after).address
             res.effects.push(effect)
         }
+        if (feeEffect.source === after.address) {
+            feeEffect.balance = after.balance
+        }
         if (isFeeBump && protocol === 20 && before.balance !== after.balance) { //bump fee calculation bug in protocol v20
             const currentFee = BigInt(feeEffect.charged)
             const diff = BigInt(after.balance) - BigInt(before.balance)

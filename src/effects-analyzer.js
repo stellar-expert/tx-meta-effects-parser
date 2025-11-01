@@ -2,7 +2,13 @@ const {StrKey, hash, xdr, nativeToScVal} = require('@stellar/stellar-base')
 const effectTypes = require('./effect-types')
 const {validateAmount, normalizeAddress, parseLargeInt} = require('./parser/normalization')
 const {parseLedgerEntryChanges} = require('./parser/ledger-entry-changes-parser')
-const {xdrParseAsset, xdrParseAccountAddress, xdrParseScVal} = require('./parser/tx-xdr-parser-utils')
+const {
+    xdrParseAsset,
+    xdrParseAccountAddress,
+    xdrParseScVal,
+    xdrParseSacBalance,
+    xdrParseTokenBalance
+} = require('./parser/tx-xdr-parser-utils')
 const {contractIdFromPreimage} = require('./parser/contract-preimage-encoder')
 const {generateContractCodeEntryHash} = require('./parser/ledger-key')
 const {analyzeSignerChanges} = require('./aggregation/signer-changes-analyzer')
@@ -803,33 +809,6 @@ class EffectsAnalyzer {
         this.addEffect(effect)
     }
 
-    processContractBalance(effect) {
-        const parsedKey = xdr.ScVal.fromXDR(effect.key, 'base64')
-        if (parsedKey._arm !== 'vec')
-            return
-        const keyParts = parsedKey._value
-        if (!(keyParts instanceof Array) || keyParts.length !== 2)
-            return
-        if (keyParts[0]._arm !== 'sym' || keyParts[1]._arm !== 'address' || keyParts[0]._value.toString() !== 'Balance')
-            return
-        const account = xdrParseScVal(keyParts[1])
-        const balanceEffects = this.effects.filter(e => (e.type === effectTypes.accountCredited || e.type === effectTypes.accountDebited) && e.source === account && e.asset === effect.owner)
-        if (balanceEffects.length !== 1) //we can set balance only when we found 1-1 mapping, if there are several balance changes, we can't establish balance relation
-            return
-        if (effect.type === effectTypes.contractDataRemoved) { //balance completely removed - this may be a reversible operation if the balance simply expired
-            balanceEffects[0].balance = '0'
-            return
-        }
-        const value = xdr.ScVal.fromXDR(effect.value, 'base64')
-        if (value._arm !== 'map')
-            return
-        const parsedValue = xdrParseScVal(value)
-        if (typeof parsedValue.clawback !== 'boolean' || typeof parsedValue.authorized !== 'boolean' || typeof parsedValue.amount !== 'string')
-            return
-        //set transfer effect balance
-        balanceEffects[0].balance = parsedValue.amount
-    }
-
     processContractChanges({action, before, after}) {
         const {kind, owner: contract, keyHash} = after
         let effect = {
@@ -906,7 +885,15 @@ class EffectsAnalyzer {
                 break
         }
         this.addEffect(effect)
-        this.processContractBalance(effect)
+        const tokenBalance = xdrParseTokenBalance(effect)
+        if (tokenBalance) {
+            const balanceEffects = this.effects.filter(e => e.source === tokenBalance.address &&
+                (e.type === effectTypes.accountCredited || e.type === effectTypes.accountDebited) &&
+                (e.asset === effect.owner || e.asset === this.sacMap?.get(effect.owner)))
+            if (balanceEffects.length !== 1)
+                return //we can set balance only when we found 1-1 mapping, if there are several balance changes, we can't establish balance relation
+            balanceEffects[0].balance = tokenBalance.balance //set transfer effect balance
+        }
     }
 
     processContractCodeChanges({type, action, before, after}) {

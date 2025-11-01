@@ -29,7 +29,8 @@
             "type": "accountCredited",
             "source": "CBOK7UOKVQ6K7KAWCV4WJUWKKB5VKJI5HK3VKRVDMZKJWKF7KKFY6P4K",
             "asset": "T001-GA5DAQYTOBSYRGJHYOKA66HSH3M2GKXPAISRAQQT7SQPNL2VGE5PNOAR-1",
-            "amount": "100000000000"
+            "amount": "100000000000",
+            "balance": "100000000000"
           },
           {
             "type": "contractEvent",
@@ -116,7 +117,8 @@
             "type": "accountCredited",
             "source": "CDFDQ7PAFOFB2MGI4RAZ5UAVD6CFQ773HI4GRRXKGBY33BXNFXISITT3",
             "asset": "AMDL-GC3EF5XJY553DPO4N6HWBGXHYVEFL6SZJPODZBAXR5IB2DH3UWALXMJY-1",
-            "amount": "1000"
+            "amount": "1000",
+            "balance": "1000"
           },
           {
             "type": "contractEvent",
@@ -225,7 +227,8 @@
             "type": "accountDebited",
             "source": "CDFDQ7PAFOFB2MGI4RAZ5UAVD6CFQ773HI4GRRXKGBY33BXNFXISITT3",
             "asset": "AMDL-GC3EF5XJY553DPO4N6HWBGXHYVEFL6SZJPODZBAXR5IB2DH3UWALXMJY-1",
-            "amount": "1002"
+            "amount": "1002",
+            "balance": "0"
           },
           {
             "type": "assetBurned",
@@ -416,16 +419,16 @@
             "type": "contractInvoked"
           },
           {
-            "amount": "100000000",
-            "asset": "CCYV4WR4WLVRBCXA4LUQE4N5PNLM5Y6QAVKO7WH77I5JBHR5AJMDHTR5",
+            "type": "assetMinted",
             "source": "GDQRGC52Z6HRRPF3AA5WRDNLYXHVO2OO3LRLB2LHJKQ4VPKEJL46LB2B",
-            "type": "assetMinted"
+            "asset": "CCYV4WR4WLVRBCXA4LUQE4N5PNLM5Y6QAVKO7WH77I5JBHR5AJMDHTR5",
+            "amount": "100000000"
           },
           {
-            "amount": "100000000",
-            "asset": "CCYV4WR4WLVRBCXA4LUQE4N5PNLM5Y6QAVKO7WH77I5JBHR5AJMDHTR5",
+            "type": "accountCredited",
             "source": "GDXN6YADLRNX6QC3GZEJ4VBSGUP3I47VFNLBYVA3A4XIQGG2XXVVDB3C",
-            "type": "accountCredited"
+            "asset": "CCYV4WR4WLVRBCXA4LUQE4N5PNLM5Y6QAVKO7WH77I5JBHR5AJMDHTR5",
+            "amount": "100000000"
           },
           {
             "args": [
@@ -648,8 +651,8 @@
             "type": "accountDebited",
             "amount": "100",
             "asset": "USDC-GDQRGC52Z6HRRPF3AA5WRDNLYXHVO2OO3LRLB2LHJKQ4VPKEJL46LB2B-1",
-            "balance": "0",
-            "source": "GDXN6YADLRNX6QC3GZEJ4VBSGUP3I47VFNLBYVA3A4XIQGG2XXVVDB3C"
+            "source": "GDXN6YADLRNX6QC3GZEJ4VBSGUP3I47VFNLBYVA3A4XIQGG2XXVVDB3C",
+            "balance": "0"
           },
           {
             "type": "setTtl",
@@ -1559,7 +1562,8 @@
             "type": "accountCredited",
             "source": "CAC6EQW2WCFXWEUANOAM3S7N7A6MROFX3ZC27YIS77HAKTJ465BF6BCO",
             "asset": "HZAVYGIBNFTA-GBD2ALDOSNTEW2QWQA6RGQXTZVWGFZYTT5DYZDCPPGNOYTXOAQ6RFUAC-2",
-            "amount": "100"
+            "amount": "100",
+            "balance": "100"
           },
           {
             "type": "contractEvent",
@@ -2108,7 +2112,8 @@
             "type": "accountDebited",
             "source": "CCO2A7ALFXZ3QIT3SUFJZRWCU5RVWG5E7AI4RCLTRXQIJEFIBEZP63JI",
             "asset": "XLM",
-            "amount": "1"
+            "amount": "1",
+            "balance": "825489754249"
           },
           {
             "type": "contractEvent",
@@ -2329,7 +2334,8 @@
             "type": "accountDebited",
             "source": "CB23WRDQWGSP6YPMY4UV5C4OW5CBTXKYN3XEATG7KJEZCXMJBYEHOUOV",
             "asset": "KALE-GBDVX4VELCDSQ54KQJYTNHXAHFLBCA77ZY2USQBM4CSHTTV7DME7KALE-1",
-            "amount": "65423522567"
+            "amount": "65423522567",
+            "balance": "0"
           },
           {
             "type": "assetBurned",
@@ -2732,7 +2738,8 @@
             "type": "accountDebited",
             "source": "CAYXY6QGTPOCZ676MLGT5JFESVROJ6OJF7VW3LLXMTC2RQIZTP5JYNEL",
             "asset": "USDC-GDQOE23CFSUMSVQK4Y5JHPPYK73VYCNHZHA7ENKCV37P6SUEO6XQBKPP-1",
-            "amount": "10000000"
+            "amount": "10000000",
+            "balance": "299000000"
           },
           {
             "type": "contractEvent",

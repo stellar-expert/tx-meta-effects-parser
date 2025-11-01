@@ -108,7 +108,8 @@ parseTxOperationsMeta({
   source: 'GBKP…YDLI',
   asset: 'XLM',
   bid: '10000',
-  charged: '100'
+  charged: '100',
+  balance: '99999999900'
 }
 ```
 </td>
@@ -160,7 +161,8 @@ PathPaymentStrictSendOp, CreateClaimableBalanceOp, ClawbackOp, InvokeHostFunctio
   type: 'accountDebited',
   source: 'GBKP…YDLI',
   asset: 'XLM',
-  amount: '1000000000'
+  amount: '1000000000',
+  balance: '199999999900'
 }
 ```
 </td>
@@ -180,7 +182,8 @@ ClawbackClaimableBalance, InflationOp, InvokeHostFunctionOp</sub></td>
   type: 'accountCredited',
   source: 'GBWC…DXHN',
   asset: 'XLM',
-  amount: '1000000000'
+  amount: '1000000000',
+  balance: '299999999900'
 }
 ```
 </td>

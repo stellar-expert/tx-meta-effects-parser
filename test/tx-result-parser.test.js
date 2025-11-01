@@ -77,7 +77,8 @@ describe('Effects', () => {
             network: resolveNetwork(network),
             tx,
             result,
-            meta
+            meta,
+            processFailedOpEffects: true
         })
 
         expect(res.effects).toStrictEqual(expected)

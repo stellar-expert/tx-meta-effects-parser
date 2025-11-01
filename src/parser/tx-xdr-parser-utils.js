@@ -1,5 +1,13 @@
-const {xdr, StrKey, LiquidityPoolId, scValToBigInt, encodeMuxedAccount, encodeMuxedAccountToAddress} = require('@stellar/stellar-base')
+const {
+    xdr,
+    StrKey,
+    LiquidityPoolId,
+    scValToBigInt,
+    encodeMuxedAccount,
+    encodeMuxedAccountToAddress
+} = require('@stellar/stellar-base')
 const {TxMetaEffectParserError} = require('../errors')
+const effectTypes = require('../effect-types')
 
 /**
  * Parse account address from XDR representation
@@ -285,6 +293,31 @@ function xdrParseScVal(value, treatBytesAsContractId = false) {
     }
 }
 
+function xdrParseTokenBalance({type, key, value}) {
+    const parsedKey = xdr.ScVal.fromXDR(key, 'base64')
+    if (parsedKey._arm !== 'vec')
+        return null
+    const keyParts = parsedKey._value
+    if (!(keyParts instanceof Array) || keyParts.length !== 2)
+        return null
+    if (keyParts[0]._arm !== 'sym' || keyParts[1]._arm !== 'address' || keyParts[0]._value.toString() !== 'Balance')
+        return null
+    let balance = '0'
+    if (type !== effectTypes.contractDataRemoved) { //TODO: handle evicted entries separately
+        const xdrVal = xdr.ScVal.fromXDR(value, 'base64')
+        if (xdrVal._arm !== 'map')
+            return null
+        const parsedValue = xdrParseScVal(xdrVal)
+        if (typeof parsedValue.amount !== 'string')
+            return null
+        balance = parsedValue.amount
+    }
+    return {
+        address: xdrParseScVal(keyParts[1]),
+        balance
+    }
+}
+
 module.exports = {
     xdrParseAsset,
     xdrParseAccountAddress,
@@ -295,5 +328,6 @@ module.exports = {
     xdrParseTradeAtom,
     xdrParseSignerKey,
     xdrParsePrice,
-    xdrParseScVal
+    xdrParseScVal,
+    xdrParseTokenBalance
 }
