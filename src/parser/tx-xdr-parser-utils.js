@@ -293,7 +293,7 @@ function xdrParseScVal(value, treatBytesAsContractId = false) {
     }
 }
 
-function xdrParseTokenBalance({type, key, value}) {
+function xdrParseSacBalanceChange(changeEventType, key, value) {
     const parsedKey = xdr.ScVal.fromXDR(key, 'base64')
     if (parsedKey._arm !== 'vec')
         return null
@@ -302,20 +302,25 @@ function xdrParseTokenBalance({type, key, value}) {
         return null
     if (keyParts[0]._arm !== 'sym' || keyParts[1]._arm !== 'address' || keyParts[0]._value.toString() !== 'Balance')
         return null
-    let balance = '0'
-    if (type !== effectTypes.contractDataRemoved) { //TODO: handle evicted entries separately
-        const xdrVal = xdr.ScVal.fromXDR(value, 'base64')
-        if (xdrVal._arm !== 'map')
-            return null
-        const parsedValue = xdrParseScVal(xdrVal)
-        if (typeof parsedValue.amount !== 'string')
-            return null
-        balance = parsedValue.amount
-    }
-    return {
+    const res = {
         address: xdrParseScVal(keyParts[1]),
-        balance
+        balance: changeEventType===effectTypes.contractDataRemoved?
+            '0':
+            retrieveBalanceFromStateData(value)
     }
+    if (res.balance === undefined)
+        return null
+    return res
+}
+
+function retrieveBalanceFromStateData(value) {
+    const xdrVal = xdr.ScVal.fromXDR(value, 'base64')
+    if (xdrVal._arm !== 'map')
+        return undefined
+    const parsedValue = xdrParseScVal(xdrVal)
+    if (typeof parsedValue.amount !== 'string')
+        return undefined
+    return parsedValue.amount
 }
 
 module.exports = {
@@ -329,5 +334,5 @@ module.exports = {
     xdrParseSignerKey,
     xdrParsePrice,
     xdrParseScVal,
-    xdrParseTokenBalance
+    xdrParseSacBalanceChange
 }

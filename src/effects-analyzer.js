@@ -6,8 +6,7 @@ const {
     xdrParseAsset,
     xdrParseAccountAddress,
     xdrParseScVal,
-    xdrParseSacBalance,
-    xdrParseTokenBalance
+    xdrParseSacBalanceChange
 } = require('./parser/tx-xdr-parser-utils')
 const {contractIdFromPreimage} = require('./parser/contract-preimage-encoder')
 const {generateContractCodeEntryHash} = require('./parser/ledger-key')
@@ -885,7 +884,7 @@ class EffectsAnalyzer {
                 break
         }
         this.addEffect(effect)
-        const tokenBalance = xdrParseTokenBalance(effect)
+        const tokenBalance = xdrParseSacBalanceChange(effect.type, key, after?.value, before?.value)
         if (tokenBalance) {
             const balanceEffects = this.effects.filter(e => e.source === tokenBalance.address &&
                 (e.type === effectTypes.accountCredited || e.type === effectTypes.accountDebited) &&
