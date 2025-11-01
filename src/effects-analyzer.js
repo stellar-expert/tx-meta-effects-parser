@@ -889,9 +889,7 @@ class EffectsAnalyzer {
             const balanceEffects = this.effects.filter(e => e.source === tokenBalance.address &&
                 (e.type === effectTypes.accountCredited || e.type === effectTypes.accountDebited) &&
                 (e.asset === effect.owner || e.asset === this.sacMap?.get(effect.owner)))
-            if (balanceEffects.length !== 1)
-                return //we can set balance only when we found 1-1 mapping, if there are several balance changes, we can't establish balance relation
-            balanceEffects[0].balance = tokenBalance.balance //set transfer effect balance
+            balanceEffects[balanceEffects.length - 1].balance = tokenBalance.balance //set latest transfer effect balance
         }
     }
 
