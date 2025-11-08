@@ -48,8 +48,6 @@ function parseLedgerEntryChanges(ledgerEntryChanges, filter = undefined) {
                 change.type = stateData.entry
                 break
             case 'updated':
-                if (type === 'contractCode')
-                    console.warn(new UnexpectedTxMetaChangeError({type, action})) //happens only in protocol 20
                 change.before = state
                 change.after = stateData
                 change.type = stateData.entry
