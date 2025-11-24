@@ -1298,7 +1298,7 @@ CreatePassiveOfferOp, WithdrawLiquidityOp, ClawbackOp, ClaimClaimableBalanceOp, 
   source: 'GBWC…DXHN',
   contract: 'CBIH…AZAD',
   function: 'mint',
-  depth: 1,,
+  depth: 1,
   rawArgs: 'AAAA…Ag=='
   args: [
     'CDFD…ITT3',

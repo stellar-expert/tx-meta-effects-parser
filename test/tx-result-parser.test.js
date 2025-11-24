@@ -44,6 +44,23 @@ describe('Effects', () => {
         }
     })
 
+    test.each(require('./soroban-op-errors-data.json'))('Analyze Soroban errors - %s', (description, params) => {
+        const {tx, result, meta, expected, network} = params
+        const res = parseTxOperationsMeta({
+            network: resolveNetwork(network),
+            tx,
+            result,
+            meta,
+            mapSac: true,
+            processFailedOpEffects: true,
+            processMetrics: false
+        })
+
+        for (let i = 0; i < res.operations.length; i++) {
+            expect(res.operations[i].effects).toStrictEqual(expected[i])
+        }
+    })
+
     test.each(require('./soroban-contract-metrics.json'))('Analyze contract metrics Soroban effects - %s', (description, params) => {
         const {tx, result, meta, expected, network, processFailedOpEffects} = params
         const res = parseTxOperationsMeta({
