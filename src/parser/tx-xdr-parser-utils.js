@@ -89,7 +89,11 @@ function xdrParseSignerKey(signer) {
         case 'hashX':
             return StrKey.encodeSha256Hash(signer.hashX())
         case 'ed25519SignedPayload':
-            return StrKey.encodeSignedPayload(signer.ed25519SignedPayload()) //TODO: check
+            let key = signer.ed25519SignedPayload()
+            if (key._attributes){
+                key = key._attributes.ed25519
+            }
+            return StrKey.encodeSignedPayload(key) //TODO: check
     }
     throw new TxMetaEffectParserError(`Unsupported signer type: "${type}"`)
 }
