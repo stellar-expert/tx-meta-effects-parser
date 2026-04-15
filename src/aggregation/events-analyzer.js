@@ -45,10 +45,13 @@ class EventsAnalyzer {
             if (topics[0] === 'DATA' && topics[1] === 'set')
                 continue //skip data entries modifications
             const rawData = body.data()
-            //add event to the pipeline
+            const contract = StrKey.encodeContract(evt.contractId())
+            //process token-related events
+            this.analyzeTokenEvents(evt._attributes.body._value, contract)
+            //add event effect
             this.effectsAnalyzer.addEffect({
                 type: effectTypes.contractEvent,
-                contract: StrKey.encodeContract(evt.contractId()),
+                contract,
                 topics,
                 rawTopics: rawTopics.map(v => v.toXDR('base64')),
                 data: processEventBodyValue(rawData),
@@ -141,6 +144,19 @@ class EventsAnalyzer {
                     return
                 this.effectsAnalyzer.addMetric(contract, xdrParseScVal(topics[1]), parseInt(processEventBodyValue(body.data())))
                 break
+        }
+    }
+
+    /**
+     * @param {xdr.ContractEventV0} body
+     * @param {String} contract
+     * @private
+     */
+    analyzeTokenEvents(body, contract) {
+        const topics = body.topics()
+        if (!topics?.length)
+            return
+        switch (xdrParseScVal(topics[0])) {
             //handle standard token contract events
             //see https://github.com/stellar/rs-soroban-sdk/blob/main/soroban-sdk/src/token.rs
             case 'transfer': {

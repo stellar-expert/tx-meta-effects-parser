@@ -9,7 +9,7 @@
   "author": "team@stellar.expert",
   "license": "MIT",
   "peerDependencies": {
-    "@stellar/stellar-base": "^14.0.0"
+    "@stellar/stellar-base": "^15.0.0"
   },
   "devDependencies": {
     "@babel/core": "^7.22.9",
