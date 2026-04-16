@@ -1,8 +1,8 @@
 const {xdr, Networks} = require('@stellar/stellar-base')
 const {parseTxOperationsMeta} = require('../src/index')
-const [txExample] = require('./tx-effects-data.json')
+const txExample = require('./tx-parser-data/tx-effects/regular-transaction.json')
 
-const {tx, result, meta, expected} = txExample[1]
+const {tx, result, meta, expected} = txExample
 
 const testCases = [
     ['base64 encoding', {tx, result, meta}],
