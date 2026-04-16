@@ -267,13 +267,19 @@ function xdrParseScVal(value, treatBytesAsContractId = false) {
         case 'address':
             switch (value._value._arm) {
                 case 'accountId':
-                    return xdrParseAccountAddress(value._value.value())
+                    return xdrParseAccountAddress(value._value._value)
                 case 'contractId':
-                    return xdrParseContractAddress(value._value.value())
+                    return xdrParseContractAddress(value._value._value)
                 case 'muxedAccount':
-                    return xdrParseMuxedScAddress(value._value.value())
+                    return xdrParseMuxedScAddress(value._value._value)
+                case 'liquidityPoolId':
+                    return StrKey.encodeLiquidityPool(value._value._value)
+                case 'claimableBalanceId':
+                    return StrKey.encodeClaimableBalance(value._value._value._value)
             }
             throw new TxMetaEffectParserError('Not supported XDR primitive type: ' + value._value._arm.toString())
+        case 'accountId':
+            return xdrParseAccountAddress(value._value.ed25519())
         case 'bytes':
             return treatBytesAsContractId ? xdrParseContractAddress(value.value()) : value._value.toString('base64')
         case 'i32':
