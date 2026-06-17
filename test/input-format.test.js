@@ -1,4 +1,4 @@
-const {xdr, Networks} = require('@stellar/stellar-base')
+const {xdr, Networks} = require('@stellar/stellar-sdk')
 const {parseTxOperationsMeta} = require('../src/index')
 const txExample = require('./tx-parser-data/tx-effects/regular-transaction.json')
 

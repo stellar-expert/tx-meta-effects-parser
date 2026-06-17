@@ -1,4 +1,4 @@
-const {StrKey, encodeMuxedAccount, encodeMuxedAccountToAddress} = require('@stellar/stellar-base')
+const {StrKey, encodeMuxedAccount, encodeMuxedAccountToAddress} = require('@stellar/stellar-sdk')
 const effectTypes = require('../effect-types')
 const {xdrParseScVal, xdrParseAsset} = require('../parser/tx-xdr-parser-utils')
 const {isContractAddress, validateAmount} = require('../parser/normalization')

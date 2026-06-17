@@ -1,4 +1,4 @@
-const {StrKey, Asset} = require('@stellar/stellar-base')
+const {StrKey, Asset} = require('@stellar/stellar-sdk')
 const {TxMetaEffectParserError} = require('../errors')
 
 /**

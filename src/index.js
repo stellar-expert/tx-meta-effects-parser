@@ -1,4 +1,4 @@
-const {TransactionBuilder, xdr} = require('@stellar/stellar-base')
+const {TransactionBuilder, xdr} = require('@stellar/stellar-sdk')
 const {TxMetaEffectParserError, UnexpectedTxMetaChangeError} = require('./errors')
 const {processFeeChargedEffect, analyzeOperationEffects, EffectsAnalyzer} = require('./effects-analyzer')
 const {disposeSacCache} = require('./aggregation/sac-contract-mapper')

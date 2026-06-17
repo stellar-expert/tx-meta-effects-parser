@@ -1,4 +1,4 @@
-const {Asset, StrKey, hash, xdr} = require('@stellar/stellar-base')
+const {Asset, StrKey, hash, xdr} = require('@stellar/stellar-sdk')
 
 const passphraseMapping = {}
 

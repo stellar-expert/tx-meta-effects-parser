@@ -1,5 +1,5 @@
 /*eslint-disable no-undef */
-const {Networks} = require('@stellar/stellar-base')
+const {Networks} = require('@stellar/stellar-sdk')
 const effectTypes = require('../src/effect-types')
 const {parseTxOperationsMeta, disposeSacCache} = require('../src')
 const fs = require('fs')

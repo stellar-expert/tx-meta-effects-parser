@@ -5,7 +5,7 @@ const {
     scValToBigInt,
     encodeMuxedAccount,
     encodeMuxedAccountToAddress
-} = require('@stellar/stellar-base')
+} = require('@stellar/stellar-sdk')
 const {TxMetaEffectParserError} = require('../errors')
 const effectTypes = require('../effect-types')
 

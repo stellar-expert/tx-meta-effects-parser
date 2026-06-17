@@ -1,4 +1,4 @@
-const {StrKey} = require('@stellar/stellar-base')
+const {StrKey} = require('@stellar/stellar-sdk')
 const {TxMetaEffectParserError, UnexpectedTxMetaChangeError} = require('../errors')
 const {
     xdrParseAsset,

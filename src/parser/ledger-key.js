@@ -1,4 +1,4 @@
-const {xdr, hash} = require('@stellar/stellar-base')
+const {xdr, hash} = require('@stellar/stellar-sdk')
 
 function generateContractStateEntryHash(data) {
     const {contract, durability, key} = data._attributes
