@@ -1048,8 +1048,17 @@ class EffectsAnalyzer {
     retrieveOpContractId() {
         const funcValue = this.operation.func._value._attributes
         if (funcValue) {
-            if (funcValue.contractAddress)
-                return StrKey.encodeContract(funcValue.contractAddress._value)
+            if (funcValue.contractAddress) {
+                let raw = funcValue.contractAddress._value
+                switch (raw._arm) {
+                    case 'ed25519':
+                        return StrKey.encodeContract(raw._value)
+                    case undefined:
+                        return StrKey.encodeContract(raw)
+                    default:
+                        throw new Error(`Unsupported contract address type: ${raw._arm}`)
+                }
+            }
             const preimage = funcValue.contractIdPreimage
             if (preimage)
                 return contractIdFromPreimage(preimage, this.network)
