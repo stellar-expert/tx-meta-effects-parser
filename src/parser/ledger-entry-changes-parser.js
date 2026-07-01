@@ -278,12 +278,14 @@ function parseContractData(value) {
         const type = instance.executable._switch.name
         switch (type) {
             case 'contractExecutableStellarAsset':
-                entry.kind = 'fromAsset'
                 if (instance.storage?.length) { //if not -- the asset has been created "fromAddress" - no metadata in this case
+                    entry.kind = 'fromAsset'
                     const metaArgs = instance.storage[0]._attributes
                     if (metaArgs.key._value.toString() !== 'METADATA')
                         throw new TxMetaEffectParserError('Unexpected asset initialization metadata')
                     entry.asset = xdrParseAsset(metaArgs.val._value[1]._attributes.val._value.toString())
+                } else {
+                    entry.kind = 'fromAddress'
                 }
                 break
             case 'contractExecutableWasm':

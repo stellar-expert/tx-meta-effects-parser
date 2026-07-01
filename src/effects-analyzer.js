@@ -788,6 +788,8 @@ class EffectsAnalyzer {
             case 'wasm':
                 effect.wasmHash = after.wasmHash
                 break
+            case 'fromAddress':
+                break
             default:
                 throw new TxMetaEffectParserError('Unexpected contract type: ' + kind)
         }
