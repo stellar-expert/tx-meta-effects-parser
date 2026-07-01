@@ -5,15 +5,6 @@
   "expected": [
     [
       {
-        "type": "contractCreated",
-        "source": "GBD2ALDOSNTEW2QWQA6RGQXTZVWGFZYTT5DYZDCPPGNOYTXOAQ6RFUAC",
-        "contract": "CB3Q3AUMWUADMG6EFS2CRWEHF3JWHZ72HOUVDWBT3LID6XR2WQSKQYZU",
-        "kind": "wasm",
-        "wasmHash": "10bd9a77f35a9619cb95a3fff229bf94a6775bcd449a243dc42cbee601e51919",
-        "keyHash": "bcb1bd64880ffa633001ac075bfc1f6a126fa301b471a762f9ac7b24d2d4e261",
-        "ttl": 171892
-      },
-      {
         "type": "contractInvoked",
         "source": "GBD2ALDOSNTEW2QWQA6RGQXTZVWGFZYTT5DYZDCPPGNOYTXOAQ6RFUAC",
         "contract": "CAC6EQW2WCFXWEUANOAM3S7N7A6MROFX3ZC27YIS77HAKTJ465BF6BCO",
@@ -25,13 +16,23 @@
         "rawArgs": "AAAAEAAAAAEAAAACAAAADQAAACAQvZp381qWGcuVo//yKb+UpndbzUSaJD3ELL7mAeUZGQAAAA0AAAAgAAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8="
       },
       {
+        "type": "contractCreated",
+        "source": "GBD2ALDOSNTEW2QWQA6RGQXTZVWGFZYTT5DYZDCPPGNOYTXOAQ6RFUAC",
+        "contract": "CB3Q3AUMWUADMG6EFS2CRWEHF3JWHZ72HOUVDWBT3LID6XR2WQSKQYZU",
+        "kind": "wasm",
+        "wasmHash": "10bd9a77f35a9619cb95a3fff229bf94a6775bcd449a243dc42cbee601e51919",
+        "keyHash": "bcb1bd64880ffa633001ac075bfc1f6a126fa301b471a762f9ac7b24d2d4e261",
+        "ttl": 171892
+      },
+      {
         "type": "contractDataCreated",
         "source": "GBD2ALDOSNTEW2QWQA6RGQXTZVWGFZYTT5DYZDCPPGNOYTXOAQ6RFUAC",
         "owner": "CB3Q3AUMWUADMG6EFS2CRWEHF3JWHZ72HOUVDWBT3LID6XR2WQSKQYZU",
         "key": "AAAAFA==",
         "value": "AAAAEwAAAAAQvZp381qWGcuVo//yKb+UpndbzUSaJD3ELL7mAeUZGQAAAAA=",
         "durability": "instance",
-        "keyHash": "bcb1bd64880ffa633001ac075bfc1f6a126fa301b471a762f9ac7b24d2d4e261"
+        "keyHash": "bcb1bd64880ffa633001ac075bfc1f6a126fa301b471a762f9ac7b24d2d4e261",
+        "ttl": 171892
       },
       {
         "type": "setTtl",

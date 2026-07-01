@@ -102,14 +102,28 @@ parseTxOperationsMeta({
 <td><sub>Transaction, FeeBumpTransaction</sub></td>
 <td>
 
-```js
+```json
 {
-  type: 'feeCharged',
-  source: 'GBKP…YDLI',
-  asset: 'XLM',
-  bid: '10000',
-  charged: '100',
-  balance: '99999999900'
+  "type": "feeCharged",
+  "source": "GBKP…YDLI",
+  "asset": "XLM",
+  "bid": "10000",
+  "charged": "100",
+  "balance": "99999999900"
+}
+```
+
+For fee-bump transactions:
+
+```json
+{
+  "type": "feeCharged",
+  "source": "GANQ…KDUJ",
+  "asset": "XLM",
+  "bid": "100000000",
+  "charged": "43598",
+  "balance": "99999956402",
+  "bump": true
 }
 ```
 </td>
@@ -122,11 +136,22 @@ parseTxOperationsMeta({
 <td><sub>CreateAccountOp</sub></td>
 <td>
 
-```js
+```json
 {
-  type: 'accountCreated',
-  source: 'GBKP…YDLI',
-  account: 'GBWC…DXHN'
+  "type": "accountCreated",
+  "source": "GBKP…YDLI",
+  "account": "GBWC…DXHN"
+}
+```
+
+For sponsored accounts:
+
+```json
+{
+  "type": "accountCreated",
+  "source": "GBKP…YDLI",
+  "account": "GDNP…CMXH",
+  "sponsor": "GBKP…YDLI"
 }
 ```
 </td>
@@ -139,10 +164,20 @@ parseTxOperationsMeta({
 <td><sub>AccountMergeOp</sub></td>
 <td>
 
-```js
+```json
 {
-  type: 'accountRemoved',
-  source: 'GBKP…YDLI'
+  "type": "accountRemoved",
+  "source": "GBKP…YDLI"
+}
+```
+
+For sponsored accounts:
+
+```json
+{
+  "type": "accountRemoved",
+  "source": "GDNP…CMXH",
+  "sponsor": "GBDO…XPCB"
 }
 ```
 </td>
@@ -156,13 +191,13 @@ parseTxOperationsMeta({
 PathPaymentStrictSendOp, CreateClaimableBalanceOp, ClawbackOp, InvokeHostFunctionOp</sub></td>
 <td>
 
-```js
+```json
 {
-  type: 'accountDebited',
-  source: 'GBKP…YDLI',
-  asset: 'XLM',
-  amount: '1000000000',
-  balance: '199999999900'
+  "type": "accountDebited",
+  "source": "GBKP…YDLI",
+  "asset": "XLM",
+  "amount": "1000000000",
+  "balance": "199999999900"
 }
 ```
 </td>
@@ -177,13 +212,13 @@ PathPaymentStrictSendOp, ClaimClaimableBalanceOp, ClawbackOp,
 ClawbackClaimableBalance, InflationOp, InvokeHostFunctionOp</sub></td>
 <td>
 
-```js
+```json
 {
-  type: 'accountCredited',
-  source: 'GBWC…DXHN',
-  asset: 'XLM',
-  amount: '1000000000',
-  balance: '299999999900'
+  "type": "accountCredited",
+  "source": "GBWC…DXHN",
+  "asset": "XLM",
+  "amount": "1000000000",
+  "balance": "299999999900"
 }
 ```
 </td>
@@ -196,11 +231,11 @@ ClawbackClaimableBalance, InflationOp, InvokeHostFunctionOp</sub></td>
 <td><sub>SetOptionsOp</sub></td>
 <td>
 
-```js
+```json
 {
-  type: 'accountHomeDomainUpdated',
-  source: 'GBWC…DXHN',
-  domain: 'example.com'
+  "type": "accountHomeDomainUpdated",
+  "source": "GBWC…DXHN",
+  "domain": "example.com"
 }
 ```
 </td>
@@ -213,11 +248,11 @@ ClawbackClaimableBalance, InflationOp, InvokeHostFunctionOp</sub></td>
 <td><sub>SetOptionsOp</sub></td>
 <td>
 
-```js
+```json
 {
-  type: 'accountThresholdsUpdated',
-  source: 'GBWC…DXHN',
-  thresholds: [1, 1 ,3]
+  "type": "accountThresholdsUpdated",
+  "source": "GBWC…DXHN",
+  "thresholds": [1, 1 ,3]
 }
 ```
 </td>
@@ -230,12 +265,12 @@ ClawbackClaimableBalance, InflationOp, InvokeHostFunctionOp</sub></td>
 <td><sub>SetOptionsOp</sub></td>
 <td>
 
-```js
+```json
 {
-  type: 'accountFlagsUpdated',
-  source: 'GBWC…DXHN',
-  flags: 2,
-  prevFlags: 0
+  "type": "accountFlagsUpdated",
+  "source": "GBWC…DXHN",
+  "flags": 2,
+  "prevFlags": 0
 }
 ```
 </td>
@@ -248,11 +283,11 @@ ClawbackClaimableBalance, InflationOp, InvokeHostFunctionOp</sub></td>
 <td><sub>SetOptionsOp</sub></td>
 <td>
 
-```js
+```json
 {
-  type: 'accountInflationDestinationUpdated',
-  source: 'GBWC…DXHN',
-  inflationDestination: 'GBKP…YDLI'
+  "type": "accountInflationDestinationUpdated",
+  "source": "GBWC…DXHN",
+  "inflationDestination": "GBKP…YDLI"
 }
 ```
 </td>
@@ -265,15 +300,15 @@ ClawbackClaimableBalance, InflationOp, InvokeHostFunctionOp</sub></td>
 <td><sub>SetOptionsOp</sub></td>
 <td>
 
-```js 
+```json
 {
-  type: 'accountSignerCreated',
-  source: 'GBWC…DXHN',
-  signer: 'GBKP…YDLI',
-  weight: 1,
-  signers: [
-    {key: 'GBWC…DXHN', weight: 1},
-    {key: 'GBKP…YDLI', weight: 1}
+  "type": "accountSignerCreated",
+  "source": "GBWC…DXHN",
+  "signer": "GBKP…YDLI",
+  "weight": 1,
+  "signers": [
+    {"key": "GBWC…DXHN", "weight": 1},
+    {"key": "GBKP…YDLI", "weight": 1}
   ]
 }
 ```
@@ -288,15 +323,15 @@ ClawbackClaimableBalance, InflationOp, InvokeHostFunctionOp</sub></td>
 <td><sub>SetOptionsOp</sub></td>
 <td>
 
-```js 
+```json
 {
-  type: 'accountSignerUpdated',
-  source: 'GBWC…DXHN',
-  signer: 'GBKP…YDLI',
-  weight: 2,
-  signers: [
-    {key: 'GBWC…DXHN', weight: 2},
-    {key: 'GBKP…YDLI', weight: 1}
+  "type": "accountSignerUpdated",
+  "source": "GBWC…DXHN",
+  "signer": "GBKP…YDLI",
+  "weight": 2,
+  "signers": [
+    {"key": "GBWC…DXHN", "weight": 2},
+    {"key": "GBKP…YDLI", "weight": 1}
   ]
 }
 ```
@@ -311,14 +346,14 @@ ClawbackClaimableBalance, InflationOp, InvokeHostFunctionOp</sub></td>
 <td><sub>SetOptionsOp</sub></td>
 <td>
 
-```js
+```json
 {
-  type: 'accountSignerRemoved',
-  source: 'GBWC…DXHN',
-  weight: 0,
-  signer: 'GBKP…YDLI',
-  signers: [
-    {key: 'GBWC…DXHN', weight: 1}
+  "type": "accountSignerRemoved",
+  "source": "GBWC…DXHN",
+  "weight": 0,
+  "signer": "GBKP…YDLI",
+  "signers": [
+    {"key": "GBWC…DXHN", "weight": 1}
   ]
 }
 ```
@@ -333,14 +368,41 @@ ClawbackClaimableBalance, InflationOp, InvokeHostFunctionOp</sub></td>
 <td><sub>ChangeTrustOp</sub></td>
 <td>
 
-```js
+```json
 {
-  type: 'trustlineCreated',
-  source: 'GBWC…DXHN',
-  asset: 'USD-GBKP…YDLI-1',
-  kind: 'asset',
-  limit: '1000000000',
-  flags: 1
+  "type": "trustlineCreated",
+  "source": "GBWC…DXHN",
+  "asset": "USD-GBKP…YDLI-1",
+  "kind": "asset",
+  "limit": "1000000000",
+  "flags": 1
+}
+```
+
+For a liquidity pool trustlines:
+
+```json
+{
+  "type": "trustlineCreated",
+  "source": "GBKP…YDLI",
+  "asset": "LA7F…HJLT",
+  "kind": "poolShares",
+  "limit": "100000000000000",
+  "flags": 0
+}
+```
+
+For sponsored trustlines:
+
+```json
+{
+  "type": "trustlineCreated",
+  "source": "GDNP…CMXH",
+  "asset": "USD-GBKP…YDLI-1",
+  "kind": "asset",
+  "limit": "100000000000000",
+  "flags": 5,
+  "sponsor": "GBKP…YDLI"
 }
 ```
 
@@ -354,15 +416,15 @@ ClawbackClaimableBalance, InflationOp, InvokeHostFunctionOp</sub></td>
 <td><sub>ChangeTrustOp, AllowTrustOp, SetTrustLineFlagsOp</sub></td>
 <td>
 
-```js
+```json
 {
-  type: 'trustlineUpdated',
-  source: 'GBWC…DXHN',
-  asset: 'USD-GBKP…YDLI-1',
-  kind: 'asset',
-  limit: '2000000000',
-  flags: 5,
-  prevFlags: 5
+  "type": "trustlineUpdated",
+  "source": "GBWC…DXHN",
+  "asset": "USD-GBKP…YDLI-1",
+  "kind": "asset",
+  "limit": "2000000000",
+  "flags": 5,
+  "prevFlags": 5
 }
 ```
 
@@ -376,13 +438,26 @@ ClawbackClaimableBalance, InflationOp, InvokeHostFunctionOp</sub></td>
 <td><sub>ChangeTrustOp</sub></td>
 <td>
 
-```js
+```json
 {
-  type: 'trustlineRemoved',
-  source: 'GBWC…DXHN',
-  asset: 'USD-GBKP…YDLI-1',
-  kind: 'asset',
-  flags: 4,
+  "type": "trustlineRemoved",
+  "source": "GBWC…DXHN",
+  "asset": "USD-GBKP…YDLI-1",
+  "kind": "asset",
+  "flags": 4
+}
+```
+
+For sponsored trustlines:
+
+```json
+{
+  "type": "trustlineRemoved",
+  "source": "GDNP…CMXH",
+  "asset": "USD-GBKP…YDLI-1",
+  "kind": "asset",
+  "flags": 5,
+  "sponsor": "GBDO…XPCB"
 }
 ```
 
@@ -396,14 +471,14 @@ ClawbackClaimableBalance, InflationOp, InvokeHostFunctionOp</sub></td>
 <td><sub>AllowTrustOp, SetTrustLineFlagsOp</sub></td>
 <td>
 
-```js
+```json
 {
-  type: 'trustlineAuthorizationUpdated',
-  source: 'GBWC…DXHN',
-  trustor: 'GBKP…YDLI',
-  asset: 'USD-GBWC…DXHN-1',
-  flags: 5,
-  prevFlags: 2
+  "type": "trustlineAuthorizationUpdated",
+  "source": "GBWC…DXHN",
+  "trustor": "GBKP…YDLI",
+  "asset": "USD-GBWC…DXHN-1",
+  "flags": 5,
+  "prevFlags": 2
 }
 ```
 
@@ -418,12 +493,12 @@ ClawbackClaimableBalance, InflationOp, InvokeHostFunctionOp</sub></td>
 ManageBuyOfferOp, ManageSellOfferOp, CreatePassiveOfferOp, DepositLiquidityOp, InvokeHostFunctionOp</sub></td>
 <td>
 
-```js
+```json
 {
-  type: 'assetMinted',
-  source: 'GBWC…DXHN',
-  asset: 'USD-GBWC…DXHN-1',
-  amount: '1000000000'
+  "type": "assetMinted",
+  "source": "GBWC…DXHN",
+  "asset": "USD-GBWC…DXHN-1",
+  "amount": "1000000000"
 }
 ```
 
@@ -438,12 +513,12 @@ ManageBuyOfferOp, ManageSellOfferOp, CreatePassiveOfferOp, DepositLiquidityOp, I
 CreatePassiveOfferOp, WithdrawLiquidityOp, ClawbackOp, ClaimClaimableBalanceOp, InvokeHostFunctionOp</sub></td>
 <td>
 
-```js
+```json
 {
-  type: 'assetBurned',
-  source: 'GBWC…DXHN',
-  asset: 'USD-GBWC…DXHN-1',
-  amount: '2000000000'
+  "type": "assetBurned",
+  "source": "GBWC…DXHN",
+  "asset": "USD-GBWC…DXHN-1",
+  "amount": "2000000000"
 }
 ```
 
@@ -457,19 +532,38 @@ CreatePassiveOfferOp, WithdrawLiquidityOp, ClawbackOp, ClaimClaimableBalanceOp, 
 <td><sub>CreatePassiveOfferOp, ManageBuyOfferOp, ManageSellOfferOp</sub></td>
 <td>
 
-```js
+```json
 {
-  type: 'offerCreated',
-  source: 'GBWC…DXHN',
-  offer: '90427',
-  owner: 'GBWC…DXHN',
-  amount: '1000000000',
-  asset: [
-    'USD-GBKP…YDLI-1',
-    'XLM'
+  "type": "offerCreated",
+  "source": "GBWC…DXHN",
+  "offer": "90427",
+  "owner": "GBWC…DXHN",
+  "amount": "1000000000",
+  "asset": [
+    "USD-GBKP…YDLI-1",
+    "XLM"
   ],
-  price: 0.09215,
-  flags: 0
+  "price": 0.09215,
+  "flags": 0
+}
+```
+
+For sponsored offers:
+
+```json
+{
+  "type": "offerCreated",
+  "source": "GDNP…CMXH",
+  "offer": "195459",
+  "owner": "GDNP…CMXH",
+  "amount": "1000000000",
+  "asset": [
+    "USD-GDNP…CMXH-1",
+    "XLM"
+  ],
+  "price": 1,
+  "flags": 0,
+  "sponsor": "GBKP…YDLI"
 }
 ```
 
@@ -483,19 +577,19 @@ CreatePassiveOfferOp, WithdrawLiquidityOp, ClawbackOp, ClaimClaimableBalanceOp, 
 <td><sub>CreatePassiveOfferOp, ManageBuyOfferOp, ManageSellOfferOp, PathPaymentOp</sub></td>
 <td>
 
-```js
+```json
 {
-  type: 'offerUpdated',
-  source: 'GBWC…DXHN',
-  offer: '90427',
-  owner: 'GBWC…DXHN',
-  amount: '900000000',
-  asset: [
-    'USD-GBKP…YDLI-1',
-    'XLM'
+  "type": "offerUpdated",
+  "source": "GBWC…DXHN",
+  "offer": "90427",
+  "owner": "GBWC…DXHN",
+  "amount": "900000000",
+  "asset": [
+    "USD-GBKP…YDLI-1",
+    "XLM"
   ],
-  price: 0.09215,
-  flags: 0
+  "price": 0.09215,
+  "flags": 0
 }
 ```
 
@@ -509,17 +603,34 @@ CreatePassiveOfferOp, WithdrawLiquidityOp, ClawbackOp, ClaimClaimableBalanceOp, 
 <td><sub>CreatePassiveOfferOp, ManageBuyOfferOp, ManageSellOfferOp, PathPaymentOp, AllowTrustOp, SetTrustLineFlagsOp</sub></td>
 <td>
 
-```js
+```json
 {
-  type: 'offerRemoved',
-  source: 'GBWC…DXHN',
-  offer: '90427',
-  owner: 'GBWC…DXHN',
-  asset: [
-    'USD-GBKP…YDLI-1',
-    'XLM'
+  "type": "offerRemoved",
+  "source": "GBWC…DXHN",
+  "offer": "90427",
+  "owner": "GBWC…DXHN",
+  "asset": [
+    "USD-GBKP…YDLI-1",
+    "XLM"
   ],
-  flags: 0
+  "flags": 0
+}
+```
+
+For sponsored offers:
+
+```json
+{
+  "type": "offerRemoved",
+  "source": "GDNP…CMXH",
+  "offer": "195459",
+  "owner": "GDNP…CMXH",
+  "asset": [
+    "USD-GDNP…CMXH-1",
+    "XLM"
+  ],
+  "flags": 0,
+  "sponsor": "GBDO…XPCB"
 }
 ```
 
@@ -533,23 +644,23 @@ CreatePassiveOfferOp, WithdrawLiquidityOp, ClawbackOp, ClaimClaimableBalanceOp, 
 <td><sub>ChangeTrustOp</sub></td>
 <td>
 
-```js
+```json
 {
-  type: 'liquidityPoolCreated',
-  source: 'GBWC…DXHN',
-  pool: 'LA7F…HJLT',
-  reserves: [
+  "type": "liquidityPoolCreated",
+  "source": "GBWC…DXHN",
+  "pool": "LA7F…HJLT",
+  "reserves": [
     {
-      asset: 'XLM',
-      amount: '0'
+      "asset": "XLM",
+      "amount": "0"
     },
     {
-      asset: 'USD-GBKP…YDLI-1',
-      amount: '0'
+      "asset": "USD-GBKP…YDLI-1",
+      "amount": "0"
     }
   ],
-  shares: '0',
-  accounts: 1
+  "shares": "0",
+  "accounts": 1
 }
 ```
 
@@ -563,23 +674,23 @@ CreatePassiveOfferOp, WithdrawLiquidityOp, ClawbackOp, ClaimClaimableBalanceOp, 
 <td><sub>DepositLiquidityOp, WithdrawLiquidityOp, AllowTrustOp, SetTrustLineFlagsOp</sub></td>
 <td>
 
-```js
+```json
 {
-  type: 'liquidityPoolUpdated',
-  source: 'GBWC…DXHN',
-  pool: 'LA7F…HJLT',
-  reserves: [
+  "type": "liquidityPoolUpdated",
+  "source": "GBWC…DXHN",
+  "pool": "LA7F…HJLT",
+  "reserves": [
     {
-      asset: 'XLM',
-      amount: '10000000000'
+      "asset": "XLM",
+      "amount": "10000000000"
     },
     {
-      asset: 'USD-GBKP…YDLI-1',
-      amount: '10000000000'
+      "asset": "USD-GBKP…YDLI-1",
+      "amount": "10000000000"
     }
   ],
-  shares: '10000000000',
-  accounts: 2
+  "shares": "10000000000",
+  "accounts": 2
 }
 ```
 
@@ -593,23 +704,23 @@ CreatePassiveOfferOp, WithdrawLiquidityOp, ClawbackOp, ClaimClaimableBalanceOp, 
 <td><sub>DepositLiquidityOp</sub></td>
 <td>
 
-```js
+```json
 {
-  type: 'liquidityPoolDeposited',
-  source: 'GBWC…DXHN',
-  pool: 'LA7F…HJLT',
-  assets: [
+  "type": "liquidityPoolDeposited",
+  "source": "GBWC…DXHN",
+  "pool": "LA7F…HJLT",
+  "assets": [
     {
-      asset: 'XLM',
-      amount: '10000000000'
+      "asset": "XLM",
+      "amount": "10000000000"
     },
     {
-      asset: 'USD-GBKP…YDLI-1',
-      amount: '10000000000'
+      "asset": "USD-GBKP…YDLI-1",
+      "amount": "10000000000"
     }
   ],
-  shares: '10000000000',
-  accounts: 2
+  "shares": "10000000000",
+  "accounts": 2
 }
 ```
 
@@ -623,23 +734,23 @@ CreatePassiveOfferOp, WithdrawLiquidityOp, ClawbackOp, ClaimClaimableBalanceOp, 
 <td><sub>WithdrawLiquidityOp</sub></td>
 <td>
 
-```js
+```json
 {
-  type: 'liquidityPoolWithdrew',
-  source: 'GBWC…DXHN',
-  pool: 'LA7F…HJLT',
-  assets: [
+  "type": "liquidityPoolWithdrew",
+  "source": "GBWC…DXHN",
+  "pool": "LA7F…HJLT",
+  "assets": [
     {
-      asset: 'XLM',
-      amount: '5000000000'
+      "asset": "XLM",
+      "amount": "5000000000"
     },
     {
-      asset: 'USD-GBKP…YDLI-1',
-      amount: '5000000000'
+      "asset": "USD-GBKP…YDLI-1",
+      "amount": "5000000000"
     }
   ],
-  shares: '5000000000',
-  accounts: 1
+  "shares": "5000000000",
+  "accounts": 1
 }
 ```
 
@@ -653,11 +764,11 @@ CreatePassiveOfferOp, WithdrawLiquidityOp, ClawbackOp, ClaimClaimableBalanceOp, 
 <td><sub>ChangeTrustOp, AllowTrustOp, SetTrustLineFlagsOp</sub></td>
 <td>
 
-```js
+```json
 {
-  type: 'liquidityPoolRemoved',
-  source: 'GBWC…DXHN',
-  pool: 'LA7F…HJLT'
+  "type": "liquidityPoolRemoved",
+  "source": "GBWC…DXHN",
+  "pool": "LA7F…HJLT"
 }
 ```
 
@@ -670,21 +781,40 @@ CreatePassiveOfferOp, WithdrawLiquidityOp, ClawbackOp, ClaimClaimableBalanceOp, 
 </td>
 <td><sub>CreatePassiveOfferOp, ManageBuyOfferOp, ManageSellOfferOp, PathPaymentOp</sub></td>
 <td>
+For trades against classic DEX:
 
-```js
+```json
 {
-  type: 'trade',
-  source: 'GBWC…DXHN',
-  offer: '14834',
-  amount: [
-    '100000000', 
-    '200000000'
+  "type": "trade",
+  "source": "GBWC…DXHN",
+  "offer": "14834",
+  "amount": [
+    "100000000", 
+    "200000000"
   ],
-  asset: [
-    'USD-GBKP…YDLI-1',
-    'XLM'
+  "asset": [
+    "USD-GBKP…YDLI-1",
+    "XLM"
   ],
-  seller: 'GBKP…YDLI'
+  "seller": "GBKP…YDLI"
+}
+```
+
+For trades against classic liquidity pools:
+
+```json
+{
+  "type": "trade",
+  "source": "GBWC…DXHN",
+  "amount": [
+    "90661089",
+    "100000000"
+  ],
+  "asset": [
+    "EUR-GBKP…YDLI-1",
+    "USD-GBKP…YDLI-1"
+  ],
+  "pool": "LA7F…HJLT"
 }
 ```
 
@@ -698,12 +828,24 @@ CreatePassiveOfferOp, WithdrawLiquidityOp, ClawbackOp, ClaimClaimableBalanceOp, 
 <td><sub>ManageDataOp</sub></td>
 <td>
 
-```js
+```json
 {
-  type: 'dataEntryCreated',
-  source: 'GBWC…DXHN',
-  name: 'test',
-  value: 'dGVzdA=='
+  "type": "dataEntryCreated",
+  "source": "GBWC…DXHN",
+  "name": "test",
+  "value": "dGVzdA=="
+}
+```
+
+For sponsored data entries:
+
+```json
+{
+  "type": "dataEntryCreated",
+  "source": "GDNP…CMXH",
+  "name": "test",
+  "value": "dGVzdA==",
+  "sponsor": "GBKP…YDLI"
 }
 ```
 
@@ -717,12 +859,12 @@ CreatePassiveOfferOp, WithdrawLiquidityOp, ClawbackOp, ClaimClaimableBalanceOp, 
 <td><sub>ManageDataOp</sub></td>
 <td>
 
-```js
+```json
 {
-  type: 'dataEntryUpdated',
-  source: 'GBWC…DXHN',
-  name: 'test',
-  value: 'dGVzVA=='
+  "type": "dataEntryUpdated",
+  "source": "GBWC…DXHN",
+  "name": "test",
+  "value": "dGVzVA=="
 }
 ```
 
@@ -736,11 +878,11 @@ CreatePassiveOfferOp, WithdrawLiquidityOp, ClawbackOp, ClaimClaimableBalanceOp, 
 <td><sub>ManageDataOp</sub></td>
 <td>
 
-```js
+```json
 {
-  type: 'dataEntryRemoved',
-  source: 'GBWC…DXHN',
-  name: 'test'
+  "type": "dataEntryRemoved",
+  "source": "GBWC…DXHN",
+  "name": "test"
 }
 ```
 
@@ -754,11 +896,11 @@ CreatePassiveOfferOp, WithdrawLiquidityOp, ClawbackOp, ClaimClaimableBalanceOp, 
 <td><sub>BumpSequenceOp</sub></td>
 <td>
 
-```js
+```json
 {
-  type: 'sequenceBumped',
-  source: 'GBWC…DXHN',
-  sequence: '9223372036854775707'
+  "type": "sequenceBumped",
+  "source": "GBWC…DXHN",
+  "sequence": "9223372036854775707"
 }
 ```
 
@@ -772,10 +914,10 @@ CreatePassiveOfferOp, WithdrawLiquidityOp, ClawbackOp, ClaimClaimableBalanceOp, 
 <td><sub>InflationOp</sub></td>
 <td>
 
-```js
+```json
 {
-  type: 'inflation',
-  source: 'GBWC…DXHN'
+  "type": "inflation",
+  "source": "GBWC…DXHN"
 }
 ```
 
@@ -789,19 +931,19 @@ CreatePassiveOfferOp, WithdrawLiquidityOp, ClawbackOp, ClaimClaimableBalanceOp, 
 <td><sub>CreateClaimableBalanceOp, AllowTrustOp, SetTrustLineFlagsOp</sub></td>
 <td>
 
-```js
+```json
 {
-  type: 'claimableBalanceCreated',
-  source: 'GBWC…DXHN',
-  sponsor: 'GBWC…DXHN',
-  balance: 'BDKD…F75Y',
-  asset: 'XLM',
-  amount: '1000000000',
-  claimants: [
+  "type": "claimableBalanceCreated",
+  "source": "GBWC…DXHN",
+  "sponsor": "GBWC…DXHN",
+  "balance": "BDKD…F75Y",
+  "asset": "XLM",
+  "amount": "1000000000",
+  "claimants": [
     {
-      destination: 'GBKP…YDLI',
-      predicate: {
-        absBefore: '1671220240580'
+      "destination": "GBKP…YDLI",
+      "predicate": {
+        "absBefore": "1671220240580"
       }
     }
   ]
@@ -818,19 +960,19 @@ CreatePassiveOfferOp, WithdrawLiquidityOp, ClawbackOp, ClaimClaimableBalanceOp, 
 <td><sub>ClaimClaimableBalanceOp, ClawbackClaimableBalanceOp</sub></td>
 <td>
 
-```js
+```json
 {
-  type: 'claimableBalanceRemoved',
-  source: 'GBKP…YDLI',
-  sponsor: 'GBWC…DXHN',
-  balance: 'BDKD…F75Y',
-  asset: 'XLM',
-  amount: '1000000000',
-  claimants: [
+  "type": "claimableBalanceRemoved",
+  "source": "GBKP…YDLI",
+  "sponsor": "GBWC…DXHN",
+  "balance": "BDKD…F75Y",
+  "asset": "XLM",
+  "amount": "1000000000",
+  "claimants": [
     {
-      destination: 'GBKP…YDLI',
-      predicate: {
-        absBefore: '1671220240580'
+      "destination": "GBKP…YDLI",
+      "predicate": {
+        "absBefore": "1671220240580"
       }
     }
   ]
@@ -847,12 +989,12 @@ CreatePassiveOfferOp, WithdrawLiquidityOp, ClawbackOp, ClaimClaimableBalanceOp, 
 <td><sub>CreateAccountOp</sub></td>
 <td>
 
-```js
+```json
 {
-  type: 'accountSponsorshipCreated',
-  source: 'GBWC…DXHN',
-  sponsor: 'GBWC…DXHN',
-  account: 'GBKP…YDLI'
+  "type": "accountSponsorshipCreated",
+  "source": "GBWC…DXHN",
+  "sponsor": "GBWC…DXHN",
+  "account": "GBKP…YDLI"
 }
 ```
 
@@ -866,13 +1008,13 @@ CreatePassiveOfferOp, WithdrawLiquidityOp, ClawbackOp, ClaimClaimableBalanceOp, 
 <td><sub>RevokeSponsorshipOp</sub></td>
 <td>
 
-```js
+```json
 {
-  type: 'accountSponsorshipUpdated',
-  source: 'GBWC…DXHN',
-  sponsor: 'GDNP…CMXH',
-  prevSponsor: 'GBWC…DXHN',
-  account: 'GBKP…YDLI'
+  "type": "accountSponsorshipUpdated",
+  "source": "GBWC…DXHN",
+  "sponsor": "GDNP…CMXH",
+  "prevSponsor": "GBWC…DXHN",
+  "account": "GBKP…YDLI"
 }
 ```
 
@@ -886,12 +1028,12 @@ CreatePassiveOfferOp, WithdrawLiquidityOp, ClawbackOp, ClaimClaimableBalanceOp, 
 <td><sub>RevokeSponsorshipOp</sub></td>
 <td>
 
-```js
+```json
 {
-  type: 'accountSponsorshipRemoved',
-  source: 'GBWC…DXHN',
-  prevSponsor: 'GBWC…DXHN',
-  account: 'GBKP…YDLI'
+  "type": "accountSponsorshipRemoved",
+  "source": "GBWC…DXHN",
+  "prevSponsor": "GBWC…DXHN",
+  "account": "GBKP…YDLI"
 }
 ```
 
@@ -905,13 +1047,13 @@ CreatePassiveOfferOp, WithdrawLiquidityOp, ClawbackOp, ClaimClaimableBalanceOp, 
 <td><sub>ChangeThrustOp</sub></td>
 <td>
 
-```js
+```json
 {
-  type: 'trustlineSponsorshipCreated',
-  source: 'GBWC…DXHN',
-  sponsor: 'GBWC…DXHN',
-  account: 'GBKP…YDLI',
-  asset: 'USD-GBKP…YDLI-1'
+  "type": "trustlineSponsorshipCreated",
+  "source": "GBWC…DXHN",
+  "sponsor": "GBWC…DXHN",
+  "account": "GBKP…YDLI",
+  "asset": "USD-GBKP…YDLI-1"
 }
 ```
 
@@ -925,14 +1067,14 @@ CreatePassiveOfferOp, WithdrawLiquidityOp, ClawbackOp, ClaimClaimableBalanceOp, 
 <td><sub>RevokeSponsorshipOp</sub></td>
 <td>
 
-```js
+```json
 {
-  type: 'trustlineSponsorshipUpdated',
-  source: 'GBWC…DXHN',
-  sponsor: 'GDNP…CMXH',
-  prevSponsor: 'GBWC…DXHN',
-  account: 'GBKP…YDLI',
-  asset: 'USD-GBKP…YDLI-1'
+  "type": "trustlineSponsorshipUpdated",
+  "source": "GBWC…DXHN",
+  "sponsor": "GDNP…CMXH",
+  "prevSponsor": "GBWC…DXHN",
+  "account": "GBKP…YDLI",
+  "asset": "USD-GBKP…YDLI-1"
 }
 ```
 
@@ -946,13 +1088,13 @@ CreatePassiveOfferOp, WithdrawLiquidityOp, ClawbackOp, ClaimClaimableBalanceOp, 
 <td><sub>RevokeSponsorshipOp</sub></td>
 <td>
 
-```js
+```json
 {
-  type: 'trustlineSponsorshipRemoved',
-  source: 'GBWC…DXHN',
-  prevSponsor: 'GBWC…DXHN',
-  account: 'GBKP…YDLI',
-  asset: 'USD-GBKP…YDLI-1'
+  "type": "trustlineSponsorshipRemoved",
+  "source": "GBWC…DXHN",
+  "prevSponsor": "GBWC…DXHN",
+  "account": "GBKP…YDLI",
+  "asset": "USD-GBKP…YDLI-1"
 }
 ```
 
@@ -966,13 +1108,13 @@ CreatePassiveOfferOp, WithdrawLiquidityOp, ClawbackOp, ClaimClaimableBalanceOp, 
 <td><sub>CreatePassiveOfferOp, ManageBuyOfferOp, ManageSellOfferOp</sub></td>
 <td>
 
-```js
+```json
 {
-  type: 'offerSponsorshipCreated',
-  source: 'GBWC…DXHN',
-  sponsor: 'GBWC…DXHN',
-  account: 'GBKP…YDLI',
-  offer: '4523452'
+  "type": "offerSponsorshipCreated",
+  "source": "GBWC…DXHN",
+  "sponsor": "GBWC…DXHN",
+  "account": "GBKP…YDLI",
+  "offer": "4523452"
 }
 ```
 
@@ -986,14 +1128,14 @@ CreatePassiveOfferOp, WithdrawLiquidityOp, ClawbackOp, ClaimClaimableBalanceOp, 
 <td><sub>RevokeSponsorshipOp</sub></td>
 <td>
 
-```js
+```json
 {
-  type: 'offerSponsorshipUpdated',
-  source: 'GBWC…DXHN',
-  sponsor: 'GDNP…CMXH',
-  prevSponsor: 'GBWC…DXHN',
-  account: 'GBKP…YDLI',
-  offer: '4523452'
+  "type": "offerSponsorshipUpdated",
+  "source": "GBWC…DXHN",
+  "sponsor": "GDNP…CMXH",
+  "prevSponsor": "GBWC…DXHN",
+  "account": "GBKP…YDLI",
+  "offer": "4523452"
 }
 ```
 
@@ -1007,13 +1149,13 @@ CreatePassiveOfferOp, WithdrawLiquidityOp, ClawbackOp, ClaimClaimableBalanceOp, 
 <td><sub>RevokeSponsorshipOp</sub></td>
 <td>
 
-```js
+```json
 {
-  type: 'offerSponsorshipRemoved',
-  source: 'GBWC…DXHN',
-  prevSponsor: 'GBWC…DXHN',
-  account: 'GBKP…YDLI',
-  offer: '4523452'
+  "type": "offerSponsorshipRemoved",
+  "source": "GBWC…DXHN",
+  "prevSponsor": "GBWC…DXHN",
+  "account": "GBKP…YDLI",
+  "offer": "4523452"
 }
 ```
 
@@ -1027,13 +1169,13 @@ CreatePassiveOfferOp, WithdrawLiquidityOp, ClawbackOp, ClaimClaimableBalanceOp, 
 <td><sub>ManageDataOp</sub></td>
 <td>
 
-```js
+```json
 {
-  type: 'dataSponsorshipCreated',
-  source: 'GBWC…DXHN',
-  sponsor: 'GBWC…DXHN',
-  account: 'GBKP…YDLI',
-  name: 'name'
+  "type": "dataSponsorshipCreated",
+  "source": "GBWC…DXHN",
+  "sponsor": "GBWC…DXHN",
+  "account": "GBKP…YDLI",
+  "name": "name"
 }
 ```
 
@@ -1047,14 +1189,14 @@ CreatePassiveOfferOp, WithdrawLiquidityOp, ClawbackOp, ClaimClaimableBalanceOp, 
 <td><sub>RevokeSponsorshipOp</sub></td>
 <td>
 
-```js
+```json
 {
-  type: 'dataSponsorshipUpdated',
-  source: 'GBWC…DXHN',
-  sponsor: 'GDNP…CMXH',
-  prevSponsor: 'GBWC…DXHN',
-  account: 'GBKP…YDLI',
-  name: 'name'
+  "type": "dataSponsorshipUpdated",
+  "source": "GBWC…DXHN",
+  "sponsor": "GDNP…CMXH",
+  "prevSponsor": "GBWC…DXHN",
+  "account": "GBKP…YDLI",
+  "name": "name"
 }
 ```
 
@@ -1068,13 +1210,13 @@ CreatePassiveOfferOp, WithdrawLiquidityOp, ClawbackOp, ClaimClaimableBalanceOp, 
 <td><sub>RevokeSponsorshipOp</sub></td>
 <td>
 
-```js
+```json
 {
-  type: 'dataSponsorshipRemoved',
-  source: 'GBWC…DXHN',
-  prevSponsor: 'GBWC…DXHN',
-  account: 'GBKP…YDLI',
-  name: 'name'
+  "type": "dataSponsorshipRemoved",
+  "source": "GBWC…DXHN",
+  "prevSponsor": "GBWC…DXHN",
+  "account": "GBKP…YDLI",
+  "name": "name"
 }
 ```
 
@@ -1088,12 +1230,12 @@ CreatePassiveOfferOp, WithdrawLiquidityOp, ClawbackOp, ClaimClaimableBalanceOp, 
 <td><sub>CreateClaimableBalanceOp</sub></td>
 <td>
 
-```js
+```json
 {
-  type: 'claimableBalanceSponsorshipCreated',
-  source: 'GBWC…DXHN',
-  sponsor: 'GBWC…DXHN',
-  balance: '7aba…6f9d'
+  "type": "claimableBalanceSponsorshipCreated",
+  "source": "GBWC…DXHN",
+  "sponsor": "GBWC…DXHN",
+  "balance": "7aba…6f9d"
 }
 ```
 
@@ -1107,13 +1249,13 @@ CreatePassiveOfferOp, WithdrawLiquidityOp, ClawbackOp, ClaimClaimableBalanceOp, 
 <td><sub>RevokeSponsorshipOp</sub></td>
 <td>
 
-```js
+```json
 {
-  type: 'claimableBalanceSponsorshipUpdated',
-  source: 'GBWC…DXHN',
-  sponsor: 'GDNP…CMXH',
-  prevSponsor: 'GBWC…DXHN',
-  balance: '7aba…6f9d'
+  "type": "claimableBalanceSponsorshipUpdated",
+  "source": "GBWC…DXHN",
+  "sponsor": "GDNP…CMXH",
+  "prevSponsor": "GBWC…DXHN",
+  "balance": "7aba…6f9d"
 }
 ```
 
@@ -1127,12 +1269,12 @@ CreatePassiveOfferOp, WithdrawLiquidityOp, ClawbackOp, ClaimClaimableBalanceOp, 
 <td><sub>RevokeSponsorshipOp</sub></td>
 <td>
 
-```js
+```json
 {
-  type: 'claimableBalanceSponsorshipRemoved',
-  source: 'GBWC…DXHN',
-  prevSponsor: 'GBWC…DXHN',
-  balance: '7aba…6f9d'
+  "type": "claimableBalanceSponsorshipRemoved",
+  "source": "GBWC…DXHN",
+  "prevSponsor": "GBWC…DXHN",
+  "balance": "7aba…6f9d"
 }
 ```
 
@@ -1146,13 +1288,13 @@ CreatePassiveOfferOp, WithdrawLiquidityOp, ClawbackOp, ClaimClaimableBalanceOp, 
 <td><sub>SetOptionsOp</sub></td>
 <td>
 
-```js
+```json
 {
-  type: 'signerSponsorshipCreated',
-  source: 'GBWC…DXHN',
-  sponsor: 'GBWC…DXHN',
-  signer: 'GALF…CR2V',
-  account: 'GBKP…YDLI'
+  "type": "signerSponsorshipCreated",
+  "source": "GBWC…DXHN",
+  "sponsor": "GBWC…DXHN",
+  "signer": "GALF…CR2V",
+  "account": "GBKP…YDLI"
 }
 ```
 
@@ -1166,14 +1308,14 @@ CreatePassiveOfferOp, WithdrawLiquidityOp, ClawbackOp, ClaimClaimableBalanceOp, 
 <td><sub>RevokeSponsorshipOp</sub></td>
 <td>
 
-```js 
+```json
 {
-  type: 'signerSponsorshipUpdated',
-  source: 'GBWC…DXHN',
-  sponsor: 'GDNP…CMXH',
-  prevSponsor: 'GBWC…DXHN',
-  signer: 'GALF…CR2V',
-  account: 'GBKP…YDLI'
+  "type": "signerSponsorshipUpdated",
+  "source": "GBWC…DXHN",
+  "sponsor": "GDNP…CMXH",
+  "prevSponsor": "GBWC…DXHN",
+  "signer": "GALF…CR2V",
+  "account": "GBKP…YDLI"
 }
 ```
 
@@ -1187,13 +1329,52 @@ CreatePassiveOfferOp, WithdrawLiquidityOp, ClawbackOp, ClaimClaimableBalanceOp, 
 <td><sub>RevokeSponsorshipOp</sub></td>
 <td>
 
-```js
+```json
 {
-  type: 'signerSponsorshipRemoved',
-  source: 'GBWC…DXHN',
-  prevSponsor: 'GBWC…DXHN',
-  signer: 'GALF…CR2V',
-  account: 'GBKP…YDLI'
+  "type": "signerSponsorshipRemoved",
+  "source": "GBWC…DXHN",
+  "prevSponsor": "GBWC…DXHN",
+  "signer": "GALF…CR2V",
+  "account": "GBKP…YDLI"
+}
+```
+
+</td>
+</tr>
+
+<tr>
+<td>
+<sub><code>liquidityPoolSponsorshipCreated</code></sub>
+</td>
+<td><sub>ChangeTrustOp</sub></td>
+<td>
+
+```json
+{
+  "type": "liquidityPoolSponsorshipCreated",
+  "source": "GBWC…DXHN",
+  "sponsor": "GBWC…DXHN",
+  "pool": "LA7F…HJLT"
+}
+```
+
+</td>
+</tr>
+
+<tr>
+<td>
+<sub><code>liquidityPoolSponsorshipUpdated</code></sub>
+</td>
+<td><sub>RevokeSponsorshipOp</sub></td>
+<td>
+
+```json
+{
+  "type": "liquidityPoolSponsorshipUpdated",
+  "source": "GBWC…DXHN",
+  "sponsor": "GDNP…CMXH",
+  "prevSponsor": "GBWC…DXHN",
+  "pool": "LA7F…HJLT"
 }
 ```
 
@@ -1207,14 +1388,14 @@ CreatePassiveOfferOp, WithdrawLiquidityOp, ClawbackOp, ClaimClaimableBalanceOp, 
 <td><sub>InvokeHostFunctionOp</sub></td>
 <td>
 
-```js
+```json
 {
-  type: 'contractCodeUploaded',
-  source: 'GBWC…DXHN',
-  wasm: 'AGFz…AAAF',
-  wasmHash: '5c55…e46d',
-  keyHash: 'a833…f27f',
-  ttl: 2282323
+  "type": "contractCodeUploaded",
+  "source": "GBWC…DXHN",
+  "wasm": "AGFz…AAAF",
+  "wasmHash": "5c55…e46d",
+  "keyHash": "a833…f27f",
+  "ttl": 2282323
 }
 ```
 
@@ -1228,12 +1409,12 @@ CreatePassiveOfferOp, WithdrawLiquidityOp, ClawbackOp, ClaimClaimableBalanceOp, 
 <td><sub>InvokeHostFunctionOp</sub></td>
 <td>
 
-```js
+```json
 {
-  type: 'contractCodeRemoved',
-  source: 'GBWC…DXHN',
-  wasmHash: '5c55…e46d',
-  keyHash: 'a833…f27f'
+  "type": "contractCodeRemoved",
+  "source": "GBWC…DXHN",
+  "wasmHash": "5c55…e46d",
+  "keyHash": "a833…f27f"
 }
 ```
 
@@ -1247,15 +1428,15 @@ CreatePassiveOfferOp, WithdrawLiquidityOp, ClawbackOp, ClaimClaimableBalanceOp, 
 <td><sub>InvokeHostFunctionOp</sub></td>
 <td>
 
-```js
+```json
 {
-  type: 'contractCreated',
-  source: 'GBWC…DXHN',
-  contract: 'CBIH…AZAD',
-  kind: 'fromAsset',
-  asset: 'ICGVCWUQXIHO-GBD2…FUAC-2',
-  keyHash: '6922ce15707976b856b398fc345c5f926c3d6f8f83d8e0d5a32ebed3af4867a4',
-  ttl: 2908049
+  "type": "contractCreated",
+  "source": "GBWC…DXHN",
+  "contract": "CBIH…AZAD",
+  "kind": "fromAsset",
+  "asset": "ICGVCWUQXIHO-GBD2…FUAC-2",
+  "keyHash": "6922ce15707976b856b398fc345c5f926c3d6f8f83d8e0d5a32ebed3af4867a4",
+  "ttl": 2908049
 }
 ```
 
@@ -1269,16 +1450,27 @@ CreatePassiveOfferOp, WithdrawLiquidityOp, ClawbackOp, ClaimClaimableBalanceOp, 
 <td><sub>InvokeHostFunctionOp</sub></td>
 <td>
 
-```js
+```json
 {
-  type: 'contractUpdated',
-  source: 'GBWC…DXHN',
-  contract: 'CBIH…AZAD',
-  kind: 'wasm',
-  wasmHash: '5c55…e46d',
-  prevWasmHash: 'eb94…19ae',
-  keyHash: '6922ce15707976b856b398fc345c5f926c3d6f8f83d8e0d5a32ebed3af4867a4',
-  ttl: 2908049
+  "type": "contractUpdated",
+  "source": "GBWC…DXHN",
+  "contract": "CBIH…AZAD",
+  "kind": "wasm",
+  "wasmHash": "5c55…e46d",
+  "prevWasmHash": "eb94…19ae",
+  "keyHash": "6922ce15707976b856b398fc345c5f926c3d6f8f83d8e0d5a32ebed3af4867a4",
+  "ttl": 2908049
+}
+```
+
+An SAC admin change:
+
+```json
+{
+  "type": "contractUpdated",
+  "source": "GA2F…I7GG",
+  "contract": "CBXG…HPAV",
+  "admin": "GCFH…M7M5"
 }
 ```
 
@@ -1292,18 +1484,19 @@ CreatePassiveOfferOp, WithdrawLiquidityOp, ClawbackOp, ClaimClaimableBalanceOp, 
 <td><sub>InvokeHostFunctionOp</sub></td>
 <td>
 
-```js
+```json
 {
-  type: 'contractInvoked',
-  source: 'GBWC…DXHN',
-  contract: 'CBIH…AZAD',
-  function: 'mint',
-  depth: 1,
-  rawArgs: 'AAAA…Ag=='
-  args: [
-    'CDFD…ITT3',
-    '1000'
-  ]
+  "type": "contractInvoked",
+  "source": "GBWC…DXHN",
+  "contract": "CBIH…AZAD",
+  "function": "mint",
+  "depth": 1,
+  "rawArgs": "AAAA…Ag==",
+  "args": [
+    "CDFD…ITT3",
+    "1000"
+  ],
+  "result": "AAAA…AQ==" 
 }
 ```
 
@@ -1317,18 +1510,18 @@ CreatePassiveOfferOp, WithdrawLiquidityOp, ClawbackOp, ClaimClaimableBalanceOp, 
 <td><sub>InvokeHostFunctionOp</sub></td>
 <td>
 
-```js
+```json
 {
-  type: 'contractError',
-  source: 'GB6V…UIYN',
-  contract: 'CBIH…AZAD',
-  code: 'scecExceededLimit',
-  details: [
-    'trying to access contract data key outside of the footprint',
-    'CCML…V66N',
+  "type": "contractError",
+  "source": "GB6V…UIYN",
+  "contract": "CBIH…AZAD",
+  "code": "scecExceededLimit",
+  "details": [
+    "trying to access contract data key outside of the footprint",
+    "CCML…V66N",
     [
-      'Secp256r1',
-      'CA3Z…EQTC'
+      "Secp256r1",
+      "CA3Z…EQTC"
     ]
   ]
 }
@@ -1344,16 +1537,16 @@ CreatePassiveOfferOp, WithdrawLiquidityOp, ClawbackOp, ClaimClaimableBalanceOp, 
 <td><sub>InvokeHostFunctionOp</sub></td>
 <td>
 
-```js
+```json
 {
-  type: 'contractDataCreated',
-  source: 'GC3E…XMJY',
-  owner: 'CCM3…OFJX',
-  key: 'AAAA…0SQ=',
-  value: 'AAAA…AA==',
-  durability: 'persistent',
-  keyHash: '2177…a56a',
-  ttl: 2282323
+  "type": "contractDataCreated",
+  "source": "GC3E…XMJY",
+  "owner": "CCM3…OFJX",
+  "key": "AAAA…0SQ=",
+  "value": "AAAA…AA==",
+  "durability": "persistent",
+  "keyHash": "2177…a56a",
+  "ttl": 2282323
 }
 ```
 
@@ -1367,17 +1560,17 @@ CreatePassiveOfferOp, WithdrawLiquidityOp, ClawbackOp, ClaimClaimableBalanceOp, 
 <td><sub>InvokeHostFunctionOp</sub></td>
 <td>
 
-```js
+```json
 {
-  type: 'contractDataUpdated',
-  source: 'GC3E…XMJY',
-  owner: 'CCM3…OFJX',
-  key: 'AAAAFA==',
-  value: 'AAAA…AA==',
-  prevValue: 'AAAA…AAA=',
-  durability: 'persistent',
-  keyHash: '2177…a56a',
-  ttl: 2282323
+  "type": "contractDataUpdated",
+  "source": "GC3E…XMJY",
+  "owner": "CCM3…OFJX",
+  "key": "AAAAFA==",
+  "value": "AAAA…AA==",
+  "prevValue": "AAAA…AAA=",
+  "durability": "persistent",
+  "keyHash": "2177…a56a",
+  "ttl": 2282323
 }
 ```
 
@@ -1391,14 +1584,14 @@ CreatePassiveOfferOp, WithdrawLiquidityOp, ClawbackOp, ClaimClaimableBalanceOp, 
 <td><sub>InvokeHostFunctionOp</sub></td>
 <td>
 
-```js
+```json
 {
-  type: 'contractDataRemoved',
-  source: 'GC3E…XMJY',
-  owner: 'CCM3…OFJX',
-  key: 'AAAAFA==',
-  prevValue: 'AAAA…AAA=',
-  durability: 'instance'
+  "type": "contractDataRemoved",
+  "source": "GC3E…XMJY",
+  "owner": "CCM3…OFJX",
+  "key": "AAAAFA==",
+  "prevValue": "AAAA…AAA=",
+  "durability": "instance"
 }
 ```
 
@@ -1412,25 +1605,25 @@ CreatePassiveOfferOp, WithdrawLiquidityOp, ClawbackOp, ClaimClaimableBalanceOp, 
 <td><sub>InvokeHostFunctionOp</sub></td>
 <td>
 
-```js
+```json
 {
-  type: 'contractEvent',
-  source: 'GC3E…XMJY',
-  contract: 'CCM3…OFJX',
-  topics: [
-    'mint',
-    'GC3E…XMJY',
-    'CDFD…ITT3',
-    'AMDL:GC3E…XMJY'
+  "type": "contractEvent",
+  "source": "GC3E…XMJY",
+  "contract": "CCM3…OFJX",
+  "topics": [
+    "mint",
+    "GC3E…XMJY",
+    "CDFD…ITT3",
+    "AMDL:GC3E…XMJY"
   ],
-  rawTopics: [
-    'AAAA…aW50',
-    'AAAA…gLs=',
-    'AAAA…JA==',
-    'AAAA…AAAA'
+  "rawTopics": [
+    "AAAA…aW50",
+    "AAAA…gLs=",
+    "AAAA…JA==",
+    "AAAA…AAAA"
   ],
-  data: '1000',
-  rawData: 'AAAA…A+g='
+  "data": "1000",
+  "rawData": "AAAA…A+g="
 }
 ```
 
@@ -1444,34 +1637,34 @@ CreatePassiveOfferOp, WithdrawLiquidityOp, ClawbackOp, ClaimClaimableBalanceOp, 
 <td><sub>InvokeHostFunctionOp</sub></td>
 <td>
 
-```js
+```json
 {
-  type: 'contractMetrics',
-  source: 'GC3E…XMJY',
-  contract: 'CCM3…OFJX',
-  cpu_insn: 25470499,
-  emit_event: 5,
-  emit_event_byte: 1176,
-  invoke_time_nsecs: 2013675,
-  ledger_read_byte: 36624,
-  ledger_write_byte: 1028,
-  max_emit_event_byte: 328,
-  max_rw_code_byte: 16352,
-  max_rw_data_byte: 924,
-  max_rw_key_byte: 160,
-  mem_byte: 10204502,
-  read_code_byte: 33508,
-  read_data_byte: 3116,
-  read_entry: 16,
-  read_key_byte: 1244,
-  write_code_byte: 0,
-  write_data_byte: 1028,
-  write_entry: 5,
-  write_key_byte: 0,
-  fee: {
-    nonrefundable: 284210,
-    refundable: 100521,
-    rent: 100481
+  "type": "contractMetrics",
+  "source": "GC3E…XMJY",
+  "contract": "CCM3…OFJX",
+  "cpu_insn": 25470499,
+  "emit_event": 5,
+  "emit_event_byte": 1176,
+  "invoke_time_nsecs": 2013675,
+  "ledger_read_byte": 36624,
+  "ledger_write_byte": 1028,
+  "max_emit_event_byte": 328,
+  "max_rw_code_byte": 16352,
+  "max_rw_data_byte": 924,
+  "max_rw_key_byte": 160,
+  "mem_byte": 10204502,
+  "read_code_byte": 33508,
+  "read_data_byte": 3116,
+  "read_entry": 16,
+  "read_key_byte": 1244,
+  "write_code_byte": 0,
+  "write_data_byte": 1028,
+  "write_entry": 5,
+  "write_key_byte": 0,
+  "fee": {
+    "nonrefundable": 284210,
+    "refundable": 100521,
+    "rent": 100481
   }
 }
 ```
@@ -1486,14 +1679,26 @@ CreatePassiveOfferOp, WithdrawLiquidityOp, ClawbackOp, ClaimClaimableBalanceOp, 
 <td><sub>ExtendFootprintTTLOp, RestoreFootprintOp</sub></td>
 <td>
 
-```js
+```json
 {
-  type: 'setTtl',
-  source: 'GC3E…XMJY',
-  owner: 'CDAE…EH7T',
-  kind: 'contractData',
-  keyHash: '7594…b429',
-  ttl: 2873856
+  "type": "setTtl",
+  "source": "GC3E…XMJY",
+  "owner": "CDAE…EH7T",
+  "kind": "contractData",
+  "keyHash": "7594…b429",
+  "ttl": 2873856
+}
+```
+
+For contract code entries:
+
+```json
+{
+  "type": "setTtl",
+  "source": "GAEB…W5FS",
+  "kind": "contractCode",
+  "keyHash": "a469…a180",
+  "ttl": 256355
 }
 ```
 
@@ -1507,16 +1712,16 @@ CreatePassiveOfferOp, WithdrawLiquidityOp, ClawbackOp, ClaimClaimableBalanceOp, 
 <td><sub>InvokeHostFunctionOp, RestoreFootprintOp</sub></td>
 <td>
 
-```js
+```json
 {
-  type: 'contractDataRestored',
-  source: 'GALD…S7SA',
-  owner: 'CAVL…6HLP',
-  key: 'AAAAFA==',
-  keyHash: '42f3…1b7c',
-  value: 'AAA…AAAE=',
-  durability: 'instance',
-  ttl: 244540
+  "type": "contractDataRestored",
+  "source": "GALD…S7SA",
+  "owner": "CAVL…6HLP",
+  "key": "AAAAFA==",
+  "keyHash": "42f3…1b7c",
+  "value": "AAA…AAAE=",
+  "durability": "instance",
+  "ttl": 244540
 }
 ```
 
@@ -1530,14 +1735,15 @@ CreatePassiveOfferOp, WithdrawLiquidityOp, ClawbackOp, ClaimClaimableBalanceOp, 
 <td><sub>InvokeHostFunctionOp, RestoreFootprintOp</sub></td>
 <td>
 
-```js
+```json
 {
-  type: 'contractRestored',
-  source: 'GALD…S7SA',
-  contract: 'CAVL…6HLP',
-  kind: 'wasm',
-  wasmHash: 'df88…8608',
-  keyHash: '42f3…1b7c'
+  "type": "contractRestored",
+  "source": "GALD…S7SA",
+  "contract": "CAVL…6HLP",
+  "kind": "wasm",
+  "wasmHash": "df88…8608",
+  "keyHash": "42f3…1b7c",
+  "ttl": 244540
 }
 ```
 
@@ -1551,13 +1757,13 @@ CreatePassiveOfferOp, WithdrawLiquidityOp, ClawbackOp, ClaimClaimableBalanceOp, 
 <td><sub>InvokeHostFunctionOp, RestoreFootprintOp</sub></td>
 <td>
 
-```js
+```json
 {
-  type: 'contractCodeRestored',
-  source: 'GALD…S7SA',
-  wasmHash: 'df88…8608',
-  keyHash: '638b…a5b6',
-  ttl: 244540
+  "type": "contractCodeRestored",
+  "source": "GALD…S7SA",
+  "wasmHash": "df88…8608",
+  "keyHash": "638b…a5b6",
+  "ttl": 244540
 }
 ```
 

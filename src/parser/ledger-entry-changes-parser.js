@@ -1,5 +1,5 @@
 const {StrKey} = require('@stellar/stellar-sdk')
-const {TxMetaEffectParserError, UnexpectedTxMetaChangeError} = require('../errors')
+const {TxMetaEffectParserError} = require('../errors')
 const {
     xdrParseAsset,
     xdrParseAccountAddress,
@@ -41,8 +41,6 @@ function parseLedgerEntryChanges(ledgerEntryChanges, filter = undefined) {
                 state = stateData
                 continue
             case 'created':
-                if (type === 'contractCode')
-                    continue //processed in operation handler
                 change.before = null
                 change.after = stateData
                 change.type = stateData.entry
@@ -59,8 +57,6 @@ function parseLedgerEntryChanges(ledgerEntryChanges, filter = undefined) {
                 state = change.after
                 break
             case 'removed':
-                if (!state && type === 'ttl')
-                    continue //skip expiration processing for now
                 change.before = state
                 change.after = null
                 change.type = state.entry
@@ -85,14 +81,14 @@ function parseEntry(entry, actionType) {
     if (actionType === 'removed')
         return null
     const value = entry.value()
-    const parsed = parseEntryData(value.data())
+    const parsed = parseEntryData(value.data(), actionType)
     if (parsed === null)
         return null
     //parsed.modified = entry.lastModifiedLedgerSeq()
     return parseLedgerEntryExt(parsed, value)
 }
 
-function parseEntryData(data) {
+function parseEntryData(data, actionType) {
     const updatedEntryType = data.arm()
     switch (updatedEntryType) {
         case 'account':
@@ -112,7 +108,7 @@ function parseEntryData(data) {
         case 'contractData':
             return parseContractData(data)
         case 'contractCode':
-            return parseContractCode(data)
+            return parseContractCode(data, actionType)
         case 'ttl':
             return parseTtl(data)
         default:
@@ -322,14 +318,18 @@ function parseStateOwnerDataAddress(contract) {
     return xdrParseAccountAddress(contract.accountId())
 }
 
-function parseContractCode(value) {
+function parseContractCode(value, actionType) {
     const contract = value.value()
     const hash = contract.hash()
-    return {
+    const res = {
         entry: 'contractCode',
         hash: hash.toString('hex'),
         keyHash: generateContractCodeEntryHash(hash)
     }
+    if (actionType === 'created') {
+        res.wasm = contract.code().toString('base64')
+    }
+    return res
 }
 
 module.exports = {parseLedgerEntryChanges}

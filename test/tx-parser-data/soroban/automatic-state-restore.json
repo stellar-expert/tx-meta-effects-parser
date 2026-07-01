@@ -33,7 +33,8 @@
         "contract": "CAVLP5DH2GJPZMVO7IJY4CVOD5MWEFTJFVPD2YY2FQXOQHRGHK4D6HLP",
         "kind": "wasm",
         "wasmHash": "df88820e231ad8f3027871e5dd3cf45491d7b7735e785731466bfc2946008608",
-        "keyHash": "42f3c372342a1b6c33b74f355c47a24cc2e20ca9136f2938f20b2b2efcf11b7c"
+        "keyHash": "42f3c372342a1b6c33b74f355c47a24cc2e20ca9136f2938f20b2b2efcf11b7c",
+        "ttl": 244540
       },
       {
         "type": "contractDataRestored",

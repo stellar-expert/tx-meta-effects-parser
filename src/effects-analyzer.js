@@ -144,7 +144,7 @@ class EffectsAnalyzer {
         if (!effect.source) {
             effect.source = this.source
         }
-        if (atPosition !== undefined) {
+        if (atPosition >= 0) {
             this.effects.splice(atPosition < 0 ? 0 : atPosition, 0, effect)
         } else {
             this.effects.push(effect)
@@ -413,46 +413,7 @@ class EffectsAnalyzer {
                 break
             }
             case 'createContract':
-            case 'createContractV2':
-                const preimage = value.contractIdPreimage()
-                const executable = value.executable()
-                const executableType = executable.switch().name
-
-                const effect = {
-                    type: effectTypes.contractCreated,
-                    contract: contractIdFromPreimage(preimage, this.network)
-                }
-                switch (executableType) {
-                    case 'contractExecutableWasm':
-                        effect.kind = 'wasm'
-                        effect.wasmHash = executable.wasmHash().toString('hex')
-                        break
-                    case 'contractExecutableStellarAsset':
-                        const preimageParams = preimage.value()
-                        switch (preimage.switch().name) {
-                            case 'contractIdPreimageFromAddress':
-                                effect.kind = 'fromAddress'
-                                effect.issuer = xdrParseAccountAddress(preimageParams.address().value())
-                                effect.salt = preimageParams.salt().toString('base64')
-                                break
-                            case 'contractIdPreimageFromAsset':
-                                effect.kind = 'fromAsset'
-                                effect.asset = xdrParseAsset(preimageParams)
-                                break
-                            default:
-                                throw new TxMetaEffectParserError('Unknown preimage type: ' + preimage.switch().name)
-                        }
-                        break
-                    default:
-                        throw new TxMetaEffectParserError('Unknown contract type: ' + executableType)
-                }
-                if (func.arm() === 'createContractV2') {
-                    const args = value.constructorArgs() //array
-                    if (args.length > 0) {
-                        effect.constructorArgs = args.map(arg => arg.toXDR('base64'))
-                    }
-                }
-                this.addEffect(effect, 0)
+            case 'createContractV2': //handled in entry changes
                 break
             default:
                 throw new TxMetaEffectParserError('Unknown host function call type: ' + func.arm())
@@ -539,8 +500,12 @@ class EffectsAnalyzer {
                     effect.balance = before?.balanceId || after?.balanceId
                     //TODO: add claimable balance asset to the effect
                     break
-                case 'liquidityPool': //ignore??
-                    continue
+                case 'liquidityPool':
+                    //sponsored liquidity pool entry is never removed, so only created/updated effects are emitted
+                    if (action !== 'created' && action !== 'updated')
+                        continue
+                    effect.pool = before?.pool || after?.pool
+                    break
             }
             effect.type = encodeSponsorshipEffectName(action, type)
             this.addEffect(effect)
@@ -828,9 +793,6 @@ class EffectsAnalyzer {
         }
         switch (action) {
             case 'created':
-                if (this.effects.some(e => e.type === effectTypes.contractCreated && e.contract === contract)) {
-                    effect = undefined //skip contract creation effects processed by top-level createContract operation call
-                }
                 break
             case 'updated':
                 effect.type = effectTypes.contractUpdated
@@ -846,7 +808,7 @@ class EffectsAnalyzer {
                 throw new UnexpectedTxMetaChangeError({type: 'contract', action})
         }
         if (effect) {
-            this.addEffect(effect, effect.type === effectTypes.contractCreated ? 0 : undefined)
+            this.addEffect(effect, effect.type === effectTypes.contractCreated ? this.effects.findIndex(e => e.contract === effect.contract || e.owner === effect.contract) : undefined)
         }
         if (before?.storage?.length || after?.storage?.length) {
             this.processInstanceDataChanges(before, after, action === 'restored')
@@ -896,9 +858,19 @@ class EffectsAnalyzer {
     }
 
     processContractCodeChanges({type, action, before, after}) {
-        const {hash, keyHash} = after || before
+        const {hash, keyHash, wasm} = after || before
         switch (action) {
             case 'created':
+                //ensure that the effect was not processed by the top-level createContract operation call
+                if (!this.effects.some(e => e.type === effectTypes.contractCodeUploaded && e.keyHash === keyHash)) {
+                    const effect = {
+                        type: effectTypes.contractCodeUploaded,
+                        wasm,
+                        wasmHash: hash,
+                        keyHash
+                    }
+                    this.addEffect(effect)
+                }
                 break //processed separately
             case 'updated':
                 break //it doesn't change the state
@@ -971,28 +943,27 @@ class EffectsAnalyzer {
         }
     }
 
-    processTtlChanges({action, before, after}) {
-        /*if (action === 'removed')
-            throw new UnexpectedTxMetaChangeError({type: 'ttl', action})*/
+    processTtlChanges({before, after}) {
         const {keyHash, ttl} = after || before
-        const stateEffect = this.effects.find(e => e.keyHash === keyHash && e.type !== effectTypes.setTtl)
         const effect = {
             type: effectTypes.setTtl,
             keyHash,
             ttl
         }
-        if (stateEffect) {
-            if (stateEffect.type.startsWith('contractCode')) {
-                effect.kind = 'contractCode'
-            } else if (stateEffect.type.startsWith('contractData')) {
-                effect.kind = 'contractData'
-                effect.owner = stateEffect.owner
-            } else if (stateEffect.type.startsWith('contract')) {
-                effect.kind = 'contractData'
-                effect.owner = stateEffect.contract
-            } else
-                throw new UnexpectedTxMetaChangeError({type: 'ttl', action: stateEffect.type})
-            stateEffect.ttl = ttl
+        for (const emitted of this.effects) {
+            if (emitted.keyHash === keyHash && emitted.type !== effectTypes.setTtl) {
+                if (emitted.type.startsWith('contractCode')) {
+                    effect.kind = 'contractCode'
+                } else if (emitted.type.startsWith('contractData')) {
+                    effect.kind = 'contractData'
+                    effect.owner = emitted.owner
+                } else if (emitted.type.startsWith('contract')) {
+                    effect.kind = 'contractData'
+                    effect.owner = emitted.contract
+                } else
+                    throw new UnexpectedTxMetaChangeError({type: 'ttl', action: emitted.type})
+                emitted.ttl = ttl
+            }
         }
         this.addEffect(effect)
     }
@@ -1032,6 +1003,20 @@ class EffectsAnalyzer {
                 default:
                     throw new UnexpectedTxMetaChangeError(change)
             }
+        //ensure that the wasm upload effect always precedes contract creation effect
+        for (let i = 0; i < this.effects.length; i++) {
+            const effect = this.effects[i]
+            if (effect.type === effectTypes.contractCodeUploaded) {
+                //find the first reference in the already emitted effects
+                const createdFromCodeIdx = this.effects.findIndex(e => e.type === effectTypes.contractCreated && e.wasmHash === effect.wasmHash)
+                //reorder effects if needed
+                if (createdFromCodeIdx >= 0) {
+                    this.effects.splice(i, 1)
+                    this.effects.splice(createdFromCodeIdx, 0, effect)
+                    i--
+                }
+            }
+        }
     }
 
     processStateChanges() {

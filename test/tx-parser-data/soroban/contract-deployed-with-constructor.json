@@ -14,16 +14,6 @@
         "ttl": 3004263
       },
       {
-        "type": "contractCreated",
-        "source": "GDAT5HWTGIU4TSSZ4752OUC4SABDLTLZFRPZUJ3D6LKBNEPA7V2CIG54",
-        "contract": "CAKW56TYUFCBQKMJMDAYIUNHM3ZDAXCILCGTUHWJTVG6QM3MOEAGLU26",
-        "kind": "wasm",
-        "wasmHash": "406edc375a4334ea2849d22e490919a5456ee176dd2f9fc3e1e557cd242ec593",
-        "constructorArgs": [
-          "AAAADgAAAAZXb3JsZCEAAA=="
-        ]
-      },
-      {
         "type": "contractInvoked",
         "source": "GDAT5HWTGIU4TSSZ4752OUC4SABDLTLZFRPZUJ3D6LKBNEPA7V2CIG54",
         "contract": "CBOUXHKCWBON5KCQZOFCEDXKRJVLEGTMMSRG7BL5GGQ72HH53ARRNYBW",
@@ -38,7 +28,8 @@
         "key": "AAAAFA==",
         "value": "AAAAEwAAAABAbtw3WkM06ihJ0i5JCRmlRW7hdt0vn8Ph5VfNJC7FkwAAAAEAAAABAAAADwAAAARuYW1lAAAADgAAAAZXb3JsZCEAAA==",
         "keyHash": "48347b4d516f24c606ce8145ae8d9719a47e94f743975223711f2f117da1e9a3",
-        "durability": "instance"
+        "durability": "instance",
+        "ttl": 3004263
       },
       {
         "type": "contractDataCreated",

@@ -9,7 +9,9 @@
         "source": "GBD2ALDOSNTEW2QWQA6RGQXTZVWGFZYTT5DYZDCPPGNOYTXOAQ6RFUAC",
         "contract": "CAC6EQW2WCFXWEUANOAM3S7N7A6MROFX3ZC27YIS77HAKTJ465BF6BCO",
         "kind": "wasm",
-        "wasmHash": "10bd9a77f35a9619cb95a3fff229bf94a6775bcd449a243dc42cbee601e51919"
+        "wasmHash": "10bd9a77f35a9619cb95a3fff229bf94a6775bcd449a243dc42cbee601e51919",
+        "keyHash": "723b1a51ffebb7ce3e0958bc31cb353ccd78af58a42130602c011ffe40d68229",
+        "ttl": 171845
       },
       {
         "type": "contractDataCreated",

@@ -1,13 +1,18 @@
 {
   "name": "@stellar-expert/tx-meta-effects-parser",
-  "version": "9.1.0",
+  "version": "9.2.0",
   "description": "Low-level effects parser for Stellar transaction results and meta XDR",
   "main": "src/index.js",
+  "author": "team@stellar.expert",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stellar-expert/tx-meta-effects-parser.git"
+  },
+  "bugs": "https://github.com/stellar-expert/tx-meta-effects-parser/issues",
   "scripts": {
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js"
   },
-  "author": "team@stellar.expert",
-  "license": "MIT",
   "peerDependencies": {
     "@stellar/stellar-sdk": ">=16"
   },
