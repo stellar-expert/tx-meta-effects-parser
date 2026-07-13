@@ -414,6 +414,30 @@ class EffectsAnalyzer {
             }
             case 'createContract':
             case 'createContractV2': //handled in entry changes
+                const executable = value.executable()
+                const executableType = executable.switch().name
+                if (executableType !== 'contractExecutableWasm') {
+                    const preimage = value.contractIdPreimage()
+                    const preimageParams = preimage.value()
+                    const effect = {
+                        type: effectTypes.contractCreated,
+                        contract: contractIdFromPreimage(preimage, this.network)
+                    }
+                    switch (preimage.switch().name) {
+                        case 'contractIdPreimageFromAddress':
+                            effect.kind = 'fromAddress'
+                            effect.issuer = xdrParseAccountAddress(preimageParams.address().value())
+                            effect.salt = preimageParams.salt().toString('base64')
+                            break
+                        case 'contractIdPreimageFromAsset':
+                            effect.kind = 'fromAsset'
+                            effect.asset = xdrParseAsset(preimageParams)
+                            break
+                        default:
+                            throw new TxMetaEffectParserError('Unknown preimage type: ' + preimage.switch().name)
+                    }
+                    this.addEffect(effect)
+                }
                 break
             default:
                 throw new TxMetaEffectParserError('Unknown host function call type: ' + func.arm())
@@ -810,7 +834,17 @@ class EffectsAnalyzer {
                 throw new UnexpectedTxMetaChangeError({type: 'contract', action})
         }
         if (effect) {
-            this.addEffect(effect, effect.type === effectTypes.contractCreated ? this.effects.findIndex(e => e.contract === effect.contract || e.owner === effect.contract) : undefined)
+            if (effect.type === effectTypes.contractCreated) {
+                const existing = this.effects.find(e => e.type === effectTypes.contractCreated && e.contract === effect.contract)
+                if (!existing) { //the effect might be already emitted from the op call
+                    this.addEffect(effect, this.effects.findIndex(e => e.contract === effect.contract || e.owner === effect.contract))
+                } else {
+                    existing.keyHash = effect.keyHash //assign keyHash, can't be calculated directly
+                }
+            } else {
+
+                this.addEffect(effect)
+            }
         }
         if (before?.storage?.length || after?.storage?.length) {
             this.processInstanceDataChanges(before, after, action === 'restored')
