@@ -1,5 +1,11 @@
 const {xdr} = require('@stellar/stellar-sdk')
-const {xdrParseAccountAddress, xdrParseTradeAtom, xdrParseClaimedOffer, xdrParseAsset} = require('./tx-xdr-parser-utils')
+const {
+    xdrParseAccountAddress,
+    xdrParseTradeAtom,
+    xdrParseClaimedOffer,
+    xdrParseAsset,
+    xdrParseHex
+} = require('./tx-xdr-parser-utils')
 const {TxMetaEffectParserError} = require('../errors')
 
 /**
@@ -8,54 +14,54 @@ const {TxMetaEffectParserError} = require('../errors')
  * @return {Object}
  */
 function parseRawOpResult(rawOpResult) {
-    const inner = rawOpResult.tr()
+    const inner = rawOpResult.tr
     if (inner === undefined)
         return null //"opNoAccount" Case
-    const opResult = inner.value()
-    const successOpResultType = opResult.switch()
+    const opResult = inner.value
+    const resultType = opResult.type
 
-    //no need to parse failed operations
-    if (successOpResultType.value < 0)
+    //no need to parse failed operations - every non-negative op result code is a "success" variant
+    if (!resultType.endsWith('Success'))
         return null
 
     const res = {
-        resultType: successOpResultType.name
+        resultType
     }
 
-    switch (successOpResultType.name) {
+    switch (resultType) {
         case 'pathPaymentStrictReceiveSuccess':
         case 'pathPaymentStrictSendSuccess': {
-            res.claimedOffers = opResult.value().offers().map(claimedOffer => xdrParseClaimedOffer(claimedOffer))
-            const paymentValue = opResult.value().last()
+            res.claimedOffers = opResult.value.offers.map(claimedOffer => xdrParseClaimedOffer(claimedOffer))
+            const paymentValue = opResult.value.last
             res.payment = {
-                account: xdrParseAccountAddress(paymentValue.destination()),
-                amount: paymentValue.amount().toString(),
-                asset: xdrParseAsset(paymentValue.asset())
+                account: xdrParseAccountAddress(paymentValue.destination),
+                amount: paymentValue.amount.toString(),
+                asset: xdrParseAsset(paymentValue.asset)
             }
         }
             break
         case 'manageSellOfferSuccess':
         case 'manageBuyOfferSuccess': {
-            const makerOfferXdr = opResult.value().offer().value()
+            const makerOfferXdr = opResult.value.offer.value
             res.makerOffer = makerOfferXdr && xdrParseTradeAtom(makerOfferXdr)
-            res.claimedOffers = opResult.value().offersClaimed().map(claimedOffer => xdrParseClaimedOffer(claimedOffer))
+            res.claimedOffers = opResult.value.offersClaimed.map(claimedOffer => xdrParseClaimedOffer(claimedOffer))
         }
             break
         case 'accountMergeSuccess':
             //retrieve the actual amount of transferred XLM
-            res.actualMergedAmount = opResult.sourceAccountBalance().toString()
+            res.actualMergedAmount = opResult.sourceAccountBalance.toString()
             break
         case 'inflationSuccess':
-            res.inflationPayouts = (opResult.payouts() || []).map(payout => ({
-                account: xdrParseAccountAddress(payout.destination()),
-                amount: payout.amount().toString()
+            res.inflationPayouts = (opResult.payouts || []).map(payout => ({
+                account: xdrParseAccountAddress(payout.destination),
+                amount: payout.amount.toString()
             }))
             break
         case 'createClaimableBalanceSuccess':
-            res.balanceId = Buffer.from(opResult.balanceId().value()).toString('hex')
+            res.balanceId = xdrParseHex(opResult.balanceId.value)
             break
         case 'invokeHostFunctionSuccess':
-            res.result = opResult.value()
+            res.result = opResult.value
             break
         case 'setOptionsSuccess':
         case 'manageDataSuccess':
@@ -77,7 +83,7 @@ function parseRawOpResult(rawOpResult) {
         case 'extendFootprintTtlSuccess':
             break //no extra info available
         default:
-            throw new TxMetaEffectParserError(`Unknown op result: ${successOpResultType.name}`)
+            throw new TxMetaEffectParserError(`Unknown op result: ${resultType}`)
     }
     return res
 }
@@ -96,25 +102,25 @@ function parseRawOpResult(rawOpResult) {
  */
 function parseTxResult(result) {
     if (typeof result === 'string') {
-        result = xdr.TransactionResult.fromXDR(result, 'base64')
+        result = xdr.TransactionResult.fromXdr(result, 'base64')
     }
-    const innerResult = result.result()
-    const txResultState = innerResult.switch()
-    const feeCharged = result.feeCharged().toString()
-    const success = txResultState.value >= 0
+    const innerResult = result.result
+    const txResultState = innerResult.type
+    const feeCharged = result.feeCharged.toString()
+    const success = xdr.TransactionResultCode[txResultState].value >= 0
 
     let opResults = []
     if (success) {
-        switch (txResultState.name) {
+        switch (txResultState) {
             case 'txFeeBumpInnerSuccess':
-                //const childTxHash = innerResult.innerResultPair().transactionHash()
-                opResults = (innerResult.value().result().result().results() || []).map(parseRawOpResult)
+                //const childTxHash = innerResult.innerResultPair.transactionHash
+                opResults = (innerResult.value.result.result.results || []).map(parseRawOpResult)
                 break
             case 'txSuccess':
-                opResults = (innerResult.results() || []).map(parseRawOpResult)
+                opResults = (innerResult.results || []).map(parseRawOpResult)
                 break
             default:
-                throw new TxMetaEffectParserError(`Invalid tx result state switch: ${txResultState.name}`)
+                throw new TxMetaEffectParserError(`Invalid tx result state switch: ${txResultState}`)
         }
     }
     return {

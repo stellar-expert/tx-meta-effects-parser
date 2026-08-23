@@ -1,6 +1,6 @@
 const {StrKey, encodeMuxedAccount, encodeMuxedAccountToAddress} = require('@stellar/stellar-sdk')
 const effectTypes = require('../effect-types')
-const {xdrParseScVal, xdrParseAsset} = require('../parser/tx-xdr-parser-utils')
+const {xdrParseScVal, xdrParseAsset, xdrParseBytes} = require('../parser/tx-xdr-parser-utils')
 const {isContractAddress, validateAmount} = require('../parser/normalization')
 const {mapSacContract} = require('./sac-contract-mapper')
 
@@ -39,23 +39,23 @@ class EventsAnalyzer {
             return
         //contract-generated events
         for (const evt of events) {
-            const body = evt.body().value()
-            const rawTopics = body.topics()
+            const body = evt.body.value
+            const rawTopics = body.topics
             const topics = rawTopics.map(xdrParseScVal)
             if (topics[0] === 'DATA' && topics[1] === 'set')
                 continue //skip data entries modifications
-            const rawData = body.data()
-            const contract = StrKey.encodeContract(evt.contractId())
+            const rawData = body.data
+            const contract = StrKey.encodeContract(xdrParseBytes(evt.contractId))
             //process token-related events
-            this.analyzeTokenEvents(evt._attributes.body._value, contract)
+            this.analyzeTokenEvents(body, contract)
             //add event effect
             this.effectsAnalyzer.addEffect({
                 type: effectTypes.contractEvent,
                 contract,
                 topics,
-                rawTopics: rawTopics.map(v => v.toXDR('base64')),
+                rawTopics: rawTopics.map(v => v.toXdr('base64')),
                 data: processEventBodyValue(rawData),
-                rawData: rawData.toXDR('base64')
+                rawData: rawData.toXdr('base64')
             })
         }
     }
@@ -71,15 +71,15 @@ class EventsAnalyzer {
         const opContractId = this.effectsAnalyzer.retrieveOpContractId()
         //diagnostic events
         for (const evt of diagnosticEvents) {
-            if (!processSystemEvents && !(processFailedOpEffects || evt.inSuccessfulContractCall()))
+            if (!processSystemEvents && !(processFailedOpEffects || evt.inSuccessfulContractCall))
                 continue //throw new UnexpectedTxMetaChangeError({type: 'diagnostic_event', action: 'failed'})
             //parse event
-            const event = evt.event()
-            let contractId = event.contractId() || opContractId //contract id may be attached to the event itself, otherwise use contract from operation
+            const event = evt.event
+            let contractId = event.contractId || opContractId //contract id may be attached to the event itself, otherwise use contract from operation
             if (contractId && typeof contractId !== 'string') {
-                contractId = StrKey.encodeContract(contractId)
+                contractId = StrKey.encodeContract(xdrParseBytes(contractId))
             }
-            this.processDiagnosticEvent(event._attributes.body._value, event._attributes.type.value, contractId, processMetrics)
+            this.processDiagnosticEvent(event.body.value, event.type.value, contractId, processMetrics)
         }
     }
 
@@ -91,20 +91,20 @@ class EventsAnalyzer {
      * @private
      */
     processDiagnosticEvent(body, type, contract, processMetrics) {
-        const topics = body.topics()
+        const topics = body.topics
         if (!topics?.length)
             return
         switch (xdrParseScVal(topics[0])) {
             case 'fn_call': // contract call
                 if (type !== EVENT_TYPES.DIAGNOSTIC)
                     return // skip non-diagnostic events
-                const rawArgs = body.data()
+                const rawArgs = body.data
                 const funcCall = {
                     type: effectTypes.contractInvoked,
                     contract: xdrParseScVal(topics[1], true),
                     function: xdrParseScVal(topics[2]),
                     args: processEventBodyValue(rawArgs),
-                    rawArgs: rawArgs.toXDR('base64')
+                    rawArgs: rawArgs.toXdr('base64')
                 }
                 //add the invocation to the call stack
                 if (this.callStack.length) {
@@ -118,15 +118,15 @@ class EventsAnalyzer {
                     return // skip non-diagnostic events
                 //attach execution result to the contract invocation event
                 const lastFuncCall = this.callStack.pop()
-                const result = body.data()
-                if (result.switch().name !== 'scvVoid') {
-                    lastFuncCall.result = result.toXDR('base64')
+                const result = body.data
+                if (result.type !== 'scvVoid') {
+                    lastFuncCall.result = result.toXdr('base64')
                 }
                 break
             case 'error':
                 if (type !== EVENT_TYPES.DIAGNOSTIC)
                     return // skip non-diagnostic events
-                let code = topics[1].value().value()
+                let code = topics[1].value.value
                 if (code.name) {
                     code = code.name
                 }
@@ -134,7 +134,7 @@ class EventsAnalyzer {
                     type: effectTypes.contractError,
                     contract,
                     code,
-                    details: processEventBodyValue(body.data())
+                    details: processEventBodyValue(body.data)
                 })
                 break
             case 'core_metrics':
@@ -142,7 +142,7 @@ class EventsAnalyzer {
                     return // skip non-diagnostic events
                 if (!processMetrics)
                     return
-                this.effectsAnalyzer.addMetric(contract, xdrParseScVal(topics[1]), parseInt(processEventBodyValue(body.data())))
+                this.effectsAnalyzer.addMetric(contract, xdrParseScVal(topics[1]), parseInt(processEventBodyValue(body.data)))
                 break
         }
     }
@@ -153,7 +153,7 @@ class EventsAnalyzer {
      * @private
      */
     analyzeTokenEvents(body, contract) {
-        const topics = body.topics()
+        const topics = body.topics
         if (!topics?.length)
             return
         switch (xdrParseScVal(topics[0])) {
@@ -165,7 +165,7 @@ class EventsAnalyzer {
                 const from = xdrParseScVal(topics[1])
                 const receiver = xdrParseScVal(topics[2])
                 let to = receiver
-                let amount = processEventBodyValue(body.data())
+                let amount = processEventBodyValue(body.data)
                 if (amount?.amount !== undefined) {
                     if (amount.to_muxed_id && !to.startsWith('M')) {
                         to = encodeMuxedAccountToAddress(encodeMuxedAccount(to, amount.to_muxed_id))
@@ -199,8 +199,8 @@ class EventsAnalyzer {
             case 'mint': {
                 if (!matchEventTopicsShape(topics, ['address', 'address', 'str?']) && !matchEventTopicsShape(topics, ['address', 'str?']))
                     return //throw new Error('Non-standard event')
-                let to = xdrParseScVal(topics[topics[2]?._arm === 'address' ? 2 : 1])
-                let amount = processEventBodyValue(body.data())
+                let to = xdrParseScVal(topics[topics[2]?.type === 'scvAddress' ? 2 : 1])
+                let amount = processEventBodyValue(body.data)
                 if (amount?.amount !== undefined) {
                     if (amount.to_muxed_id && !to.startsWith('M')) {
                         to = encodeMuxedAccountToAddress(encodeMuxedAccount(to, amount.to_muxed_id))
@@ -221,7 +221,7 @@ class EventsAnalyzer {
                 if (!matchEventTopicsShape(topics, ['address', 'str?']))
                     return //throw new Error('Non-standard event')
                 const from = xdrParseScVal(topics[1])
-                const amount = processEventBodyValue(body.data())
+                const amount = processEventBodyValue(body.data)
                 if (validateAmount(amount, false) === null)
                     return null
                 const asset = this.getAssetFromEventTopics(topics, contract)
@@ -234,8 +234,8 @@ class EventsAnalyzer {
             case 'clawback': {
                 if (!matchEventTopicsShape(topics, ['address', 'address', 'str?']) && !matchEventTopicsShape(topics, ['address', 'str?']))
                     return //throw new Error('Non-standard event')
-                const from = xdrParseScVal(topics[topics[2]?._arm === 'address' ? 2 : 1])
-                const amount = processEventBodyValue(body.data())
+                const from = xdrParseScVal(topics[topics[2]?.type === 'scvAddress' ? 2 : 1])
+                const amount = processEventBodyValue(body.data)
                 if (validateAmount(amount, false) === null)
                     return null
                 const asset = this.getAssetFromEventTopics(topics, contract)
@@ -249,7 +249,7 @@ class EventsAnalyzer {
                 if (!matchEventTopicsShape(topics, ['address', 'str?']))
                     return //throw new Error('Non-standard event')
                 const currentAdmin = xdrParseScVal(topics[1])
-                const newAdmin = processEventBodyValue(body.data())
+                const newAdmin = processEventBodyValue(body.data)
                 this.getAssetFromEventTopics(topics, contract)
                 this.effectsAnalyzer.setAdmin(contract, newAdmin)
             }
@@ -259,7 +259,7 @@ class EventsAnalyzer {
                     return //throw new Error('Non-standard event')
                 const trustor = xdrParseScVal(topics[1])
                 const asset = this.getAssetFromEventTopics(topics, contract)
-                const isAuthorized = processEventBodyValue(body.data())
+                const isAuthorized = processEventBodyValue(body.data)
                 this.effectsAnalyzer.addEffect({
                     type: effectTypes.trustlineAuthorizationUpdated,
                     trustor,
@@ -291,12 +291,19 @@ class EventsAnalyzer {
      */
     getAssetFromEventTopics(topics, contract) {
         const last = topics[topics.length - 1]
-        if (last._arm === 'str') {
+        if (last.type === 'scvString') {
             const classicAsset = xdrParseAsset(xdrParseScVal(last))
             mapSacContract(this.effectsAnalyzer, contract, classicAsset)
         }
         return this.effectsAnalyzer.resolveAsset(contract)
     }
+}
+
+//expected topic shape aliases mapped to the corresponding ScVal union variant names
+const topicShapeTypes = {
+    address: 'scvAddress',
+    str: 'scvString',
+    sym: 'scvSymbol'
 }
 
 /**
@@ -318,7 +325,7 @@ function matchEventTopicsShape(topics, shape) {
         }
         const topic = topics[i + 1]
         if (topic) {
-            if (topic._arm !== match)
+            if (topic.type !== topicShapeTypes[match])
                 return false
         } else if (!optional)
             return false
@@ -331,8 +338,7 @@ function matchEventTopicsShape(topics, shape) {
  * @param value
  */
 function processEventBodyValue(value) {
-    const innerValue = value.value()
-    if (innerValue === undefined) //scVoid
+    if (value.type === 'scvVoid')
         return null
     return xdrParseScVal(value) //other scValue
 }

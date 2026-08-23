@@ -16,7 +16,7 @@ describe('contractIdFromAsset()', () => {
 
 describe('contractIdFromPreimage()', () => {
     test('fromAddress', () => {
-        expect(contractIdFromPreimage(xdr.ContractIdPreimage.fromXDR('AAAAAAAAAAAAAAAAaL+VY7iSo8qhzZTpU+N6j9cGAqdCUB7a2XxwM3ySxARIphZVO8UGRqhbpwse7WkQtfO9yx4c4s8XoUMCKGiQNg==', 'base64'), futurenetPassphrase))
+        expect(contractIdFromPreimage(xdr.ContractIdPreimage.fromXdr('AAAAAAAAAAAAAAAAaL+VY7iSo8qhzZTpU+N6j9cGAqdCUB7a2XxwM3ySxARIphZVO8UGRqhbpwse7WkQtfO9yx4c4s8XoUMCKGiQNg==', 'base64'), futurenetPassphrase))
             .toEqual('CCMWY6VNP77CH6CZUPOPHKIBNI6TQKRFAIGPTPLUAGD6GWHLHFJASVJB')
     })
 })

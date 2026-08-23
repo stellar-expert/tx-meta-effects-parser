@@ -5,8 +5,11 @@ const {parseLedgerEntryChanges} = require('./parser/ledger-entry-changes-parser'
 const {
     xdrParseAsset,
     xdrParseAccountAddress,
+    xdrParseScAddress,
     xdrParseScVal,
-    xdrParseSacBalanceChange
+    xdrParseSacBalanceChange,
+    xdrParseHex,
+    xdrParseBase64
 } = require('./parser/tx-xdr-parser-utils')
 const {contractIdFromPreimage} = require('./parser/contract-preimage-encoder')
 const {generateContractCodeEntryHash} = require('./parser/ledger-key')
@@ -212,16 +215,15 @@ class EffectsAnalyzer {
     }
 
     addFeeMetric(metaValue) {
-        const {sorobanMeta} = metaValue._attributes
+        const {sorobanMeta} = metaValue
         if (!sorobanMeta)
             return
-        const sorobanExt = sorobanMeta._attributes.ext._value
+        const sorobanExt = sorobanMeta.ext?.value
         if (sorobanExt) {
-            const attrs = sorobanExt._attributes
             const fee = {
-                nonrefundable: parseInt(parseLargeInt(attrs.totalNonRefundableResourceFeeCharged)),
-                refundable: parseInt(parseLargeInt(attrs.totalRefundableResourceFeeCharged)),
-                rent: parseInt(parseLargeInt(attrs.rentFeeCharged))
+                nonrefundable: parseInt(parseLargeInt(sorobanExt.totalNonRefundableResourceFeeCharged)),
+                refundable: parseInt(parseLargeInt(sorobanExt.totalRefundableResourceFeeCharged)),
+                rent: parseInt(parseLargeInt(sorobanExt.rentFeeCharged))
             }
             this.addMetric(this.retrieveOpContractId(), 'fee', fee)
         }
@@ -349,7 +351,7 @@ class EffectsAnalyzer {
     }
 
     liquidityPoolDeposit() {
-        const pool = StrKey.encodeLiquidityPool(Buffer.from(this.operation.liquidityPoolId, 'hex'))
+        const pool = StrKey.encodeLiquidityPool(xdr.decodeBytes(this.operation.liquidityPoolId, 'hex'))
         const change = this.changes.find(ch => ch.type === 'liquidityPool' && ch.action === 'updated' && ch.after.pool === pool)
         if (!change) //tx failed
             return
@@ -367,7 +369,7 @@ class EffectsAnalyzer {
     }
 
     liquidityPoolWithdraw() {
-        const pool = StrKey.encodeLiquidityPool(Buffer.from(this.operation.liquidityPoolId, 'hex'))
+        const pool = StrKey.encodeLiquidityPool(xdr.decodeBytes(this.operation.liquidityPoolId, 'hex'))
         const change = this.changes.find(ch => ch.type === 'liquidityPool' && ch.action === 'updated' && ch.before.pool === pool)
         if (!change) //tx failed
             return
@@ -386,61 +388,61 @@ class EffectsAnalyzer {
 
     invokeHostFunction() {
         const {func} = this.operation
-        const value = func.value()
-        switch (func.arm()) {
-            case 'invokeContract':
+        const value = func.value
+        switch (func.type) {
+            case 'hostFunctionTypeInvokeContract':
                 if (!this.diagnosticEvents) {
                     //add top-level contract invocation effect only if diagnostic events are unavailable
-                    const rawArgs = value.args()
+                    const rawArgs = value.args
                     const effect = {
                         type: effectTypes.contractInvoked,
-                        contract: xdrParseScVal(value.contractAddress()),
-                        function: value.functionName().toString(),
+                        contract: xdrParseScAddress(value.contractAddress),
+                        function: value.functionName.toString(),
                         args: rawArgs.map(xdrParseScVal),
-                        rawArgs: nativeToScVal(rawArgs).toXDR('base64')
+                        rawArgs: nativeToScVal(rawArgs).toXdr('base64')
                     }
                     this.addEffect(effect)
                 }
                 break
-            case 'wasm': {
+            case 'hostFunctionTypeUploadContractWasm': {
                 const codeHash = hash(value)
                 this.addEffect({
                     type: effectTypes.contractCodeUploaded,
-                    wasm: value.toString('base64'),
-                    wasmHash: codeHash.toString('hex'),
+                    wasm: xdrParseBase64(value),
+                    wasmHash: xdrParseHex(codeHash),
                     keyHash: generateContractCodeEntryHash(codeHash)
                 })
                 break
             }
-            case 'createContract':
-            case 'createContractV2': //handled in entry changes
-                const executable = value.executable()
-                const executableType = executable.switch().name
+            case 'hostFunctionTypeCreateContract':
+            case 'hostFunctionTypeCreateContractV2': //handled in entry changes
+                const executable = value.executable
+                const executableType = executable.type
                 if (executableType !== 'contractExecutableWasm') {
-                    const preimage = value.contractIdPreimage()
-                    const preimageParams = preimage.value()
+                    const preimage = value.contractIdPreimage
+                    const preimageParams = preimage.value
                     const effect = {
                         type: effectTypes.contractCreated,
                         contract: contractIdFromPreimage(preimage, this.network)
                     }
-                    switch (preimage.switch().name) {
+                    switch (preimage.type) {
                         case 'contractIdPreimageFromAddress':
                             effect.kind = 'fromAddress'
-                            effect.issuer = xdrParseAccountAddress(preimageParams.address().value())
-                            effect.salt = preimageParams.salt().toString('base64')
+                            effect.issuer = xdrParseAccountAddress(preimageParams.address.value)
+                            effect.salt = xdrParseBase64(preimageParams.salt)
                             break
                         case 'contractIdPreimageFromAsset':
                             effect.kind = 'fromAsset'
                             effect.asset = xdrParseAsset(preimageParams)
                             break
                         default:
-                            throw new TxMetaEffectParserError('Unknown preimage type: ' + preimage.switch().name)
+                            throw new TxMetaEffectParserError('Unknown preimage type: ' + preimage.type)
                     }
                     this.addEffect(effect)
                 }
                 break
             default:
-                throw new TxMetaEffectParserError('Unknown host function call type: ' + func.arm())
+                throw new TxMetaEffectParserError('Unknown host function call type: ' + func.type)
         }
     }
 
@@ -1067,22 +1069,13 @@ class EffectsAnalyzer {
      * @private
      */
     retrieveOpContractId() {
-        const funcValue = this.operation.func._value._attributes
+        const funcValue = this.operation.func?.value
         if (funcValue) {
-            if (funcValue.contractAddress) {
-                let raw = funcValue.contractAddress._value
-                switch (raw._arm) {
-                    case 'ed25519':
-                        return StrKey.encodeContract(raw._value)
-                    case undefined:
-                        return StrKey.encodeContract(raw)
-                    default:
-                        throw new Error(`Unsupported contract address type: ${raw._arm}`)
-                }
-            }
-            const preimage = funcValue.contractIdPreimage
-            if (preimage)
-                return contractIdFromPreimage(preimage, this.network)
+            const {contractAddress, contractIdPreimage} = funcValue
+            if (contractAddress)
+                return xdrParseScAddress(contractAddress)
+            if (contractIdPreimage)
+                return contractIdFromPreimage(contractIdPreimage, this.network)
         }
         return null
     }
@@ -1109,11 +1102,11 @@ class EffectsAnalyzer {
  * @returns {{}} - Fee charged effect
  */
 function processFeeChargedEffect(tx, source, chargedAmount, feeBump = false) {
-    if (tx._switch) { //raw XDR
-        const txXdr = tx.value().tx()
+    if (tx instanceof xdr.TransactionEnvelope) { //raw XDR
+        const txXdr = tx.value.tx
         tx = {
-            source: xdrParseAccountAddress((txXdr.feeSource ? txXdr.feeSource : txXdr.sourceAccount).call(txXdr)),
-            fee: txXdr.fee().toString()
+            source: xdrParseAccountAddress(txXdr.feeSource ?? txXdr.sourceAccount),
+            fee: txXdr.fee.toString()
         }
     }
     const res = {

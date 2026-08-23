@@ -12,9 +12,9 @@ const testCases = [
         meta: Buffer.from(meta, 'base64')
     }],
     ['parsed XDR', {
-        tx: xdr.TransactionEnvelope.fromXDR(tx, 'base64'),
-        result: xdr.TransactionResult.fromXDR(result, 'base64'),
-        meta: xdr.TransactionMeta.fromXDR(meta, 'base64')
+        tx: xdr.TransactionEnvelope.fromXdr(tx, 'base64'),
+        result: xdr.TransactionResult.fromXdr(result, 'base64'),
+        meta: xdr.TransactionMeta.fromXdr(meta, 'base64')
     }]
 ]
 

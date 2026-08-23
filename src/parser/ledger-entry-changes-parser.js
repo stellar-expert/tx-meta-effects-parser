@@ -5,7 +5,10 @@ const {
     xdrParseAccountAddress,
     xdrParseClaimant,
     xdrParsePrice,
-    xdrParseSignerKey
+    xdrParseSignerKey,
+    xdrParseBytes,
+    xdrParseHex,
+    xdrParseBase64
 } = require('./tx-xdr-parser-utils')
 const {generateContractStateEntryHash, generateContractCodeEntryHash} = require('./ledger-key')
 
@@ -18,6 +21,19 @@ const {generateContractStateEntryHash, generateContractCodeEntryHash} = require(
  */
 
 /**
+ * Retrieve the modification action encoded in the LedgerEntryChange union discriminant
+ * @param {LedgerEntryChange} entry
+ * @return {'created'|'updated'|'removed'|'state'|'restored'}
+ */
+function parseChangeAction(entry) {
+    const {type} = entry //"ledgerEntryCreated", "ledgerEntryState", etc.
+    if (!type.startsWith('ledgerEntry'))
+        throw new TxMetaEffectParserError(`Unknown change entry type: ${type}`)
+    const action = type.substring('ledgerEntry'.length)
+    return action.charAt(0).toLowerCase() + action.substring(1)
+}
+
+/**
  * @param {LedgerEntryChange[]} ledgerEntryChanges
  * @param {Set<string>} [filter]
  * @return {ParsedLedgerEntryMeta[]}
@@ -28,10 +44,11 @@ function parseLedgerEntryChanges(ledgerEntryChanges, filter = undefined) {
     let containsTtl = false
     for (let i = 0; i < ledgerEntryChanges.length; i++) {
         const entry = ledgerEntryChanges[i]
-        const type = entry._value._arm || entry._value._attributes.data._arm
+        const action = parseChangeAction(entry)
+        //"removed" changes carry a LedgerKey, all others carry a LedgerEntry
+        const type = (action === 'removed' ? entry.value : entry.value.data).type
         if (filter && !filter.has(type)) //skip filtered ledger entry types
             continue
-        const action = entry._arm
         const stateData = parseEntry(entry, action)
         if (stateData === undefined)
             continue
@@ -80,16 +97,16 @@ function parseLedgerEntryChanges(ledgerEntryChanges, filter = undefined) {
 function parseEntry(entry, actionType) {
     if (actionType === 'removed')
         return null
-    const value = entry.value()
-    const parsed = parseEntryData(value.data(), actionType)
+    const value = entry.value
+    const parsed = parseEntryData(value.data, actionType)
     if (parsed === null)
         return null
-    //parsed.modified = entry.lastModifiedLedgerSeq()
+    //parsed.modified = entry.lastModifiedLedgerSeq
     return parseLedgerEntryExt(parsed, value)
 }
 
 function parseEntryData(data, actionType) {
-    const updatedEntryType = data.arm()
+    const updatedEntryType = data.type
     switch (updatedEntryType) {
         case 'account':
             return parseAccountEntry(data)
@@ -117,9 +134,9 @@ function parseEntryData(data, actionType) {
 }
 
 function parseLedgerEntryExt(data, entry) {
-    const v1 = entry.ext()?.v1()
+    const v1 = entry.ext?.v1
     if (v1) {
-        const sponsor = v1.sponsoringId()
+        const sponsor = v1.sponsoringId
         if (sponsor) {
             data.sponsor = xdrParseAccountAddress(sponsor)
         }
@@ -128,28 +145,28 @@ function parseLedgerEntryExt(data, entry) {
 }
 
 function parseAccountEntry(value) {
-    const accountEntryXdr = value.value()
+    const accountEntryXdr = value.value
     const data = {
         entry: 'account',
-        address: xdrParseAccountAddress(accountEntryXdr.accountId()),
-        sequence: accountEntryXdr.seqNum().toString(),
-        balance: accountEntryXdr.balance().toString(),
-        homeDomain: accountEntryXdr.homeDomain().toString('UTF8'),
-        inflationDest: xdrParseAccountAddress(accountEntryXdr.inflationDest()),
-        flags: accountEntryXdr.flags(),
-        signers: accountEntryXdr.signers().map(signer => ({
-            key: xdrParseSignerKey(signer.key()),
-            weight: signer.weight()
+        address: xdrParseAccountAddress(accountEntryXdr.accountId),
+        sequence: accountEntryXdr.seqNum.toString(),
+        balance: accountEntryXdr.balance.toString(),
+        homeDomain: accountEntryXdr.homeDomain.toString(),
+        inflationDest: xdrParseAccountAddress(accountEntryXdr.inflationDest),
+        flags: accountEntryXdr.flags,
+        signers: accountEntryXdr.signers.map(signer => ({
+            key: xdrParseSignerKey(signer.key),
+            weight: signer.weight
         }))
     }
-    const thresholds = accountEntryXdr.thresholds()
+    const thresholds = xdrParseBytes(accountEntryXdr.thresholds)
     data.thresholds = thresholds.slice(1).join()
     data.masterWeight = thresholds[0]
-    const extV1 = accountEntryXdr.ext()?.v1()
+    const extV1 = accountEntryXdr.ext?.v1
     if (extV1) {
-        const extV2 = extV1.ext()?.v2()
+        const extV2 = extV1.ext?.v2
         if (extV2) {
-            const sponsoringIDs = extV2.signerSponsoringIDs()
+            const sponsoringIDs = extV2.signerSponsoringIDs
             if (sponsoringIDs.length > 0) {
                 for (let i = 0; i < data.signers.length; i++) {
                     const sponsor = sponsoringIDs[i]
@@ -165,140 +182,140 @@ function parseAccountEntry(value) {
 }
 
 function parseTrustlineEntry(value) {
-    const trustlineEntryXdr = value.value()
-    const trustlineAsset = trustlineEntryXdr.asset()
-    const trustlineType = trustlineAsset.switch()
+    const trustlineEntryXdr = value.value
+    const trustlineAsset = trustlineEntryXdr.asset
+    const trustlineType = trustlineAsset.type
     let asset
-    switch (trustlineType.value) {
-        case 0:
-        case 1:
-        case 2:
+    switch (trustlineType) {
+        case 'assetTypeNative':
+        case 'assetTypeCreditAlphanum4':
+        case 'assetTypeCreditAlphanum12':
             asset = xdrParseAsset(trustlineAsset)
             break
-        case 3:
-            asset = StrKey.encodeLiquidityPool(trustlineEntryXdr.asset().liquidityPoolId())
+        case 'assetTypePoolShare':
+            asset = StrKey.encodeLiquidityPool(xdrParseBytes(trustlineAsset.liquidityPoolId))
             break
         default:
             throw new TxMetaEffectParserError(`Unsupported trustline type ` + trustlineType)
     }
     const data = {
         entry: 'trustline',
-        account: xdrParseAccountAddress(trustlineEntryXdr.accountId()),
+        account: xdrParseAccountAddress(trustlineEntryXdr.accountId),
         asset,
-        balance: trustlineEntryXdr.balance().toString(),
-        limit: trustlineEntryXdr.limit().toString(),
-        flags: trustlineEntryXdr.flags()
+        balance: trustlineEntryXdr.balance.toString(),
+        limit: trustlineEntryXdr.limit.toString(),
+        flags: trustlineEntryXdr.flags
     }
 
     /*
     //ignored
-    const extV1 = trustlineEntryXdr.ext()?.v1()
+    const extV1 = trustlineEntryXdr.ext?.v1
     if (extV1) {
-        const liabilities = extV1.liabilities()
-        data.buying_liabilities = liabilities.buying().toString()
-        data.selling_liabilities = liabilities.selling().toString()
+        const liabilities = extV1.liabilities
+        data.buying_liabilities = liabilities.buying.toString()
+        data.selling_liabilities = liabilities.selling.toString()
     }*/
 
     return data
 }
 
 function parseDataEntry(value) {
-    const dataEntryXdr = value.value()
+    const dataEntryXdr = value.value
     return {
         entry: 'data',
-        account: xdrParseAccountAddress(dataEntryXdr.accountId()),
-        name: dataEntryXdr.dataName().toString(),
-        value: dataEntryXdr.dataValue().toString('base64')
+        account: xdrParseAccountAddress(dataEntryXdr.accountId),
+        name: dataEntryXdr.dataName.toString(),
+        value: xdrParseBase64(dataEntryXdr.dataValue)
     }
 }
 
 function parseLiquidityPoolEntry(value) {
-    const liquidityPoolEntryXdr = value.value()
-    const body = liquidityPoolEntryXdr.body().value()
-    const params = body.params()
+    const liquidityPoolEntryXdr = value.value
+    const body = liquidityPoolEntryXdr.body.value
+    const params = body.params
     return {
         entry: 'liquidityPool',
-        pool: StrKey.encodeLiquidityPool(liquidityPoolEntryXdr.liquidityPoolId()),
-        asset: [xdrParseAsset(params.assetA()), xdrParseAsset(params.assetB())],
-        fee: params.fee(),
-        amount: [body.reserveA().toString(), body.reserveB().toString()],
-        shares: body.totalPoolShares().toString(),
-        accounts: body.poolSharesTrustLineCount().low
+        pool: StrKey.encodeLiquidityPool(xdrParseBytes(liquidityPoolEntryXdr.liquidityPoolId)),
+        asset: [xdrParseAsset(params.assetA), xdrParseAsset(params.assetB)],
+        fee: params.fee,
+        amount: [body.reserveA.toString(), body.reserveB.toString()],
+        shares: body.totalPoolShares.toString(),
+        accounts: Number(body.poolSharesTrustLineCount)
     }
 }
 
 function parseOfferEntry(value) {
-    const offerEntryXdr = value.value()
-    const rprice = offerEntryXdr.price()
+    const offerEntryXdr = value.value
+    const rprice = offerEntryXdr.price
     const data = {
         entry: 'offer',
-        id: offerEntryXdr.offerId().toString(),
-        account: xdrParseAccountAddress(offerEntryXdr.sellerId()),
-        asset: [xdrParseAsset(offerEntryXdr.selling()), xdrParseAsset(offerEntryXdr.buying())],
-        amount: offerEntryXdr.amount().toString(),
+        id: offerEntryXdr.offerId.toString(),
+        account: xdrParseAccountAddress(offerEntryXdr.sellerId),
+        asset: [xdrParseAsset(offerEntryXdr.selling), xdrParseAsset(offerEntryXdr.buying)],
+        amount: offerEntryXdr.amount.toString(),
         price: xdrParsePrice(rprice),
-        rprice: rprice._attributes,
-        flags: offerEntryXdr.flags()
+        rprice: {n: rprice.n, d: rprice.d},
+        flags: offerEntryXdr.flags
     }
     return data
 }
 
 function parseClaimableBalanceEntry(value) {
-    const claimableBalanceXdr = value.value()
+    const claimableBalanceXdr = value.value
     const data = {
-        balanceId: StrKey.encodeClaimableBalance(claimableBalanceXdr.balanceId().value()),
+        balanceId: StrKey.encodeClaimableBalance(xdrParseBytes(claimableBalanceXdr.balanceId.value)),
         entry: 'claimableBalance',
-        asset: xdrParseAsset(claimableBalanceXdr.asset()),
-        amount: claimableBalanceXdr.amount().toString(),
-        claimants: claimableBalanceXdr.claimants().map(claimant => xdrParseClaimant(claimant))
+        asset: xdrParseAsset(claimableBalanceXdr.asset),
+        amount: claimableBalanceXdr.amount.toString(),
+        claimants: claimableBalanceXdr.claimants.map(claimant => xdrParseClaimant(claimant))
     }
-    const extV1 = claimableBalanceXdr.ext()?.v1()
+    const extV1 = claimableBalanceXdr.ext?.v1
     if (extV1) {
-        data.flags = extV1.flags()
+        data.flags = extV1.flags
     }
     return data
 }
 
 function parseContractData(value) {
-    const data = value.value()
-    const owner = parseStateOwnerDataAddress(data.contract())
+    const data = value.value
+    const owner = parseStateOwnerDataAddress(data.contract)
 
-    const valueAttr = data.val()
+    const valueAttr = data.val
     const entry = {
         entry: 'contractData',
         owner,
-        key: data.key().toXDR('base64'),
-        value: valueAttr.toXDR('base64'),
-        durability: data.durability().name,
+        key: data.key.toXdr('base64'),
+        value: valueAttr.toXdr('base64'),
+        durability: data.durability.name,
         keyHash: generateContractStateEntryHash(data)
     }
-    if (data.key().switch()?.name === 'scvLedgerKeyContractInstance' && entry.durability === 'persistent') {
+    if (data.key.type === 'scvLedgerKeyContractInstance' && entry.durability === 'persistent') {
         entry.durability = 'instance'
-        const instance = valueAttr.instance()._attributes
-        const type = instance.executable._switch.name
+        const instance = valueAttr.instance
+        const type = instance.executable.type
         switch (type) {
             case 'contractExecutableStellarAsset':
                 if (instance.storage?.length) { //if not -- the asset has been created "fromAddress" - no metadata in this case
                     entry.kind = 'fromAsset'
-                    const metaArgs = instance.storage[0]._attributes
-                    if (metaArgs.key._value.toString() !== 'METADATA')
+                    const metaArgs = instance.storage[0]
+                    if (metaArgs.key.value.toString() !== 'METADATA')
                         throw new TxMetaEffectParserError('Unexpected asset initialization metadata')
-                    entry.asset = xdrParseAsset(metaArgs.val._value[1]._attributes.val._value.toString())
+                    entry.asset = xdrParseAsset(metaArgs.val.map[1].val.value.toString())
                 } else {
                     entry.kind = 'fromAddress'
                 }
                 break
             case 'contractExecutableWasm':
                 entry.kind = 'wasm'
-                entry.wasmHash = instance.executable.wasmHash().toString('hex')
+                entry.wasmHash = xdrParseHex(instance.executable.wasmHash)
                 break
             default:
                 throw new TxMetaEffectParserError('Unsupported executable type: ' + type)
         }
         if (instance.storage?.length) {
             entry.storage = instance.storage.map(entry => ({
-                key: entry.key().toXDR('base64'),
-                val: entry.val().toXDR('base64')
+                key: entry.key.toXdr('base64'),
+                val: entry.val.toXdr('base64')
             }))
         }
     }
@@ -306,30 +323,30 @@ function parseContractData(value) {
 }
 
 function parseTtl(data) {
-    const attrs = data._value._attributes
+    const ttlEntry = data.value
     return {
         entry: 'ttl',
-        keyHash: attrs.keyHash.toString('hex'),
-        ttl: attrs.liveUntilLedgerSeq
+        keyHash: xdrParseHex(ttlEntry.keyHash),
+        ttl: ttlEntry.liveUntilLedgerSeq
     }
 }
 
 function parseStateOwnerDataAddress(contract) {
-    if (contract.switch().name === 'scAddressTypeContract')
-        return StrKey.encodeContract(contract.contractId())
-    return xdrParseAccountAddress(contract.accountId())
+    if (contract.type === 'scAddressTypeContract')
+        return StrKey.encodeContract(xdrParseBytes(contract.contractId))
+    return xdrParseAccountAddress(contract.accountId)
 }
 
 function parseContractCode(value, actionType) {
-    const contract = value.value()
-    const hash = contract.hash()
+    const contract = value.value
+    const hash = contract.hash
     const res = {
         entry: 'contractCode',
-        hash: hash.toString('hex'),
+        hash: xdrParseHex(hash),
         keyHash: generateContractCodeEntryHash(hash)
     }
     if (actionType === 'created') {
-        res.wasm = contract.code().toString('base64')
+        res.wasm = xdrParseBase64(contract.code)
     }
     return res
 }
