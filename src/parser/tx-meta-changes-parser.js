@@ -7,21 +7,21 @@ const {TxMetaEffectParserError} = require('../errors')
  * @return {ParsedLedgerEntryMeta[]}
  */
 function parseTxMetaChanges(meta) {
-    const transactionMeta = meta.value()
+    const transactionMeta = meta.value
     const txMetaChanges = []
 
-    switch (meta.arm()) {
+    switch (meta.type) {
         case 'v1':
-            retrieveTopLevelChanges(transactionMeta.txChanges(), txMetaChanges)
+            retrieveTopLevelChanges(transactionMeta.txChanges, txMetaChanges)
             break
         case 'v2':
         case 'v3':
         case 'v4':
-            retrieveTopLevelChanges(transactionMeta.txChangesBefore(), txMetaChanges)
-            retrieveTopLevelChanges(transactionMeta.txChangesAfter(), txMetaChanges)
+            retrieveTopLevelChanges(transactionMeta.txChangesBefore, txMetaChanges)
+            retrieveTopLevelChanges(transactionMeta.txChangesAfter, txMetaChanges)
             break
         default:
-            throw new TxMetaEffectParserError(`Transaction meta version ${meta.arm()} is not supported.`)
+            throw new TxMetaEffectParserError(`Transaction meta version ${meta.type} is not supported.`)
     }
 
     return txMetaChanges

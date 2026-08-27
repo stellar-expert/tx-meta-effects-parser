@@ -13,9 +13,9 @@ const effectTypes = require('./effect-types')
 /**
  * Retrieve effects from transaction execution result metadata
  * @param {String} network - Network passphrase
- * @param {String|Buffer|xdr.TransactionEnvelope} tx - Base64-encoded tx envelope xdr
- * @param {String|Buffer|xdr.TransactionResult} [result] - Base64-encoded tx envelope result
- * @param {String|Buffer|xdr.TransactionMeta} [meta] - Base64-encoded tx envelope meta
+ * @param {String|Uint8Array|xdr.TransactionEnvelope} tx - Base64-encoded tx envelope xdr
+ * @param {String|Uint8Array|xdr.TransactionResult} [result] - Base64-encoded tx envelope result
+ * @param {String|Uint8Array|xdr.TransactionMeta} [meta] - Base64-encoded tx envelope meta
  * @param {Boolean} [mapSac] - Whether to create a map SAC->Asset
  * @param {Boolean} [processSystemEvents] - Emit effects for contract errors and resource stats
  * @param {Boolean} [processFailedOpEffects] - Whether to generate operation effects for failed/rejected transactions
@@ -55,13 +55,13 @@ function parseTxOperationsMeta({
         } catch (e) {
             try {
                 const pair = ensureXdrInputType(result, xdr.TransactionResultPair)
-                result = pair.result()
+                result = pair.result
             } catch {
                 throw new TxMetaEffectParserError('Invalid transaction result XDR. ' + e.message)
             }
         }
     }
-    tx = TransactionBuilder.fromXDR(tx, network)
+    tx = TransactionBuilder.fromXdr(tx, network)
 
     let parsedTx = tx
     let parsedResult = result
@@ -80,8 +80,8 @@ function parseTxOperationsMeta({
         if (parsedTx.innerTransaction)
             throw new TxMetaEffectParserError('Failed to process FeeBumpTransaction wrapped with another FeeBumpTransaction')
         if (!isEphemeral) {
-            parsedResult = result.result().innerResultPair().result()
-            feeBumpSuccess = parsedResult.result().switch().value >= 0
+            parsedResult = result.result.innerResultPair.result
+            feeBumpSuccess = xdr.TransactionResultCode[parsedResult.result.type].value >= 0
         }
     }
 
@@ -103,7 +103,7 @@ function parseTxOperationsMeta({
         return res //do not parse meta for unsubmitted/rejected transactions
 
     //process fee charge
-    const feeEffect = processFeeChargedEffect(tx, tx.feeSource || parsedTx.source, result.feeCharged().toString(), isFeeBump)
+    const feeEffect = processFeeChargedEffect(tx, tx.feeSource || parsedTx.source, result.feeCharged.toString(), isFeeBump)
     res.effects.push(feeEffect)
 
     //check execution result
@@ -143,9 +143,9 @@ function parseTxOperationsMeta({
             }
         }
     }
-    const metaValue = meta.value()
-    const opMeta = metaValue.operations()
-    const isV4Meta = meta.arm() === 'v4'
+    const metaValue = meta.value
+    const opMeta = metaValue.operations
+    const isV4Meta = meta.type === 'v4'
 
     //analyze operation effects for each operation
     for (let i = 0; i < parsedTx.operations.length; i++) {
@@ -154,7 +154,7 @@ function parseTxOperationsMeta({
             const params = {
                 network,
                 operation,
-                meta: opMeta[i]?.changes() || [],
+                meta: opMeta[i]?.changes || [],
                 result: opResults[i],
                 processFailedOpEffects,
                 processMetrics
@@ -162,21 +162,21 @@ function parseTxOperationsMeta({
             const isSorobanInvocation = operation.type === 'invokeHostFunction'
             //only for Soroban contract invocation
             if (isSorobanInvocation) {
-                const {sorobanMeta} = metaValue._attributes
+                const {sorobanMeta} = metaValue
                 if (sorobanMeta) {
                     if (sorobanMeta.events) {
-                        params.events = sorobanMeta.events()
+                        params.events = sorobanMeta.events
                     }
                     if (sorobanMeta.diagnosticEvents) {
-                        params.diagnosticEvents = sorobanMeta.diagnosticEvents()
+                        params.diagnosticEvents = sorobanMeta.diagnosticEvents
                     }
                     params.processSystemEvents = processSystemEvents
                 }
                 if (isV4Meta) {
-                    params.diagnosticEvents = metaValue.diagnosticEvents()
-                    const invocationOp = metaValue.operations()[0]
+                    params.diagnosticEvents = metaValue.diagnosticEvents
+                    const invocationOp = metaValue.operations[0]
                     if (invocationOp) {
-                        params.events = invocationOp.events()
+                        params.events = invocationOp.events
                     }
                 }
                 params.mapSac = mapSac
@@ -196,18 +196,18 @@ function parseTxOperationsMeta({
 
 /**
  * Convert base64/raw XDR representation to XDR type
- * @param {String|Buffer|Uint8Array|xdrType} value
+ * @param {String|Uint8Array|xdrType} value
  * @param xdrType
  * @return {xdrType|*}
  * @internal
  */
 function ensureXdrInputType(value, xdrType) {
-    if (value?.toXDR) // duck-typing check XDR types
+    if (value?.toXdr) // duck-typing check XDR types
         return value
 
     if (!value || (typeof value !== 'string' && !(value instanceof Uint8Array)))
         throw new TypeError(`Invalid input format. Expected xdr.${xdrType.name} (raw, buffer, or bas64-encoded).`)
-    return xdrType.fromXDR(value, typeof value === 'string' ? 'base64' : 'raw')
+    return typeof value === 'string' ? xdrType.fromXdr(value, 'base64') : xdrType.fromXdr(value)
 }
 
 /**

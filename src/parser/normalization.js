@@ -63,11 +63,11 @@ function validateAmount(amount, throwIfInvalid = true) {
 }
 
 /**
- * @param largeInt
+ * @param {BigInt|{toString: Function}} largeInt
  * @return {String}
  */
 function parseLargeInt(largeInt) {
-    return largeInt._value.toString()
+    return largeInt.toString()
 }
 
 module.exports = {normalizeAddress, isContractAddress, toStellarAsset, validateAmount, parseLargeInt}

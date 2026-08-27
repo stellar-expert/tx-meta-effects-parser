@@ -10,6 +10,46 @@ const {TxMetaEffectParserError} = require('../errors')
 const effectTypes = require('../effect-types')
 
 /**
+ * Unwrap raw bytes from an XDR value wrapper (Hash, ContractId, PoolId, AssetCode4, etc.)
+ * @param {Uint8Array|{value: Uint8Array}} value
+ * @return {Uint8Array}
+ */
+function xdrParseBytes(value) {
+    if (value instanceof Uint8Array)
+        return value
+    if (value?.value instanceof Uint8Array)
+        return value.value
+    throw new TypeError(`Failed to retrieve raw bytes from the value: ${value}`)
+}
+
+/**
+ * Encode raw XDR bytes as a hex string
+ * @param {Uint8Array|{value: Uint8Array}} value
+ * @return {String}
+ */
+function xdrParseHex(value) {
+    return xdr.encodeBytes(xdrParseBytes(value), 'hex')
+}
+
+/**
+ * Encode raw XDR bytes as a base64 string
+ * @param {Uint8Array|{value: Uint8Array}} value
+ * @return {String}
+ */
+function xdrParseBase64(value) {
+    return xdr.encodeBytes(xdrParseBytes(value), 'base64')
+}
+
+/**
+ * Decode XDR opaque value bytes as an UTF8 string
+ * @param {Uint8Array|{value: Uint8Array}} value
+ * @return {String}
+ */
+function xdrParseText(value) {
+    return new TextDecoder().decode(xdrParseBytes(value))
+}
+
+/**
  * Parse account address from XDR representation
  * @param accountId
  * @return {String}
@@ -17,22 +57,20 @@ const effectTypes = require('../effect-types')
 function xdrParseAccountAddress(accountId) {
     if (!accountId)
         return undefined
-    if (accountId.arm) {
-        switch (accountId.arm()) {
-            case 'ed25519':
-                return StrKey.encodeEd25519PublicKey(accountId.ed25519())
-            case 'med25519':
-                return {
-                    primary: StrKey.encodeEd25519PublicKey(accountId.value().ed25519()),
-                    muxedId: accountId.value().id().toString()
-                }
-            default:
-                throw new TxMetaEffectParserError(`Unsupported account type: ${accountId.arm()}`)
-        }
+    switch (accountId.type) {
+        case 'publicKeyTypeEd25519':
+        case 'keyTypeEd25519':
+            return StrKey.encodeEd25519PublicKey(xdrParseBytes(accountId.ed25519))
+        case 'keyTypeMuxedEd25519':
+            return {
+                primary: StrKey.encodeEd25519PublicKey(xdrParseBytes(accountId.value.ed25519)),
+                muxedId: accountId.value.id.toString()
+            }
     }
-    if (accountId instanceof Uint8Array) {
-        return StrKey.encodeEd25519PublicKey(accountId)
-    }
+    if (typeof accountId.type === 'string')
+        throw new TxMetaEffectParserError(`Unsupported account type: ${accountId.type}`)
+    if (accountId instanceof Uint8Array || accountId.value instanceof Uint8Array)
+        return StrKey.encodeEd25519PublicKey(xdrParseBytes(accountId))
     throw new TypeError(`Failed to identify and parse account address: ${accountId}`)
 }
 
@@ -42,27 +80,47 @@ function xdrParseAccountAddress(accountId) {
  * @return {string}
  */
 function xdrParseMuxedScAddress(value) {
-    const {ed25519, id} = value._attributes
-    const muxed = encodeMuxedAccount(StrKey.encodeEd25519PublicKey(ed25519), id._value.toString())
+    const muxed = encodeMuxedAccount(StrKey.encodeEd25519PublicKey(xdrParseBytes(value.ed25519)), value.id.toString())
     return encodeMuxedAccountToAddress(muxed)
 }
 
 /**
  * Parse Contract ID from raw bytes
- * @param {Buffer} rawContractId
+ * @param {Uint8Array|{value: Uint8Array}} rawContractId
  * @return {String}
  */
 function xdrParseContractAddress(rawContractId) {
-    return StrKey.encodeContract(rawContractId)
+    return StrKey.encodeContract(xdrParseBytes(rawContractId))
+}
+
+/**
+ * Parse ScAddress XDR representation
+ * @param {xdr.ScAddress} address
+ * @return {String}
+ */
+function xdrParseScAddress(address) {
+    switch (address.type) {
+        case 'scAddressTypeAccount':
+            return xdrParseAccountAddress(address.accountId)
+        case 'scAddressTypeContract':
+            return xdrParseContractAddress(address.contractId)
+        case 'scAddressTypeMuxedAccount':
+            return xdrParseMuxedScAddress(address.muxedAccount)
+        case 'scAddressTypeLiquidityPool':
+            return StrKey.encodeLiquidityPool(xdrParseBytes(address.liquidityPoolId))
+        case 'scAddressTypeClaimableBalance':
+            return StrKey.encodeClaimableBalance(xdrParseBytes(address.claimableBalanceId.value))
+    }
+    throw new TxMetaEffectParserError('Not supported XDR primitive type: ' + address.type)
 }
 
 /**
  * Parse XDR price representation
- * @param {{n: Function, d: Function}} price
+ * @param {{n: Number, d: Number}} price
  * @return {Number}
  */
 function xdrParsePrice(price) {
-    return price.n() / price.d()
+    return price.n / price.d
 }
 
 /**
@@ -80,20 +138,16 @@ function retrieveBaseMuxedAddress(address) {
  * @return {String}
  */
 function xdrParseSignerKey(signer) {
-    const type = signer.arm()
+    const type = signer.type
     switch (type) {
-        case 'ed25519':
-            return StrKey.encodeEd25519PublicKey(signer.ed25519())
-        case 'preAuthTx':
-            return StrKey.encodePreAuthTx(signer.preAuthTx())
-        case 'hashX':
-            return StrKey.encodeSha256Hash(signer.hashX())
-        case 'ed25519SignedPayload':
-            let key = signer.ed25519SignedPayload()
-            if (key._attributes){
-                key = key._attributes.ed25519
-            }
-            return StrKey.encodeSignedPayload(key) //TODO: check
+        case 'signerKeyTypeEd25519':
+            return StrKey.encodeEd25519PublicKey(xdrParseBytes(signer.ed25519))
+        case 'signerKeyTypePreAuthTx':
+            return StrKey.encodePreAuthTx(xdrParseBytes(signer.preAuthTx))
+        case 'signerKeyTypeHashX':
+            return StrKey.encodeSha256Hash(xdrParseBytes(signer.hashX))
+        case 'signerKeyTypeEd25519SignedPayload':
+            return StrKey.encodeSignedPayload(xdrParseBytes(signer.ed25519SignedPayload.ed25519)) //TODO: check
     }
     throw new TxMetaEffectParserError(`Unsupported signer type: "${type}"`)
 }
@@ -105,7 +159,7 @@ function xdrParseSignerKey(signer) {
  * @property {Array<String>} asset
  * @property {Array<String>} amount
  * @property {String} offerId?
- * @property {Buffer} poolId?
+ * @property {Uint8Array} poolId?
  */
 
 /**
@@ -115,13 +169,13 @@ function xdrParseSignerKey(signer) {
  */
 function xdrParseTradeAtom(offerXdr) {
     return {
-        offerId: offerXdr.offerId().toString(),
-        account: xdrParseAccountAddress(offerXdr.sellerId()),
-        asset: [xdrParseAsset(offerXdr.selling()).toString(), xdrParseAsset(offerXdr.buying()).toString()],
+        offerId: offerXdr.offerId.toString(),
+        account: xdrParseAccountAddress(offerXdr.sellerId),
+        asset: [xdrParseAsset(offerXdr.selling).toString(), xdrParseAsset(offerXdr.buying).toString()],
         //offer amount is always stored in terms of a selling asset, even for buy offers
-        amount: (offerXdr.amount() || offerXdr.buyAmount()).toString(),
-        //flags: offerXdr.flags()
-        price: xdrParsePrice(offerXdr.price())
+        amount: (offerXdr.amount ?? offerXdr.buyAmount).toString(),
+        //flags: offerXdr.flags
+        price: xdrParsePrice(offerXdr.price)
     }
 }
 
@@ -131,27 +185,27 @@ function xdrParseTradeAtom(offerXdr) {
  * @return {ParsedOffer}
  */
 function xdrParseClaimedOffer(claimedAtom) {
-    const atomType = claimedAtom.arm()
+    const atomType = claimedAtom.type
     let res
     switch (atomType) {
-        case 'v0':
-            claimedAtom = claimedAtom.v0()
+        case 'claimAtomTypeV0':
+            claimedAtom = claimedAtom.v0
             res = {
-                account: xdrParseAccountAddress(claimedAtom.sellerEd25519()),
-                offerId: claimedAtom.offerId().toString()
+                account: xdrParseAccountAddress(claimedAtom.sellerEd25519),
+                offerId: claimedAtom.offerId.toString()
             }
             break
-        case 'orderBook':
-            claimedAtom = claimedAtom.orderBook()
+        case 'claimAtomTypeOrderBook':
+            claimedAtom = claimedAtom.orderBook
             res = {
-                account: xdrParseAccountAddress(claimedAtom.sellerId()),
-                offerId: claimedAtom.offerId().toString()
+                account: xdrParseAccountAddress(claimedAtom.sellerId),
+                offerId: claimedAtom.offerId.toString()
             }
             break
-        case 'liquidityPool':
-            claimedAtom = claimedAtom.liquidityPool()
+        case 'claimAtomTypeLiquidityPool':
+            claimedAtom = claimedAtom.liquidityPool
             res = {
-                poolId: claimedAtom.liquidityPoolId()
+                poolId: xdrParseBytes(claimedAtom.liquidityPoolId)
             }
             break
         default:
@@ -159,12 +213,12 @@ function xdrParseClaimedOffer(claimedAtom) {
     }
     return {
         asset: [
-            xdrParseAsset(claimedAtom.assetSold()),
-            xdrParseAsset(claimedAtom.assetBought())
+            xdrParseAsset(claimedAtom.assetSold),
+            xdrParseAsset(claimedAtom.assetBought)
         ],
         amount: [
-            claimedAtom.amountSold().toString(),
-            claimedAtom.amountBought().toString()
+            claimedAtom.amountSold.toString(),
+            claimedAtom.amountBought.toString()
         ],
         ...res
     }
@@ -172,8 +226,8 @@ function xdrParseClaimedOffer(claimedAtom) {
 
 function xdrParseClaimantPredicate(predicate) {
     if (!predicate) return {}
-    const type = predicate.switch().name
-    const value = predicate.value()
+    const type = predicate.type
+    const value = predicate.value
     switch (type) {
         case 'claimPredicateUnconditional':
             return {}
@@ -193,10 +247,10 @@ function xdrParseClaimantPredicate(predicate) {
 }
 
 function xdrParseClaimant(claimant) {
-    const value = claimant.value()
+    const value = claimant.value
     return {
-        destination: xdrParseAccountAddress(value.destination()),
-        predicate: xdrParseClaimantPredicate(value.predicate())
+        destination: xdrParseAccountAddress(value.destination),
+        predicate: xdrParseClaimantPredicate(value.predicate)
     }
 }
 
@@ -204,21 +258,21 @@ function xdrParseAsset(src) {
     if (!src)
         return undefined
 
-    if (src.arm) { //XDR
-        switch (src.switch().name) {
+    if (typeof src.type === 'string') { //XDR
+        switch (src.type) {
             case 'assetTypeNative':
                 return 'XLM'
             case 'assetTypePoolShare': {
-                const poolId = src.value()
-                if (poolId.length)
-                    return poolId.toString('hex')
+                const poolId = src.value
+                if (poolId instanceof Uint8Array || poolId?.value instanceof Uint8Array)
+                    return xdrParseHex(poolId)
                 if (poolId.constantProduct)
                     return LiquidityPoolId.fromOperation(poolId).getLiquidityPoolId()
                 throw new TxMetaEffectParserError('Unsupported liquidity pool asset id format')
             }
             default: {
-                const value = src.value()
-                return `${value.assetCode().toString().replace(/\0+$/, '')}-${StrKey.encodeEd25519PublicKey(value.issuer().ed25519())}-${src.arm() === 'alphaNum4' ? 1 : 2}`
+                const value = src.value
+                return `${xdrParseText(value.assetCode).replace(/\0+$/, '')}-${xdrParseAccountAddress(value.issuer)}-${src.type === 'assetTypeCreditAlphanum4' ? 1 : 2}`
             }
         }
     }
@@ -243,88 +297,73 @@ function xdrParseAsset(src) {
 
 function xdrParseScVal(value, treatBytesAsContractId = false) {
     if (typeof value === 'string') {
-        value = xdr.ScVal.fromXDR(value, 'base64')
+        value = xdr.ScVal.fromXdr(value, 'base64')
     }
-    switch (value._arm) {
-        case 'vec':
-            return value._value.map(xdrParseScVal)
-        case 'map':
+    switch (value.type) {
+        case 'scvVec':
+            return value.vec.map(xdrParseScVal)
+        case 'scvMap':
             const res = {}
-            for (const entry of value._value) {
-                res[xdrParseScVal(entry.key())] = xdrParseScVal(entry.val())
+            for (const entry of value.map) {
+                res[xdrParseScVal(entry.key)] = xdrParseScVal(entry.val)
             }
             return res
-        case 'i256':
-        case 'u256':
-        case 'i128':
-        case 'u128':
-        case 'i64':
-        case 'u64':
+        case 'scvI256':
+        case 'scvU256':
+        case 'scvI128':
+        case 'scvU128':
+        case 'scvI64':
+        case 'scvU64':
             return scValToBigInt(value).toString()
-        case 'timepoint':
-        case 'duration':
-            return value._value._value.toString()
-        case 'address':
-            switch (value._value._arm) {
-                case 'accountId':
-                    return xdrParseAccountAddress(value._value._value)
-                case 'contractId':
-                    return xdrParseContractAddress(value._value._value)
-                case 'muxedAccount':
-                    return xdrParseMuxedScAddress(value._value._value)
-                case 'liquidityPoolId':
-                    return StrKey.encodeLiquidityPool(value._value._value)
-                case 'claimableBalanceId':
-                    return StrKey.encodeClaimableBalance(value._value._value._value)
-            }
-            throw new TxMetaEffectParserError('Not supported XDR primitive type: ' + value._value._arm.toString())
-        case 'accountId':
-            return xdrParseAccountAddress(value._value.ed25519())
-        case 'bytes':
-            return treatBytesAsContractId ? xdrParseContractAddress(value.value()) : value._value.toString('base64')
-        case 'i32':
-        case 'u32':
-        case 'b':
-            return value._value
-        case 'str':
-        case 'sym':
-            return value._value.toString()
-        case 'nonceKey':
-            return value._value.nonce()._value.toString()
-        case 'instance':
-            return value._value.executable.wasmHash().toString('base64')
-        case 'error':
-            return value.toXDR('base64')
-        case 'contractId':
-            return xdrParseContractAddress(value._value)
+        case 'scvTimepoint':
+        case 'scvDuration':
+            return value.value.toString()
+        case 'scvAddress':
+            return xdrParseScAddress(value.address)
+        case 'scvBytes':
+            return treatBytesAsContractId ? xdrParseContractAddress(value.bytes) : xdrParseBase64(value.bytes)
+        case 'scvI32':
+        case 'scvU32':
+        case 'scvBool':
+            return value.value
+        case 'scvString':
+        case 'scvSymbol':
+            return value.value.toString()
+        case 'scvLedgerKeyNonce':
+            return value.nonceKey.nonce.toString()
+        case 'scvContractInstance':
+            return xdrParseBase64(value.instance.executable.wasmHash)
+        case 'scvError':
+            return value.toXdr('base64')
+        case 'scvVoid':
+            return undefined
+        case 'scvLedgerKeyContractInstance':
+            return '<LedgerKeyContractInstance>'
+        //xdrParseScVal is also invoked with bare ScAddress values (e.g. InvokeContractArgs.contractAddress)
+        case 'scAddressTypeAccount':
+        case 'scAddressTypeContract':
+        case 'scAddressTypeMuxedAccount':
+        case 'scAddressTypeLiquidityPool':
+        case 'scAddressTypeClaimableBalance':
+            return xdrParseScAddress(value)
         default:
-            switch (value._switch.name) {
-                case 'scvVoid':
-                    return undefined
-                case 'scvContractInstance':
-                    return '<ContractInstance>'
-                case 'scvLedgerKeyContractInstance':
-                    return '<LedgerKeyContractInstance>'
-                case 'scvLedgerKeyNonce':
-                    return '<LedgerKeyNonce>'
-            }
-            throw new TxMetaEffectParserError('Not supported XDR primitive type: ' + value.toXDR ? value.toXDR() : value.toString())
+            throw new TxMetaEffectParserError('Not supported XDR primitive type: ' + (value.toXdr ? value.toXdr('base64') : value.toString()))
     }
 }
 
 function xdrParseSacBalanceChange(changeEventType, key, value) {
-    const parsedKey = xdr.ScVal.fromXDR(key, 'base64')
-    if (parsedKey._arm !== 'vec')
+    const parsedKey = xdr.ScVal.fromXdr(key, 'base64')
+    if (parsedKey.type !== 'scvVec')
         return null
-    const keyParts = parsedKey._value
+    const keyParts = parsedKey.vec
     if (!(keyParts instanceof Array) || keyParts.length !== 2)
         return null
-    if (keyParts[0]._arm !== 'sym' || keyParts[1]._arm !== 'address' || keyParts[0]._value.toString() !== 'Balance')
+    if (keyParts[0].type !== 'scvSymbol' || keyParts[1].type !== 'scvAddress' || keyParts[0].value.toString() !== 'Balance')
         return null
     const res = {
         address: xdrParseScVal(keyParts[1]),
-        balance: changeEventType===effectTypes.contractDataRemoved?
-            '0':
+        balance: changeEventType === effectTypes.contractDataRemoved ?
+            '0' :
             retrieveBalanceFromStateData(value)
     }
     if (res.balance === undefined)
@@ -333,8 +372,8 @@ function xdrParseSacBalanceChange(changeEventType, key, value) {
 }
 
 function retrieveBalanceFromStateData(value) {
-    const xdrVal = xdr.ScVal.fromXDR(value, 'base64')
-    if (xdrVal._arm !== 'map')
+    const xdrVal = xdr.ScVal.fromXdr(value, 'base64')
+    if (xdrVal.type !== 'scvMap')
         return undefined
     const parsedValue = xdrParseScVal(xdrVal)
     if (typeof parsedValue.amount !== 'string')
@@ -347,6 +386,7 @@ module.exports = {
     xdrParseAccountAddress,
     xdrParseContractAddress,
     xdrParseMuxedScAddress,
+    xdrParseScAddress,
     xdrParseClaimant,
     xdrParseClaimedOffer,
     xdrParseTradeAtom,
@@ -354,5 +394,9 @@ module.exports = {
     xdrParsePrice,
     xdrParseScVal,
     xdrParseSacBalanceChange,
+    xdrParseBytes,
+    xdrParseHex,
+    xdrParseBase64,
+    xdrParseText,
     retrieveBaseMuxedAddress
 }
