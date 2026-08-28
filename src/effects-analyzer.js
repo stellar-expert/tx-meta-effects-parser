@@ -1,4 +1,4 @@
-const {StrKey, hash, nativeToScVal} = require('@stellar/stellar-sdk')
+const {StrKey, hash, xdr, nativeToScVal} = require('@stellar/stellar-sdk')
 const effectTypes = require('./effect-types')
 const {validateAmount, normalizeAddress, parseLargeInt} = require('./parser/normalization')
 const {parseLedgerEntryChanges} = require('./parser/ledger-entry-changes-parser')
