@@ -331,8 +331,21 @@ function xdrParseScVal(value, treatBytesAsContractId = false) {
             return value.value.toString()
         case 'scvLedgerKeyNonce':
             return value.nonceKey.nonce.toString()
-        case 'scvContractInstance':
-            return xdrParseBase64(value.instance.executable.wasmHash)
+        case 'scvContractInstance': {
+            const {executable} = value.instance
+            switch (executable.type) {
+                case 'contractExecutableWasm':
+                    return xdrParseBase64(executable.wasmHash)
+                case 'contractExecutableExternalRef': {
+                    const {executableOwner, tag} = executable.externalRef
+                    return `<ExternalRef:${xdrParseScAddress(executableOwner)}/${tag.toString()}>`
+                }
+                default:
+                    return '<StellarAsset>'
+            }
+        }
+        case 'scvExecutableTag':
+            return value.executableTag.toString()
         case 'scvError':
             return value.toXdr('base64')
         case 'scvVoid':

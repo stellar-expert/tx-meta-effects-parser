@@ -1,4 +1,4 @@
-const {StrKey, hash, xdr, nativeToScVal} = require('@stellar/stellar-sdk')
+const {StrKey, hash, nativeToScVal} = require('@stellar/stellar-sdk')
 const effectTypes = require('./effect-types')
 const {validateAmount, normalizeAddress, parseLargeInt} = require('./parser/normalization')
 const {parseLedgerEntryChanges} = require('./parser/ledger-entry-changes-parser')
@@ -418,7 +418,8 @@ class EffectsAnalyzer {
             case 'hostFunctionTypeCreateContractV2': //handled in entry changes
                 const executable = value.executable
                 const executableType = executable.type
-                if (executableType !== 'contractExecutableWasm') {
+                //only SAC creation emitted here - the preimage carries issuer/salt/asset that the meta lacks
+                if (executableType === 'contractExecutableStellarAsset') {
                     const preimage = value.contractIdPreimage
                     const preimageParams = preimage.value
                     const effect = {
@@ -800,7 +801,8 @@ class EffectsAnalyzer {
     }
 
     processContractChanges({action, before, after}) {
-        const {kind, owner: contract, keyHash} = after
+        const state = after || before
+        const {kind, owner: contract, keyHash} = state
         let effect = {
             type: effectTypes.contractCreated,
             contract,
@@ -809,10 +811,14 @@ class EffectsAnalyzer {
         }
         switch (kind) {
             case 'fromAsset':
-                effect.asset = after.asset
+                effect.asset = state.asset
                 break
             case 'wasm':
-                effect.wasmHash = after.wasmHash
+                effect.wasmHash = state.wasmHash
+                break
+            case 'external':
+                effect.executableOwner = state.executableOwner
+                effect.executableTag = state.executableTag
                 break
             case 'fromAddress':
                 break
@@ -823,10 +829,19 @@ class EffectsAnalyzer {
             case 'created':
                 break
             case 'updated':
-                effect.type = effectTypes.contractUpdated
-                effect.prevWasmHash = before.wasmHash
-                if (before.wasmHash === after.wasmHash) {//skip if hash unchanged
+                if (sameExecutable(before, after)) { //skip if the executable hasn't changed
                     effect = undefined
+                    break
+                }
+                effect.type = effectTypes.contractUpdated
+                if (before.kind !== after.kind) {
+                    effect.prevKind = before.kind
+                }
+                if (before.kind === 'wasm') {
+                    effect.prevWasmHash = before.wasmHash
+                } else if (before.kind === 'external') {
+                    effect.prevExecutableOwner = before.executableOwner
+                    effect.prevExecutableTag = before.executableTag
                 }
                 break
             case 'restored':
@@ -884,6 +899,7 @@ class EffectsAnalyzer {
                 break
         }
         this.addEffect(effect)
+        this.processExecutableRefChanges(action, before, after)
         const tokenBalance = xdrParseSacBalanceChange(effect.type, key, after?.value, before?.value)
         if (tokenBalance) {
             const balanceEffects = this.effects.filter(e => e.source === tokenBalance.address &&
@@ -893,6 +909,31 @@ class EffectsAnalyzer {
                 return
             balanceEffects[balanceEffects.length - 1].balance = tokenBalance.balance //set latest transfer effect balance
         }
+    }
+
+    /**
+     * Emit CAP-85 executable reference effects for the executable tag entry modifications
+     * @param {String} action
+     * @param {{}} [before]
+     * @param {{}} [after]
+     * @private
+     */
+    processExecutableRefChanges(action, before, after) {
+        if (!after) //CAP-85 forbids the executable tag entry removal
+            return
+        if (!after.executableTag || !after.wasmHash) //not an executable reference entry, or the value is malformed
+            return
+        const effect = {
+            type: action === 'created' ? effectTypes.contractExecutableRefCreated : effectTypes.contractExecutableRefUpdated,
+            owner: after.owner,
+            tag: after.executableTag,
+            wasmHash: after.wasmHash,
+            keyHash: after.keyHash
+        }
+        if (action === 'updated' && before.wasmHash) {
+            effect.prevWasmHash = before.wasmHash
+        }
+        this.addEffect(effect)
     }
 
     processContractCodeChanges({type, action, before, after}) {
@@ -992,7 +1033,7 @@ class EffectsAnalyzer {
             if (emitted.keyHash === keyHash && emitted.type !== effectTypes.setTtl) {
                 if (emitted.type.startsWith('contractCode')) {
                     effect.kind = 'contractCode'
-                } else if (emitted.type.startsWith('contractData')) {
+                } else if (emitted.type.startsWith('contractData') || emitted.type.startsWith('contractExecutableRef')) {
                     effect.kind = 'contractData'
                     effect.owner = emitted.owner
                 } else if (emitted.type.startsWith('contract')) {
@@ -1041,12 +1082,12 @@ class EffectsAnalyzer {
                 default:
                     throw new UnexpectedTxMetaChangeError(change)
             }
-        //ensure that the wasm upload effect always precedes contract creation effect
+        //ensure that the wasm upload effect always precedes contract creation and executable reference effects
         for (let i = 0; i < this.effects.length; i++) {
             const effect = this.effects[i]
             if (effect.type === effectTypes.contractCodeUploaded) {
                 //find the first reference in the already emitted effects
-                const createdFromCodeIdx = this.effects.findIndex(e => e.type === effectTypes.contractCreated && e.wasmHash === effect.wasmHash)
+                const createdFromCodeIdx = this.effects.findIndex(e => referencesUploadedCode(e, effect.wasmHash))
                 //reorder effects if needed
                 if (createdFromCodeIdx >= 0) {
                     this.effects.splice(i, 1)
@@ -1120,6 +1161,43 @@ function processFeeChargedEffect(tx, source, chargedAmount, feeBump = false) {
         res.bump = true
     }
     return res
+}
+
+/**
+ * Check whether the effect points to an uploaded contract code by its Wasm hash
+ * @param {{}} effect
+ * @param {string} refWasmHash
+ * @return {Boolean}
+ */
+function referencesUploadedCode(effect, refWasmHash) {
+    switch (effect.type) {
+        case effectTypes.contractCreated:
+        case effectTypes.contractExecutableRefCreated:
+        case effectTypes.contractExecutableRefUpdated:
+            return refWasmHash === effect.wasmHash
+        default:
+            return false
+    }
+}
+
+/**
+ * Check whether two contract instance snapshots refer to the same executable
+ * @param {{}} before - Instance state before changes
+ * @param {{}} after - Instance state after changes
+ * @return {boolean}
+ */
+function sameExecutable(before, after) {
+    //compare the raw XDR executable type - `kind` for SAC contracts is derived from the storage presence heuristic
+    if (before?.executableType !== after?.executableType)
+        return false
+    switch (after.executableType) {
+        case 'contractExecutableWasm':
+            return before.wasmHash === after.wasmHash
+        case 'contractExecutableExternalRef':
+            return before.executableOwner === after.executableOwner && before.executableTag === after.executableTag
+        default:
+            return true //SAC executables never change
+    }
 }
 
 /**

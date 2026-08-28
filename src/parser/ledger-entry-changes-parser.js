@@ -3,6 +3,7 @@ const {TxMetaEffectParserError} = require('../errors')
 const {
     xdrParseAsset,
     xdrParseAccountAddress,
+    xdrParseScAddress,
     xdrParseClaimant,
     xdrParsePrice,
     xdrParseSignerKey,
@@ -292,34 +293,61 @@ function parseContractData(value) {
     if (data.key.type === 'scvLedgerKeyContractInstance' && entry.durability === 'persistent') {
         entry.durability = 'instance'
         const instance = valueAttr.instance
-        const type = instance.executable.type
-        switch (type) {
-            case 'contractExecutableStellarAsset':
-                if (instance.storage?.length) { //if not -- the asset has been created "fromAddress" - no metadata in this case
-                    entry.kind = 'fromAsset'
-                    const metaArgs = instance.storage[0]
-                    if (metaArgs.key.value.toString() !== 'METADATA')
-                        throw new TxMetaEffectParserError('Unexpected asset initialization metadata')
-                    entry.asset = xdrParseAsset(metaArgs.val.map[1].val.value.toString())
-                } else {
-                    entry.kind = 'fromAddress'
-                }
-                break
-            case 'contractExecutableWasm':
-                entry.kind = 'wasm'
-                entry.wasmHash = xdrParseHex(instance.executable.wasmHash)
-                break
-            default:
-                throw new TxMetaEffectParserError('Unsupported executable type: ' + type)
-        }
+        Object.assign(entry, decodeExecutableInfo(instance))
         if (instance.storage?.length) {
             entry.storage = instance.storage.map(entry => ({
                 key: entry.key.toXdr('base64'),
                 val: entry.val.toXdr('base64')
             }))
         }
+    } else if (data.key.type === 'scvExecutableTag') { //CAP-85 executable reference entry owned by the contract
+        entry.executableTag = data.key.executableTag.toString()
+        if (valueAttr.type === 'scvBytes') { //the protocol guarantees a 32-byte Wasm hash, but never fail the parse on it
+            entry.wasmHash = xdrParseHex(valueAttr.bytes)
+        }
     }
     return entry
+}
+
+/**
+ * Decode contract instance executable type and params
+ * @param {{}} instance - ScContractInstance XDR
+ * @return {{executableType: String, kind: String, wasmHash: String?, asset: String?, executableOwner: String?, executableTag: String?}}
+ * @private
+ */
+function decodeExecutableInfo(instance) {
+    const {executable} = instance
+    const executableType = executable.type
+    switch (executableType) {
+        case 'contractExecutableStellarAsset':
+            if (!instance.storage?.length) //if no storage -- the asset has been created "fromAddress" - no metadata in this case
+                return {executableType, kind: 'fromAddress'}
+            const metaArgs = instance.storage[0]
+            if (metaArgs.key.value.toString() !== 'METADATA')
+                throw new TxMetaEffectParserError('Unexpected asset initialization metadata')
+            return {
+                executableType,
+                kind: 'fromAsset',
+                asset: xdrParseAsset(metaArgs.val.map[1].val.value.toString())
+            }
+        case 'contractExecutableWasm':
+            return {
+                executableType,
+                kind: 'wasm',
+                wasmHash: xdrParseHex(executable.wasmHash)
+            }
+        case 'contractExecutableExternalRef': {
+            const {executableOwner, tag} = executable.externalRef
+            return {
+                executableType,
+                kind: 'external',
+                executableOwner: xdrParseScAddress(executableOwner),
+                executableTag: tag.toString()
+            }
+        }
+        default:
+            throw new TxMetaEffectParserError('Unsupported executable type: ' + executableType)
+    }
 }
 
 function parseTtl({value}) {

@@ -1423,6 +1423,56 @@ For sponsored data entries:
 
 <tr>
 <td>
+<sub><code>contractExecutableRefCreated</code></sub>
+</td>
+<td><sub>InvokeHostFunctionOp</sub></td>
+<td>
+
+A CAP-85 executable reference entry has been written by its owner contract.
+
+```json
+{
+  "type": "contractExecutableRefCreated",
+  "source": "GBLW…EZ6M",
+  "owner": "CATF…5DTJ",
+  "tag": "pocket",
+  "wasmHash": "07ee977b9fdd91610544e9e84f7d3869d580d9965c69b49bc80887b3e297f32c",
+  "keyHash": "914eec2a39a7e416a27e7a8dd9df4a1f6009bf5095f4429e7c51d3858913a782",
+  "ttl": 4493148
+}
+```
+
+</td>
+</tr>
+
+<tr>
+<td>
+<sub><code>contractExecutableRefUpdated</code></sub>
+</td>
+<td><sub>InvokeHostFunctionOp</sub></td>
+<td>
+
+The owner contract re-pointed the reference to another WASM. Every contract referring to this
+`owner`+`tag` pair now executes the new code, without any change in their own instance entries.
+Also emitted when an archived reference entry is restored.
+
+```json
+{
+  "type": "contractExecutableRefUpdated",
+  "source": "GBLW…EZ6M",
+  "owner": "CATF…5DTJ",
+  "tag": "pocket",
+  "wasmHash": "07ee…f32c",
+  "prevWasmHash": "a8c9…34c9",
+  "keyHash": "914eec2a39a7e416a27e7a8dd9df4a1f6009bf5095f4429e7c51d3858913a782"
+}
+```
+
+</td>
+</tr>
+
+<tr>
+<td>
 <sub><code>contractCreated</code></sub>
 </td>
 <td><sub>InvokeHostFunctionOp</sub></td>
@@ -1437,6 +1487,23 @@ For sponsored data entries:
   "asset": "ICGVCWUQXIHO-GBD2…FUAC-2",
   "keyHash": "6922ce15707976b856b398fc345c5f926c3d6f8f83d8e0d5a32ebed3af4867a4",
   "ttl": 2908049
+}
+```
+
+A contract with a CAP-85 externally managed executable (`kind` is `external`) refers to a WASM
+hash stored in the `executableOwner` contract under the `executableTag` key instead of embedding
+it in its own instance entry:
+
+```json
+{
+  "type": "contractCreated",
+  "source": "GBLW…EZ6M",
+  "contract": "CBZK…ESXW",
+  "kind": "external",
+  "executableOwner": "CATF…5DTJ",
+  "executableTag": "pocket",
+  "keyHash": "540d7072ec4951cc71b60b278e74aa6ce24c03fde5ad51f5609212e2fafe5891",
+  "ttl": 4493155
 }
 ```
 
@@ -1471,6 +1538,24 @@ An SAC admin change:
   "source": "GA2F…I7GG",
   "contract": "CBXG…HPAV",
   "admin": "GCFH…M7M5"
+}
+```
+
+A switch to a CAP-85 externally managed executable. `prevKind` is present only when the executable
+kind itself changed; `prevWasmHash` and `prevExecutableOwner`/`prevExecutableTag` describe whichever
+executable the contract had before:
+
+```json
+{
+  "type": "contractUpdated",
+  "source": "GBLW…EZ6M",
+  "contract": "CBZK…ESXW",
+  "kind": "external",
+  "executableOwner": "CATF…5DTJ",
+  "executableTag": "pocket",
+  "prevKind": "wasm",
+  "prevWasmHash": "eb94…19ae",
+  "keyHash": "540d7072ec4951cc71b60b278e74aa6ce24c03fde5ad51f5609212e2fafe5891"
 }
 ```
 
@@ -1742,6 +1827,21 @@ For contract code entries:
   "contract": "CAVL…6HLP",
   "kind": "wasm",
   "wasmHash": "df88…8608",
+  "keyHash": "42f3…1b7c",
+  "ttl": 244540
+}
+```
+
+A restored contract with a CAP-85 externally managed executable:
+
+```json
+{
+  "type": "contractRestored",
+  "source": "GALD…S7SA",
+  "contract": "CBZK…ESXW",
+  "kind": "external",
+  "executableOwner": "CATF…5DTJ",
+  "executableTag": "pocket",
   "keyHash": "42f3…1b7c",
   "ttl": 244540
 }

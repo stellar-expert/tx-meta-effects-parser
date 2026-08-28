@@ -84,6 +84,9 @@ const effectTypes = {
     contractCodeRemoved: 'contractCodeRemoved',
     contractCodeRestored: 'contractCodeRestored',
 
+    contractExecutableRefCreated: 'contractExecutableRefCreated',
+    contractExecutableRefUpdated: 'contractExecutableRefUpdated',
+
     contractCreated: 'contractCreated',
     contractUpdated: 'contractUpdated',
     contractRestored: 'contractRestored',
